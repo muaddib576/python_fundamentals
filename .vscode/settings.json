@@ -1,0 +1,9 @@
+{
+    "python.pythonPath": "/Users/brian/Library/Caches/pypoetry/virtualenvs/python-fundamentals-Gj_N2T8F-py3.8/bin/python",
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    "python.testing.pytestEnabled": true
+}
