@@ -8,6 +8,9 @@
 #     [x] split on comma on readin
 #     [x] ensure no commas on validating user input
 # [ ] add email address to data user can save in contacts
+#     [ ] add email input() in main()
+#     [ ] add email validation
+#     [ ] update add_contact()
 
 contacts_file = 'data/contacts.txt'
 
@@ -17,7 +20,7 @@ def add_contact(name, number):
         fp.write(f"{name}, {number}\n")
 
 def read_contacts():
-    """Adds all the lines from contacts.txt to a variable that will be printed in main()"""
+    """Adds all the lines from contacts.txt to a variable, removing any commas"""
     with open(contacts_file, "r") as fp:
         contents = fp.read()
     
@@ -72,10 +75,6 @@ def number_validation(number):
         return False
 
     return True
-
-
-def to_csv(data):
-    pass
 
 def main():
     """Asks user to selection actions, and executes acordingly"""

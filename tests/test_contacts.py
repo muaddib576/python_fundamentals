@@ -17,6 +17,7 @@ def test_selection_validation():
 def test_name_validation():
     assert name_validation('') == False, 'Blank should return False'
     assert name_validation('blah') == True, 'Non-blank string should be True'
+    assert name_validation('bl,ah') == False, 'string w/ a comma should be False'
 
 def test_number_validation():
     assert number_validation('3249023445') == True, 'a string of only numbers should be True'
