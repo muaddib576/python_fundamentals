@@ -2,33 +2,44 @@
 # -----
 # [x] add user input validation on search/add (ensure not blank, phone number is numbers/symbols, etc)
 # [x] print a message if the user doesn't enter a valid command
-# [ ] write tests
-# [ ] store as a faux-CSV:
-#     [ ] separate each field with a comma when writing
-#     [ ] split on comma on readin
-#     [ ] ensure no commas on validating user input
+# [x] write tests
+# [x] store as a faux-CSV:
+#     [x] separate each field with a comma when writing
+#     [x] split on comma on readin
+#     [x] ensure no commas on validating user input
 # [ ] add email address to data user can save in contacts
+
+contacts_file = 'data/contacts.txt'
 
 def add_contact(name, number):
     """Appends a new name and number to contacts.txt"""
-    with open("contacts.txt", "a") as fp:
-        fp.write(f"{name} {number}\n")
+    with open(contacts_file, "a") as fp:
+        fp.write(f"{name}, {number}\n")
 
 def read_contacts():
     """Adds all the lines from contacts.txt to a variable that will be printed in main()"""
-    with open("contacts.txt", "r") as fp:
+    with open(contacts_file, "r") as fp:
         contents = fp.read()
-    return contents
+    
+    contents = contents.split('\n')
+    text = ""
+    for contact in contents:
+        if contact:
+            contact = contact.split(',')
+            text += f"{contact[0]} {contact[1]}\n"
+    
+    return text
 
 def search_contacts(name):
-    with open("contacts.txt", "r") as fp:
-        text = ""
-        for line in fp.readlines():
-            if name in line.lower():
-                text += f"{line}"
-        if not text:
-            text += "You have no contacts with that name. Womp womp."
-        return text
+    """Returns any contact that contains the string entered by user"""
+    contents = read_contacts().split("\n")
+    text = "Search results:\n"
+    for line in contents:
+        if name in line.lower():
+            text += f"{line}\n"
+    if not text:
+        text += "You have no contacts with that name. Womp womp."
+    return text
 
 def selection_validation(user_pick):
     """Validates the user picked an existing command"""
@@ -39,6 +50,8 @@ def selection_validation(user_pick):
 def name_validation(name):
     """checks if name is blank"""
     if not name:
+        return False
+    if "," in name:
         return False
     return True
 
@@ -61,6 +74,9 @@ def number_validation(number):
     return True
 
 
+def to_csv(data):
+    pass
+
 def main():
     """Asks user to selection actions, and executes acordingly"""
     while True:
@@ -80,10 +96,10 @@ def main():
             while not name_validation(new_name):
                 new_name = input("Please type the name better:\n").title()
 
-            new_number = input("What is the phone number of the new contact?\n")
+            new_number = str(input("What is the phone number of the new contact?\n"))
 
             while not number_validation(new_number):
-                new_number = input("Please ensure you type only numbers, hyphens, and parenthesis!\n")
+                new_number = str(input("Please ensure you type only numbers, hyphens, and parenthesis!\n"))
 
             add_contact(new_name, new_number)
         
