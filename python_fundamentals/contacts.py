@@ -7,17 +7,19 @@
 #     [x] separate each field with a comma when writing
 #     [x] split on comma on readin
 #     [x] ensure no commas on validating user input
-# [ ] add email address to data user can save in contacts
-#     [ ] add email input() in main()
-#     [ ] add email validation
-#     [ ] update add_contact()
+# [x] add email address to data user can save in contacts
+#     [x] add email input() in main()
+#     [x] add email validation
+#     [x] update add_contact()
+
+import re
 
 contacts_file = 'data/contacts.txt'
 
-def add_contact(name, number):
+def add_contact(name, number, email):
     """Appends a new name and number to contacts.txt"""
     with open(contacts_file, "a") as fp:
-        fp.write(f"{name}, {number}\n")
+        fp.write(f"{name}, {number}, {email}\n")
 
 def read_contacts():
     """Adds all the lines from contacts.txt to a variable, removing any commas"""
@@ -29,7 +31,7 @@ def read_contacts():
     for contact in contents:
         if contact:
             contact = contact.split(',')
-            text += f"{contact[0]} {contact[1]}\n"
+            text += f"{contact[0]} {contact[1]} {contact[2]}\n"
     
     return text
 
@@ -76,6 +78,18 @@ def number_validation(number):
 
     return True
 
+def email_validation(email):
+    if not email:
+        return False
+    if type(email) == int:
+        return False
+    # checks if email looks like "wildcard@wildcard.wildcard"
+    if not re.search(r"^[^@]+@[^@.]+\.[^@.]+$", email):
+        return False
+
+    return True
+
+
 def main():
     """Asks user to selection actions, and executes acordingly"""
     while True:
@@ -100,7 +114,12 @@ def main():
             while not number_validation(new_number):
                 new_number = str(input("Please ensure you type only numbers, hyphens, and parenthesis!\n"))
 
-            add_contact(new_name, new_number)
+            new_email = input("What is the email adress for the new contact?\n")
+
+            while not email_validation(new_email):
+                new_email = input("Please be sure the email is entered correctly:\n")
+
+            add_contact(new_name, new_number, new_email)
         
         if selection in ("v", "view"):
             text = read_contacts()

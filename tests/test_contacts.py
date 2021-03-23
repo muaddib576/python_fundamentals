@@ -1,12 +1,9 @@
 from python_fundamentals.contacts import (
-    search_contacts,
     selection_validation,
     name_validation,
-    number_validation
+    number_validation,
+    email_validation
 )
-
-def test_search_contacts():
-    pass
 
 def test_selection_validation():
     assert selection_validation("view") == True, '"view" should return True'
@@ -25,3 +22,14 @@ def test_number_validation():
     assert number_validation('(324)90/2-3234') == False, 'a string with "/" should be False'
     assert number_validation('Mah digits') == False, 'a string with letters should be False'
     assert number_validation('') == False, 'a blank string should be False'
+
+def test_email_validation():
+    assert email_validation('blah@gmail.com') == True, 'a str w/ ??? then "@" then ??? then "." then ??? should be True'
+    assert email_validation('bl.ah@gmail.com') == True, 'a str w/ a "." before the first "@" should be True'
+    assert email_validation('blahgmail.com') == False, 'a str without "@" should be False'
+    assert email_validation('blah@gmailcom') == False, 'a str without "." should be False'
+    assert email_validation('blah@gm@ail.com') == False, 'a str more than one "@" should be False'
+    assert email_validation('blah@gm.ail.com') == False, 'a str more than one "." after the "@" should be False'
+    assert email_validation('@.') == False, 'a str with no characters outside "@" and "." should be False'
+    assert email_validation('') == False, 'a blank str should be False'
+    assert email_validation(5) == False, 'an int should be False'
