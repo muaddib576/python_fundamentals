@@ -32,4 +32,3 @@ def test_email_validation():
     assert email_validation('blah@gm.ail.com') == False, 'a str more than one "." after the "@" should be False'
     assert email_validation('@.') == False, 'a str with no characters outside "@" and "." should be False'
     assert email_validation('') == False, 'a blank str should be False'
-    assert email_validation(5) == False, 'an int should be False'

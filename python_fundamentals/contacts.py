@@ -26,9 +26,8 @@ def read_contacts():
     with open(contacts_file, "r") as fp:
         contents = fp.read()
     
-    contents = contents.split('\n')
     text = ""
-    for contact in contents:
+    for contact in contents.splitlines():
         if contact:
             contact = contact.split(',')
             text += f"{contact[0]} {contact[1]} {contact[2]}\n"
@@ -38,12 +37,14 @@ def read_contacts():
 def search_contacts(name):
     """Returns any contact that contains the string entered by user"""
     contents = read_contacts().split("\n")
-    text = "Search results:\n"
+    text = ""
     for line in contents:
         if name in line.lower():
             text += f"{line}\n"
     if not text:
-        text += "You have no contacts with that name. Womp womp."
+        text += "You have no contacts with that name. Womp womp.\n"
+    else:
+        text = "Search results:\n" + text
     return text
 
 def selection_validation(user_pick):
@@ -62,33 +63,32 @@ def name_validation(name):
 
 def number_validation(number):
     """checks if phone number is valid"""
+
     if not number:
         return False
-    # it seems to me like this could be a project in itself, so im just going to do it lazy and *shudder* trust the user a bit
-    nums = ""
-    for x in number:
-        if x in ("(", ")", "-"):
-            continue
-        nums += x
-    
-    try:
-        int(nums)
-    except ValueError:
-        return False
 
-    return True
+    #checks for (xxx)xxx-xxxx
+    if number[0] == "(":
+        if re.search(r"^\({1}[0-9]{3}\){1}[0-9]{3}-{1}[0-9]{4}$", number):
+            return True    
+    
+    #checks for xxx-xxx-xxxx
+    if number[3] == "-":
+        if re.search(r"^[0-9]{3}-{1}[0-9]{3}-{1}[0-9]{4}$", number):
+            return True
+    
+    #checks for xxxxxxxxxx
+    if number.isnumeric() == True:
+        if re.search(r"^[0-9]{10}$", number):
+            return True
+    
+    return False
 
 def email_validation(email):
-    if not email:
-        return False
-    if type(email) == int:
-        return False
-    # checks if email looks like "wildcard@wildcard.wildcard"
-    if not re.search(r"^[^@]+@[^@.]+\.[^@.]+$", email):
-        return False
-
-    return True
-
+    """Checks if email looks like wildcard@wildcard.wildcard"""
+    if re.search(r"^[^@]+@[^@.]+\.[^@.]+$", email):
+        return True
+    return False
 
 def main():
     """Asks user to selection actions, and executes acordingly"""
@@ -96,43 +96,47 @@ def main():
         selection = input("Would you like to ADD, VIEW, or SEARCH your contacts? QUIT if you are done :)\n").lower()
 
         if not selection_validation(selection):
-            print("Sorry, that is not one of the options I gave you...")
+            print("\nSorry, that is not one of the options I gave you...")
             continue
         
         if selection in ("q", "quit"):
-            print("Okay crazy person I love you bye bye.")
+            print("\nOkay crazy person I love you bye bye.")
             break
 
         if selection in ("a", "add"):
-            new_name = input("What is the name of the new contact?\n").title()
+            new_name = input("\nWhat is the name of the new contact?\n").title()
             
             while not name_validation(new_name):
-                new_name = input("Please type the name better:\n").title()
+                new_name = input("\nPlease type the name better:\n").title()
 
-            new_number = str(input("What is the phone number of the new contact?\n"))
+            new_number = input("\nWhat is the phone number of the new contact?\n" \
+                            "Please use one of the following formats:\n" \
+                            "(xxx)xxx-xxxx\nxxx-xxx-xxxx\nxxxxxxxxxx\n").replace(" ", "")
 
             while not number_validation(new_number):
-                new_number = str(input("Please ensure you type only numbers, hyphens, and parenthesis!\n"))
+                new_number = input("\nPlease ensure you type only numbers, hyphens, parenthesis\n"\
+                            "and use one of the following formats:\n"\
+                            "(xxx)xxx-xxxx\nxxx-xxx-xxxx\nxxxxxxxxxx\n").replace(" ", "")
 
-            new_email = input("What is the email adress for the new contact?\n")
+            new_email = input("\nWhat is the email adress for the new contact?\n")
 
             while not email_validation(new_email):
-                new_email = input("Please be sure the email is entered correctly:\n")
+                new_email = input("\nPlease be sure the email is entered correctly:\n")
 
             add_contact(new_name, new_number, new_email)
         
         if selection in ("v", "view"):
             text = read_contacts()
-            print(text)
+            print(f"\n{text}")
 
         if selection in ("s", "search"):
-            query_name = input("Which contact would you like to search for?\n").lower()
+            query_name = input("\nWhich contact would you like to search for?\n").lower()
 
             while not name_validation(query_name):
-                query_name = input("Please type the name better:\n").lower()
+                query_name = input("\nPlease type the name better:\n").lower()
 
             results = search_contacts(query_name)
-            print(results)
+            print(f"\n{results}")
         
 if __name__ == "__main__":
     main()
