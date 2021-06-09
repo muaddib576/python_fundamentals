@@ -1,0 +1,5 @@
+front, back
+import the Path class, from pathlib import Path
+check if Path object path exists, path.exists()
+check if Path object path is a file, path.is_file()
+check if Path object path is a directory, path.is_dir()
