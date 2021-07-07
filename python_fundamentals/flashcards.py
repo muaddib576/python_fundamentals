@@ -3,13 +3,20 @@ from datetime import datetime
 import random
 import shutil
 
-
+# make datetime object from epoch int
+# dt = datetime.fromtimestamp(EPOCH)
+# 
+# print a human readable datetime object
+# print(str(dt))
+#
+# get a formatted datetime string
+# date = datetime.strptime("06//05//2020 12:06:58", "%d//%m//%Y %H:%M:%S")
 
 terminal_size = shutil.get_terminal_size()
 width = terminal_size[0]
 
-def load_csv(path):
-    """does a specific thing"""
+def load_card_csv(path):
+    """Opens,reads, and returns the contents of the flashcards csv"""
 
     if not path.exists():
         print(f"ERROR: {path} does not exist")
@@ -57,7 +64,21 @@ def scorekeeper(path, correct, total):
 
     print("This outcome has been recorded for posterity.")
 
+def load_scores(path):
+    """loads all past scores"""
+    if not path.exists():
+        print(f"ERROR: {path} does not exist")
+        return 
 
+    score_list = []
+
+    with open(path) as ch:
+        for i, line in enumerate(ch.readlines(), 1):
+            row = line.split(",")
+
+            score_list.append(row)
+    
+    return score_list
 
 def play(play_cards):
     """Takes the formatted cards and challenges the player"""
@@ -112,17 +133,29 @@ def play(play_cards):
 def main():
     """does the main thing"""
 
-    card_path = Path.cwd() / "data/flashcards/paths.csv"
-    log_path = Path.cwd() / "data/flashcards/score_log.csv"
+    while True:
 
-    cards = load_csv(card_path)
+        card_path = Path.cwd() / "data/flashcards/paths.csv"
+        log_path = Path.cwd() / "data/flashcards/score_log.csv"
+        valid_play = ['play','p']
+        valid_scoreboard = ['view','v']
 
-    if cards == False:
-        print("Error: someth went wrong.")
-        return
-    
-    results = play(cards)
+        choice = input("Would you like to PLAY or VIEW previous scores? ").lower()
 
-    scorekeeper(log_path, results[0], results[1])
+        #starts the flashcard challenge if selected
+        if choice in valid_play:
+            cards = load_card_csv(card_path)
+
+            if cards == False:
+                print("Error: someth went wrong.")
+                return
+            
+            results = play(cards)
+            scorekeeper(log_path, results[0], results[1])
+        
+        #starts displaying past scores
+        if choice in valid_scoreboard:
+            scores = load_scores(log_path)
+            print(scores)
 
 main()
