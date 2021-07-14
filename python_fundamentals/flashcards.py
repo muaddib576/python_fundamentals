@@ -3,15 +3,6 @@ from datetime import datetime
 import random
 import shutil
 
-# make datetime object from epoch int
-# dt = datetime.fromtimestamp(EPOCH)
-# 
-# print a human readable datetime object
-# print(str(dt))
-#
-# get a formatted datetime string
-# date = datetime.strptime("06//05//2020 12:06:58", "%d//%m//%Y %H:%M:%S")
-
 terminal_size = shutil.get_terminal_size()
 width = terminal_size[0]
 
@@ -29,6 +20,11 @@ def load_card_csv(path):
     with open(path) as ch: 
 
         for i, line in enumerate(ch.readlines(), 1):
+            
+            # ignores any blank card lines
+            if line == "\n":
+                continue
+
             card_dict = {'front': "", 'back': ""}
             row = line.split(",")
 
@@ -74,11 +70,40 @@ def load_scores(path):
 
     with open(path) as ch:
         for i, line in enumerate(ch.readlines(), 1):
-            row = line.split(",")
+            row = line.strip()
+            row = row.split(",")
 
             score_list.append(row)
     
     return score_list
+
+def print_scores(past_scores):
+    """It ain't fancy, but this formats and prints the scores from score_log.csv"""
+
+    score_board = ''
+    for line in past_scores:
+        if line[0] == 'date':
+            continue
+
+        # make datetime object from epoch int
+        dt = datetime.fromtimestamp(int(line[0]))
+        
+        total_cards = int(line[1])+int(line[2])
+
+        score_board += f"| {dt} | {line[1]} out of {total_cards} |\n"
+
+    #adds a header/footer bounding box based on the length of the first line
+    length = len(score_board.split('\n',1)[0])
+
+    header = "="*length+"\n"
+    header += "|"+"Scoreboard".center(length-2)+"|"+"\n"
+    header += "-"*length+"\n"
+
+    score_board = header + score_board
+    score_board += "="*length
+
+    print(score_board)
+
 
 def play(play_cards):
     """Takes the formatted cards and challenges the player"""
@@ -114,8 +139,8 @@ def play(play_cards):
             continue
         
         print(f"Whoops. Sorry I was looking for: {card['back']}")
-        print()
-
+        
+    print()
     print("Game Over".center(width))
 
     print(".-=========-.".center(width))
@@ -128,10 +153,11 @@ def play(play_cards):
     print("_/_______\_".center(width))
     print("(___________)".center(width))
 
+    print()
     return score, denom
 
 def main():
-    """does the main thing"""
+    """Takes the users input and either 'plays' a round of flashcards, or displays past scores"""
 
     while True:
 
@@ -140,7 +166,9 @@ def main():
         valid_play = ['play','p']
         valid_scoreboard = ['view','v']
 
+        print()
         choice = input("Would you like to PLAY or VIEW previous scores? ").lower()
+        print()
 
         #starts the flashcard challenge if selected
         if choice in valid_play:
@@ -153,9 +181,9 @@ def main():
             results = play(cards)
             scorekeeper(log_path, results[0], results[1])
         
-        #starts displaying past scores
+        #displays past scores
         if choice in valid_scoreboard:
             scores = load_scores(log_path)
-            print(scores)
+            print_scores(scores)
 
 main()
