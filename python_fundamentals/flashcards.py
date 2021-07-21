@@ -3,8 +3,10 @@ from datetime import datetime
 import random
 import shutil
 
-terminal_size = shutil.get_terminal_size()
-width = terminal_size[0]
+TERMINAL_SIZE = shutil.get_terminal_size()
+WIDTH = TERMINAL_SIZE[0]
+CARD_PATH = Path.cwd() / "data/flashcards/paths.csv"
+LOG_PATH = Path.cwd() / "data/flashcards/score_log.csv"
 
 def load_card_csv(path):
     """Opens,reads, and returns the contents of the flashcards csv"""
@@ -62,6 +64,7 @@ def scorekeeper(path, correct, total):
 
 def load_scores(path):
     """loads all past scores"""
+    #do the score line dicitonary here
     if not path.exists():
         print(f"ERROR: {path} does not exist")
         return 
@@ -104,6 +107,28 @@ def print_scores(past_scores):
 
     print(score_board)
 
+def print_card_line(card_line, width=100):
+    """Formats the card lines"""
+    print("|", end = "")
+    print(card_line.center(WIDTH-2), end="")
+    print("|")
+
+def print_final_score(score,denom):
+    """Prints endgame trophy"""
+    #make this a docstring and set to a var. Then run through split lines and itterate over each line to center
+    #less good option is to make it a list of strings
+    print()
+    print("Game Over".center(WIDTH))
+    print(".-=========-.".center(WIDTH))
+    print("('-=======-')".center(WIDTH))
+    print("_|   .=.   |_".center(WIDTH))
+    print(f"((|  {score} of {denom} |))".center(WIDTH))
+    print("\|   /|\   |/".center(WIDTH))
+    print("\__ '`' __/".center(WIDTH))
+    print("_`) (`_".center(WIDTH))
+    print("_/_______\_".center(WIDTH))
+    print("(___________)".center(WIDTH))
+    print()
 
 def play(play_cards):
     """Takes the formatted cards and challenges the player"""
@@ -119,17 +144,11 @@ def play(play_cards):
         i += 1
 
         print()
-        print("=" * width)
-        print("|", end = "")
-        print(f"Flashcard {i} of {denom}".center(width-2), end = "")
-        print("|")
-        print("|", end = "")
-        print("Hey there Dummy, here's an easy one:".center(width-2), end = "")
-        print("|")
-        print("|", end = "")
-        print(f"How do you {card['front']}?".center(width-2), end = "")
-        print("|")
-        print("=" * width)
+        print("=" * WIDTH)
+        print_card_line(f"Flashcard {i} of {denom}")
+        print_card_line("Hey there Dummy, here's an easy one:")
+        print_card_line(f"How do you {card['front']}?")
+        print("=" * WIDTH)
 
         answer = input("\nAnswer: ")
 
@@ -140,20 +159,8 @@ def play(play_cards):
         
         print(f"Whoops. Sorry I was looking for: {card['back']}")
         
-    print()
-    print("Game Over".center(width))
+    print_final_score(score,denom)
 
-    print(".-=========-.".center(width))
-    print("('-=======-')".center(width))
-    print("_|   .=.   |_".center(width))
-    print(f"((|  {score} of {denom} |))".center(width))
-    print("\|   /|\   |/".center(width))
-    print("\__ '`' __/".center(width))
-    print("_`) (`_".center(width))
-    print("_/_______\_".center(width))
-    print("(___________)".center(width))
-
-    print()
     return score, denom
 
 def main():
@@ -161,8 +168,6 @@ def main():
 
     while True:
 
-        card_path = Path.cwd() / "data/flashcards/paths.csv"
-        log_path = Path.cwd() / "data/flashcards/score_log.csv"
         valid_play = ['play','p']
         valid_scoreboard = ['view','v']
 
@@ -172,18 +177,18 @@ def main():
 
         #starts the flashcard challenge if selected
         if choice in valid_play:
-            cards = load_card_csv(card_path)
+            cards = load_card_csv(CARD_PATH)
 
             if cards == False:
                 print("Error: someth went wrong.")
                 return
             
             results = play(cards)
-            scorekeeper(log_path, results[0], results[1])
+            scorekeeper(LOG_PATH, results[0], results[1])
         
         #displays past scores
-        if choice in valid_scoreboard:
-            scores = load_scores(log_path)
+        elif choice in valid_scoreboard:
+            scores = load_scores(LOG_PATH)
             print_scores(scores)
 
 main()
