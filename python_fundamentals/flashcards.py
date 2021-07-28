@@ -2,11 +2,13 @@ from pathlib import Path
 from datetime import datetime
 import random
 import shutil
+import textwrap
 
 TERMINAL_SIZE = shutil.get_terminal_size()
 WIDTH = TERMINAL_SIZE[0]
 CARD_PATH = Path.cwd() / "data/flashcards/paths.csv"
 LOG_PATH = Path.cwd() / "data/flashcards/score_log.csv"
+TOPICS = []
 
 def load_card_csv(path):
     """Opens,reads, and returns the contents of the flashcards csv"""
@@ -44,6 +46,22 @@ def load_card_csv(path):
             card_list.append(card_dict)
 
     return card_list
+
+def menu():
+    """Populates a menu of the flashcard CSVs and makes the user pick one"""
+    card_dir = Path.cwd() / "data/flashcards/"
+    menu_options = ["0. All of 'em"]
+    selection = []
+
+    if not card_dir.is_dir():
+        print(f"ERROR: {card_dir} does not exist")
+        return
+
+    for i, file_path in enumerate(card_dir.iterdir(),1):
+        TOPICS.append(file_path)
+        menu_options.append(f"{i}. {file_path.stem}")
+    
+    choices = input(f"Which topic do you desire?")
 
 def scorekeeper(path, correct, total):
     """logs the results in score_log.csv"""
@@ -143,11 +161,27 @@ def play(play_cards):
         play_cards.remove(card)
         i += 1
 
+        q_lines = textwrap.wrap(card['front'], WIDTH-20)
+
         print()
         print("=" * WIDTH)
         print_card_line(f"Flashcard {i} of {denom}")
+        print_card_line("")
         print_card_line("Hey there Dummy, here's an easy one:")
-        print_card_line(f"How do you {card['front']}?")
+        
+        #prints the textwraped question lines. You probs wont like this. (fix by just altering the card['front'] == +?)
+        for x, line in enumerate(q_lines,1):
+            if x == 1:
+                if x == len(q_lines):
+                    print_card_line(f"How do you {line}?")
+                    continue
+                print_card_line(f"How do you {line}")
+                continue
+            if x == len(q_lines):
+                print_card_line(f"{line}?")
+                continue
+            print_card_line(line)
+        
         print("=" * WIDTH)
 
         answer = input("\nAnswer: ")
@@ -191,4 +225,5 @@ def main():
             scores = load_scores(LOG_PATH)
             print_scores(scores)
 
-main()
+# main()
+menu()
