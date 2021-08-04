@@ -50,18 +50,33 @@ def load_card_csv(path):
 def menu():
     """Populates a menu of the flashcard CSVs and makes the user pick one"""
     card_dir = Path.cwd() / "data/flashcards/"
-    menu_options = ["0. All of 'em"]
     selection = []
 
     if not card_dir.is_dir():
         print(f"ERROR: {card_dir} does not exist")
         return
 
+    print("0. All of 'em")
+
     for i, file_path in enumerate(card_dir.iterdir(),1):
         TOPICS.append(file_path)
-        menu_options.append(f"{i}. {file_path.stem}")
-    
-    choices = input(f"Which topic do you desire?")
+        print(f"{i}. {file_path.stem}")
+
+    choices = input(f"Select the NUMBER(s) for the topic(s) you would like to review. Input 0 if you are feeling brave: ")
+
+    choices = choices.split(" ")
+    choices = set(choices)
+
+    for i in choices:
+        if i == "0":
+            return TOPICS
+        
+        #converts input into index for TOPICS
+        num = int(i) - 1
+        
+        selection.append(TOPICS[num])
+
+    return selection
 
 def scorekeeper(path, correct, total):
     """logs the results in score_log.csv"""
@@ -200,6 +215,8 @@ def play(play_cards):
 def main():
     """Takes the users input and either 'plays' a round of flashcards, or displays past scores"""
 
+    cards = []
+
     while True:
 
         valid_play = ['play','p']
@@ -211,7 +228,13 @@ def main():
 
         #starts the flashcard challenge if selected
         if choice in valid_play:
-            cards = load_card_csv(CARD_PATH)
+            # cards = load_card_csv(CARD_PATH)
+
+            paths = menu()
+
+            for i in paths:
+
+                cards.extend(load_card_csv(i))
 
             if cards == False:
                 print("Error: someth went wrong.")
@@ -225,5 +248,5 @@ def main():
             scores = load_scores(LOG_PATH)
             print_scores(scores)
 
-# main()
-menu()
+main()
+# menu()
