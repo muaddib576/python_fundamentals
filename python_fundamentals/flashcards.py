@@ -232,9 +232,9 @@ def main():
 
             paths = menu()
 
-            for i in paths:
+            for path in paths:
 
-                cards.extend(load_card_csv(i))
+                cards.extend(load_card_csv(path))
 
             if cards == False:
                 print("Error: someth went wrong.")
