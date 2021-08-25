@@ -3,11 +3,12 @@ from datetime import datetime
 import random
 import shutil
 import textwrap
+import csv
 
 TERMINAL_SIZE = shutil.get_terminal_size()
 WIDTH = TERMINAL_SIZE[0]
 CARD_PATH = Path.cwd() / "data/flashcards/paths.csv"
-LOG_PATH = Path.cwd() / "data/flashcards/score_log.csv"
+LOG_PATH = Path.cwd() / "data/flashcard_scores/score_log.csv"
 TOPICS = []
 
 def load_card_csv(path):
@@ -23,21 +24,33 @@ def load_card_csv(path):
     
     with open(path) as ch: 
 
-        for i, line in enumerate(ch.readlines(), 1):
+        reader = csv.reader(
+            ch,
+            quotechar="'",
+            skipinitialspace=True,
+            escapechar="\\"
+        )
+
+        # for i, line in enumerate(ch.readlines(), 1):
+        for i, line in enumerate(reader, 1):
             
-            # ignores any blank card lines
-            if line == "\n":
-                continue
+            # ignores any blank card lines (i dont think this is needed anymore)
+            # if line == "\n":
+            #     continue
 
             card_dict = {'front': "", 'back': ""}
-            row = line.split(",")
 
-            if len(row) != 2:
+            #skips any blank lines in csv
+            if not line:
+                continue
+
+            #returns error if csv is not 2 items per line
+            if len(line) != 2:
                 print("Error: the input file is not proper format.")
                 return
 
-            card_dict['front'] = row[0].strip()
-            card_dict['back'] = row[1].strip()
+            card_dict['front'] = line[0].strip()
+            card_dict['back'] = line[1].strip()
 
             #removes any header Front/Back line
             if card_dict['front'].lower() == "front":
@@ -188,9 +201,9 @@ def play(play_cards):
         for x, line in enumerate(q_lines,1):
             if x == 1:
                 if x == len(q_lines):
-                    print_card_line(f"How do you {line}?")
+                    print_card_line(f"How do you: {line}?")
                     continue
-                print_card_line(f"How do you {line}")
+                print_card_line(f"How do you: {line}")
                 continue
             if x == len(q_lines):
                 print_card_line(f"{line}?")
@@ -231,9 +244,10 @@ def main():
             # cards = load_card_csv(CARD_PATH)
 
             paths = menu()
-
+            # print(paths)
             for path in paths:
-
+                # print("**********************")
+                # print(path)
                 cards.extend(load_card_csv(path))
 
             if cards == False:
@@ -248,5 +262,5 @@ def main():
             scores = load_scores(LOG_PATH)
             print_scores(scores)
 
-main()
-# menu()
+if __name__ == "__main__":
+    main()
