@@ -4,6 +4,7 @@ import random
 import shutil
 import textwrap
 import csv
+import sys
 
 TERMINAL_SIZE = shutil.get_terminal_size()
 WIDTH = TERMINAL_SIZE[0]
@@ -184,7 +185,7 @@ def play(play_cards):
     i = 0
 
     while play_cards:
-        
+
         card = random.choice(play_cards)
         play_cards.remove(card)
         i += 1
@@ -241,19 +242,26 @@ def main():
 
         #starts the flashcard challenge if selected
         if choice in valid_play:
-            # cards = load_card_csv(CARD_PATH)
 
             paths = menu()
-            # print(paths)
+
             for path in paths:
-                # print("**********************")
-                # print(path)
+
                 cards.extend(load_card_csv(path))
 
             if cards == False:
                 print("Error: someth went wrong.")
                 return
             
+            #accounts for sys argv for debugging
+            if len(sys.argv) > 1:
+                limit = int(sys.argv[1])
+            else:
+                limit = len(cards)
+
+            #grabs a random set of cards based on the debugging sys argv
+            cards = random.choices(cards, k=limit)
+
             results = play(cards)
             scorekeeper(LOG_PATH, results[0], results[1])
         
