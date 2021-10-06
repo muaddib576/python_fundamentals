@@ -1,4 +1,25 @@
+from sys import stderr
 
+DEBUG = True
+
+PLAYER = {
+    "place": "home",
+}
+
+PLACES = {
+    "home": {
+        "key": "home",
+        "name": "Your Cottage",
+        "east": "town-square",
+        "description": "A cozy stone cottage with a desk and a neatly made bed.",
+    },
+    "town square": {
+        "key": "town square",
+        "name": "Town Square",
+        "west": "home",
+        "description": "The square part of town.",
+    }
+}
 
 ITEMS = {
     "potion": {
@@ -21,16 +42,23 @@ ITEMS = {
     }
 }
 
-def do_quit():
+def debug(message):
+    if DEBUG:
+        print(f"!!! {message}")
+    
+def error(message):
+    print(f"Error: {message}", file=stderr)
+
+def do_quit(args=None):
     """Ends the game"""
     print("Goodbye.")
     quit()
 
-def do_look():
+def do_look(args=None):
     """Examines suroundings"""
     print("You see a vast nothingness.")
 
-def do_shop():
+def do_shop(args=None):
     """Does the shop, duh"""
     print("Whater you buyin'?\n")
 
@@ -38,13 +66,25 @@ def do_shop():
         print(f"{item[0].title()}: {item[1]['description']}")
     print()
 
+def do_go(direction):
+    """Moves to the specified location"""
+    
+    if not direction:
+        print("You must specify a location.")
+        return
+
+    debug(f"Trying to go: {direction[0]}")
+
+
 action_dict = {
     "q": do_quit,
     "quit": do_quit,
     "l": do_look,
     "look": do_look,
     "s": do_shop,
-    "shop": do_shop
+    "shop": do_shop,
+    "g": do_go,
+    "go": do_go
 }
 
 def main():
@@ -53,14 +93,26 @@ def main():
 
     while True:
         print()
-        reply = input("> ").lower()
 
-        if reply in action_dict.keys():
+        debug(f"You are at: {PLAYER['place']}")
+
+        reply = input("> ").lower().strip()
+
+        args = reply.split()
+
+        if not args:
+            continue
+
+        debug(args)
+
+        command = args.pop(0)
+
+        if command in action_dict.keys():
             print()
-            action_dict[reply]()
+            action_dict[command](args)
 
         else:
-            print("No such command.")
+            error("No such command.")
             continue
 
 if __name__ == "__main__":
