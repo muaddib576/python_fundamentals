@@ -10,7 +10,7 @@ PLACES = {
     "home": {
         "key": "home",
         "name": "Your Cottage",
-        "east": "town-square",
+        "east": "town square",
         "description": "A cozy stone cottage with a desk and a neatly made bed.",
     },
     "town square": {
@@ -42,6 +42,8 @@ ITEMS = {
     }
 }
 
+COMPASS = ['north','east','south','west']
+
 def debug(message):
     if DEBUG:
         print(f"!!! {message}")
@@ -62,18 +64,45 @@ def do_shop(args=None):
     """Does the shop, duh"""
     print("Whater you buyin'?\n")
 
-    for item in ITEMS.items():
-        print(f"{item[0].title()}: {item[1]['description']}")
+    for item in ITEMS.values():
+        #format this better
+        print(f"${abs(item['price'])}. {item['key'].title()}: {item['description']}")
     print()
 
-def do_go(direction):
+def do_go(args):
     """Moves to the specified location"""
     
-    if not direction:
-        print("You must specify a location.")
+    if not args:
+        error("You must specify a location.")
         return
 
-    debug(f"Trying to go: {direction[0]}")
+    debug(f"Trying to go: {args}")
+
+    direction = args[0].lower()
+
+    if direction not in COMPASS:
+        error(f"Sorry, there is no '{direction}'")
+        return
+
+    old_name = PLAYER['place']
+    old_place = PLACES[old_name]
+
+    new_name = old_place.get(direction)
+
+    if not new_name:
+        error(f"Sorry, there is no '{direction}'' from {old_place['name'].lower()}.")
+        return
+
+    new_place = PLACES.get(new_name)
+
+    if not new_place:
+        error(f"Ruh roh, raggy! The GM seems to have forgotten the details of {new_name}.")
+        return
+
+    PLAYER['place'] = new_name
+
+    print(f"You find yourself in {new_place['name'].lower()}: {new_place['description'].lower()}")
+
 
 
 action_dict = {
