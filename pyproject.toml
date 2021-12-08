@@ -7,6 +7,7 @@ authors = ["muaddib576 <36249678+muaddib576@users.noreply.github.com>"]
 [tool.poetry.dependencies]
 python = "^3.8"
 asciinema = "^2.0.2"
+console = "^0.9907"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

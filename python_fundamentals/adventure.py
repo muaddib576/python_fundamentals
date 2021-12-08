@@ -1,23 +1,40 @@
+# you finished the pretify part
 from sys import stderr
+from console import fg, bg, fx
+import textwrap
 
+WIDTH = 60
+MARGIN = ' '*3
 DEBUG = True
 
+class Place:
+    def __init__(self, key, name, description, north=None, east=None, south=None, west=None):
+        self.key = key
+        self.name = name
+        self.description = description
+        self.north = north
+        self.east = east
+        self.south = south
+        self.west = west
+
 PLAYER = {
-    "place": "home",
+    "place": home,
 }
 
 PLACES = {
-    "home": {
-        "key": "home",
-        "name": "Your Cottage",
-        "east": "town square",
-        "description": "A cozy stone cottage with a desk and a neatly made bed.",
+    "home": {Place(
+        key="home",
+        name="Your Cottage",
+        description="A cozy stone cottage with a desk and a neatly made bed.",
+        east="town square",
+        )
     },
-    "town square": {
-        "key": "town square",
-        "name": "Town Square",
-        "west": "home",
-        "description": "The square part of town.",
+    "town square": {Place(
+        key="town square",
+        name="Town Square",
+        description="The square part of town.",
+        west="home",
+        )
     }
 }
 
@@ -45,15 +62,33 @@ ITEMS = {
 COMPASS = ['north','east','south','west']
 
 def debug(message):
+    """De debug"""
     if DEBUG:
-        print(f"!!! {message}")
+        print(fg.lightblack(f"!!! {message}"))
     
 def error(message):
-    print(f"Error: {message}", file=stderr)
+    """Prints da error"""
+    print(f"{fg.red('Error:')} {message}", file=stderr)
+
+def wrap(text):
+    # print(MARGIN,text)
+    paragraph = textwrap.fill(text, WIDTH, initial_indent=MARGIN, subsequent_indent=MARGIN)
+    print(paragraph)
+
+def write(text):
+    print(MARGIN, text, sep="")
+
+def header(title):
+    print()
+    title = fx.bold(title)
+    title = fx.underline(title)
+    title = fg.cyan(title)
+    write(title)
+    print()
 
 def do_quit(args=None):
     """Ends the game"""
-    print("Goodbye.")
+    write("Goodbye.")
     quit()
 
 def do_look(args=None):
@@ -62,11 +97,11 @@ def do_look(args=None):
 
 def do_shop(args=None):
     """Does the shop, duh"""
-    print("Whater you buyin'?\n")
+    header("Whater you buyin'?\n")
 
     for item in ITEMS.values():
-        #format this better
-        print(f"${abs(item['price'])}. {item['key'].title()}: {item['description']}")
+        #format this better {num:>80}
+        write(f"${abs(item['price']):02d}. {item['key'].title()}: {item['description']}")
     print()
 
 def do_go(args):
@@ -101,7 +136,8 @@ def do_go(args):
 
     PLAYER['place'] = new_name
 
-    print(f"You find yourself in {new_place['name'].lower()}: {new_place['description'].lower()}")
+    header(new_place['name'])    
+    wrap(new_place['description'])
 
 
 
@@ -125,7 +161,7 @@ def main():
 
         debug(f"You are at: {PLAYER['place']}")
 
-        reply = input("> ").lower().strip()
+        reply = input(fg.green("> ")).lower().strip()
 
         args = reply.split()
 
