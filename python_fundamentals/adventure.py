@@ -1,4 +1,5 @@
-# you finished the pretify part
+# you finished the pretify part and converting to classes
+# you are on section 4
 from sys import stderr
 from console import fg, bg, fx
 import textwrap
@@ -17,46 +18,65 @@ class Place:
         self.south = south
         self.west = west
 
+    # get = __dict__.get <this can replace the method below>
+    def get(self, key, default=None):
+        
+        x = self.__dict__.get(key, default)
+
+        return x
+
+    def go(self, direction):
+        if direction not in COMPASS:
+            error(f"Sorry, there is no '{direction}'")
+            return
+
+        return self.__dict__.get(direction)
+
+class Item:
+    def __init__(self, key, name, description, price):
+        self.key = key
+        self.name = name
+        self.description = description
+        self.price = price
+
 PLAYER = {
-    "place": home,
+    "place": "home",
 }
 
 PLACES = {
-    "home": {Place(
+    "home": Place(
         key="home",
         name="Your Cottage",
         description="A cozy stone cottage with a desk and a neatly made bed.",
         east="town square",
-        )
-    },
-    "town square": {Place(
+    ),
+    "town square": Place(
         key="town square",
         name="Town Square",
         description="The square part of town.",
         west="home",
-        )
-    }
+    ),
 }
 
 ITEMS = {
-    "potion": {
-        "key": "potion",
-        "name": "healing potion",
-        "description": "A magical liquid that improves your life's outlook.",
-        "price": -10,
-    },
-    "lockpicks": {
-        "key": "lockpicks",
-        "name": "lockpicking tools",
-        "description": "A standard theiving kit.",
-        "price": -8,
-    },
-    "dagger": {
-        "key": "dagger",
-        "name": "stabbing dagger",
-        "description": "A length of metal honed to a fine point.",
-        "price": -20,
-    }
+    "potion": Item(
+        key="potion",
+        name="healing potion",
+        description="A magical liquid that improves your life's outlook.",
+        price=-10,
+    ),
+    "lockpicks": Item(
+        key="lockpicks",
+        name="lockpicking tools",
+        description="A standard theiving kit.",
+        price=-8,
+    ),
+    "dagger": Item(
+        key="dagger",
+        name="stabbing dagger",
+        description="A length of metal honed to a fine point.",
+        price=-20,
+    ),
 }
 
 COMPASS = ['north','east','south','west']
@@ -101,7 +121,7 @@ def do_shop(args=None):
 
     for item in ITEMS.values():
         #format this better {num:>80}
-        write(f"${abs(item['price']):02d}. {item['key'].title()}: {item['description']}")
+        write(f"${abs(item.price):>2d}. {item.key.title()}: {item.description}")
     print()
 
 def do_go(args):
@@ -122,10 +142,10 @@ def do_go(args):
     old_name = PLAYER['place']
     old_place = PLACES[old_name]
 
-    new_name = old_place.get(direction)
+    new_name = old_place.go(direction)
 
     if not new_name:
-        error(f"Sorry, there is no '{direction}'' from {old_place['name'].lower()}.")
+        error(f"Sorry, there is no '{direction}' from {old_place.name.lower()}.")
         return
 
     new_place = PLACES.get(new_name)
@@ -136,8 +156,8 @@ def do_go(args):
 
     PLAYER['place'] = new_name
 
-    header(new_place['name'])    
-    wrap(new_place['description'])
+    header(new_place.name)    
+    wrap(new_place.description)
 
 
 
