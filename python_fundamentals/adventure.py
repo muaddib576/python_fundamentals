@@ -1,5 +1,7 @@
 # you finished the pretify part and converting to classes
 # you are on section 4
+# Think about maybe: command class that handles argument parsing
+# maybe: player class where inventory is stores, with add/remove methods
 from sys import stderr
 from console import fg, bg, fx
 import textwrap
@@ -8,11 +10,18 @@ WIDTH = 60
 MARGIN = ' '*3
 DEBUG = True
 
-class Place:
-    def __init__(self, key, name, description, north=None, east=None, south=None, west=None):
+class Object:
+    def __init__(self, key, name, description):
         self.key = key
         self.name = name
         self.description = description
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} object={self.name}>"
+
+class Place(Object):
+    def __init__(self, key, name, description, north=None, east=None, south=None, west=None):
+        super().__init__(key, name, description)
         self.north = north
         self.east = east
         self.south = south
@@ -20,9 +29,7 @@ class Place:
 
     # get = __dict__.get <this can replace the method below>
     def get(self, key, default=None):
-        
         x = self.__dict__.get(key, default)
-
         return x
 
     def go(self, direction):
@@ -32,11 +39,9 @@ class Place:
 
         return self.__dict__.get(direction)
 
-class Item:
+class Item(Object):
     def __init__(self, key, name, description, price):
-        self.key = key
-        self.name = name
-        self.description = description
+        super().__init__(key, name, description)
         self.price = price
 
 PLAYER = {
@@ -175,6 +180,8 @@ action_dict = {
 def main():
 
     print("Welcome!")
+
+    print(repr(ITEMS['potion']))
 
     while True:
         print()
