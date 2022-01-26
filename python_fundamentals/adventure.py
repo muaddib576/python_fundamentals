@@ -1,7 +1,10 @@
 # you finished the pretify part and converting to classes
 # you are on section 4
 # Think about maybe: command class that handles argument parsing
-# maybe: player class where inventory is stores, with add/remove methods
+# maybe: player class where inventory is stored, with add/remove methods
+# Alissa made Game class and Command class. But each command inherets from that class. "Do" method
+# Game class, do_ as methods. Player and Place class
+
 from sys import stderr
 from console import fg, bg, fx
 import textwrap
@@ -9,6 +12,64 @@ import textwrap
 WIDTH = 60
 MARGIN = ' '*3
 DEBUG = True
+
+class Command:
+    def __init__(self):
+        ...
+    
+    def do_quit(self, args=None):
+        """Ends the game"""
+        write("Goodbye.")
+        quit()
+
+    def do_look(self, args=None):
+        """Examines suroundings"""
+        print("You see a vast nothingness.")
+
+    def do_shop(self, args=None):
+        """Does the shop, duh"""
+        header("Whater you buyin'?\n")
+
+        for item in ITEMS.values():
+            #format this better {num:>80}
+            write(f"${abs(item.price):>2d}. {item.key.title()}: {item.description}")
+        print()
+
+    def do_go(self, args):
+        """Moves to the specified location"""
+        
+        if not args:
+            error("You must specify a location.")
+            return
+
+        debug(f"Trying to go: {args}")
+
+        direction = args[0].lower()
+
+        if direction not in COMPASS:
+            error(f"Sorry, there is no '{direction}'")
+            return
+
+        old_name = PLAYER['place']
+        old_place = PLACES[old_name]
+
+        new_name = old_place.go(direction)
+
+        if not new_name:
+            error(f"Sorry, there is no '{direction}' from {old_place.name.lower()}.")
+            return
+
+        new_place = PLACES.get(new_name)
+
+        if not new_place:
+            error(f"Ruh roh, raggy! The GM seems to have forgotten the details of {new_name}.")
+            return
+
+        PLAYER['place'] = new_name
+
+        header(new_place.name)    
+        wrap(new_place.description)
+
 
 class Object:
     def __init__(self, key, name, description):
