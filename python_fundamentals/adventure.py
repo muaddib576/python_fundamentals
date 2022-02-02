@@ -13,65 +13,15 @@ WIDTH = 60
 MARGIN = ' '*3
 DEBUG = True
 
-class Command:
+# class Object():
+#     """Base class"""
+#     ...
+
+class Command():
     def __init__(self):
         ...
     
-    def do_quit(self, args=None):
-        """Ends the game"""
-        write("Goodbye.")
-        quit()
-
-    def do_look(self, args=None):
-        """Examines suroundings"""
-        print("You see a vast nothingness.")
-
-    def do_shop(self, args=None):
-        """Does the shop, duh"""
-        header("Whater you buyin'?\n")
-
-        for item in ITEMS.values():
-            #format this better {num:>80}
-            write(f"${abs(item.price):>2d}. {item.key.title()}: {item.description}")
-        print()
-
-    def do_go(self, args):
-        """Moves to the specified location"""
-        
-        if not args:
-            error("You must specify a location.")
-            return
-
-        debug(f"Trying to go: {args}")
-
-        direction = args[0].lower()
-
-        if direction not in COMPASS:
-            error(f"Sorry, there is no '{direction}'")
-            return
-
-        old_name = PLAYER['place']
-        old_place = PLACES[old_name]
-
-        new_name = old_place.go(direction)
-
-        if not new_name:
-            error(f"Sorry, there is no '{direction}' from {old_place.name.lower()}.")
-            return
-
-        new_place = PLACES.get(new_name)
-
-        if not new_place:
-            error(f"Ruh roh, raggy! The GM seems to have forgotten the details of {new_name}.")
-            return
-
-        PLAYER['place'] = new_name
-
-        header(new_place.name)    
-        wrap(new_place.description)
-
-
-class Object:
+class Collection():
     def __init__(self, key, name, description):
         self.key = key
         self.name = name
@@ -80,7 +30,8 @@ class Object:
     def __repr__(self):
         return f"<{self.__class__.__name__} object={self.name}>"
 
-class Place(Object):
+class Place(Collection):
+    """Base class for objects with collections"""
     def __init__(self, key, name, description, north=None, east=None, south=None, west=None):
         super().__init__(key, name, description)
         self.north = north
@@ -100,7 +51,7 @@ class Place(Object):
 
         return self.__dict__.get(direction)
 
-class Item(Object):
+class Item(Collection):
     def __init__(self, key, name, description, price):
         super().__init__(key, name, description)
         self.price = price
@@ -172,71 +123,84 @@ def header(title):
     write(title)
     print()
 
-def do_quit(args=None):
-    """Ends the game"""
-    write("Goodbye.")
-    quit()
+class Quit(Command):
 
-def do_look(args=None):
-    """Examines suroundings"""
-    print("You see a vast nothingness.")
+    def do(args=None):
+        """Ends the game"""
+        write("Goodbye.")
+        quit()
 
-def do_shop(args=None):
-    """Does the shop, duh"""
-    header("Whater you buyin'?\n")
+class Look(Command):
 
-    for item in ITEMS.values():
-        #format this better {num:>80}
-        write(f"${abs(item.price):>2d}. {item.key.title()}: {item.description}")
-    print()
+    def do(args=None):
+        """Examines suroundings"""
+        print("You see a vast nothingness.")
 
-def do_go(args):
-    """Moves to the specified location"""
-    
-    if not args:
-        error("You must specify a location.")
-        return
+class Shop(Command):
 
-    debug(f"Trying to go: {args}")
+    def do(args=None):
+        """Does the shop, duh"""
+        header("Whater you buyin'?\n")
 
-    direction = args[0].lower()
+        for item in ITEMS.values():
+            #format this better {num:>80}
+            write(f"${abs(item.price):>2d}. {item.key.title()}: {item.description}")
+        print()
 
-    if direction not in COMPASS:
-        error(f"Sorry, there is no '{direction}'")
-        return
+class Go(Command):
 
-    old_name = PLAYER['place']
-    old_place = PLACES[old_name]
+    def do(args):
+        """Moves to the specified location"""
+        
+        if not args:
+            error("You must specify a location.")
+            return
 
-    new_name = old_place.go(direction)
+        debug(f"Trying to go: {args}")
 
-    if not new_name:
-        error(f"Sorry, there is no '{direction}' from {old_place.name.lower()}.")
-        return
+        direction = args[0].lower()
 
-    new_place = PLACES.get(new_name)
+        if direction not in COMPASS:
+            error(f"Sorry, there is no '{direction}'")
+            return
 
-    if not new_place:
-        error(f"Ruh roh, raggy! The GM seems to have forgotten the details of {new_name}.")
-        return
+        old_name = PLAYER['place']
+        old_place = PLACES[old_name]
 
-    PLAYER['place'] = new_name
+        new_name = old_place.go(direction)
 
-    header(new_place.name)    
-    wrap(new_place.description)
+        if not new_name:
+            error(f"Sorry, there is no '{direction}' from {old_place.name.lower()}.")
+            return
+
+        new_place = PLACES.get(new_name)
+
+        if not new_place:
+            error(f"Ruh roh, raggy! The GM seems to have forgotten the details of {new_name}.")
+            return
+
+        PLAYER['place'] = new_name
+
+        header(new_place.name)    
+        wrap(new_place.description)
 
 
 
 action_dict = {
-    "q": do_quit,
-    "quit": do_quit,
-    "l": do_look,
-    "look": do_look,
-    "s": do_shop,
-    "shop": do_shop,
-    "g": do_go,
-    "go": do_go
+    "q": Quit.do,
+    "quit": Quit.do,
+    "l": Look.do,
+    "look": Look.do,
+    "s": Shop.do,
+    "shop": Shop.do,
+    "g": Go.do,
+    "go": Go.do
 }
+
+
+# class Game():
+#     def __init__(self):
+
 
 def main():
 
@@ -262,6 +226,7 @@ def main():
 
         if command in action_dict.keys():
             print()
+            # instead of calling do in the dictionary, you need to set Klass = the below, and substantiate an instance of the command, and then call do on it
             action_dict[command](args)
 
         else:
