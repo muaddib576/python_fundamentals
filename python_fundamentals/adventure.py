@@ -18,8 +18,13 @@ DEBUG = True
 #     ...
 
 class Command():
-    def __init__(self):
-        ...
+    def __init__(self, args):
+        self.args = args
+
+    # TODO add validation to ensure the place a good
+    def get_place(self):
+        player_place = PLACES[PLAYER['place']]
+        return player_place
     
 class Collection():
     def __init__(self, key, name, description):
@@ -125,20 +130,20 @@ def header(title):
 
 class Quit(Command):
 
-    def do(args=None):
+    def do(self):
         """Ends the game"""
         write("Goodbye.")
         quit()
 
 class Look(Command):
 
-    def do(args=None):
+    def do(self):
         """Examines suroundings"""
         print("You see a vast nothingness.")
 
 class Shop(Command):
 
-    def do(args=None):
+    def do(self):
         """Does the shop, duh"""
         header("Whater you buyin'?\n")
 
@@ -148,17 +153,19 @@ class Shop(Command):
         print()
 
 class Go(Command):
-
-    def do(args):
+    # TODO update this to use the Command method .get_place()
+    def do(self):
         """Moves to the specified location"""
         
-        if not args:
+        print(self.get_place())
+        
+        if not self.args:
             error("You must specify a location.")
             return
 
-        debug(f"Trying to go: {args}")
+        debug(f"Trying to go: {self.args}")
 
-        direction = args[0].lower()
+        direction = self.args[0].lower()
 
         if direction not in COMPASS:
             error(f"Sorry, there is no '{direction}'")
@@ -183,18 +190,18 @@ class Go(Command):
 
         header(new_place.name)    
         wrap(new_place.description)
-
-
+        
+        print(self.get_place())
 
 action_dict = {
-    "q": Quit.do,
-    "quit": Quit.do,
-    "l": Look.do,
-    "look": Look.do,
-    "s": Shop.do,
-    "shop": Shop.do,
-    "g": Go.do,
-    "go": Go.do
+    "q": Quit,
+    "quit": Quit,
+    "l": Look,
+    "look": Look,
+    "s": Shop,
+    "shop": Shop,
+    "g": Go,
+    "go": Go
 }
 
 
@@ -226,8 +233,11 @@ def main():
 
         if command in action_dict.keys():
             print()
-            # instead of calling do in the dictionary, you need to set Klass = the below, and substantiate an instance of the command, and then call do on it
-            action_dict[command](args)
+
+            klass = action_dict[command]
+            cmd = klass(args)
+            cmd.do()
+
 
         else:
             error("No such command.")
