@@ -18,6 +18,7 @@ class Pet():
         "weight": None,
         "name": "",
     }
+
     def __init__(self, **kwargs):
         # set all attributes included in Pet.attrs
         # raise if unknown kwargs
@@ -35,3 +36,5 @@ class Pet():
     def feed(self):
         self.weight += 1
         self.is_hungry = False
+
+    
