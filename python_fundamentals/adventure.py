@@ -5,6 +5,7 @@
 # Alissa made Game class and Command class. But each command inherets from that class. "Do" method
 # Game class, do_ as methods. Player and Place class
 
+from multiprocessing.dummy import current_process
 from sys import stderr
 from console import fg, bg, fx
 import textwrap
@@ -22,8 +23,16 @@ class Command():
         self.args = args
 
     # TODO add validation to ensure the place a good
+    
     def get_place(self):
-        player_place = PLACES[PLAYER['place']]
+        """gets the current player location and returns the place object"""
+        current_location = PLAYER['place']
+
+        if current_location not in PLACES.keys():
+            error(f"It seems the player exists outside the known universe...")
+            return
+        
+        player_place = PLACES[current_location]
         return player_place
     
 class Collection():
@@ -50,19 +59,35 @@ class Place(Collection):
         return x
 
     def go(self, direction):
+        """Validates the requested direction and updates player location"""
         if direction not in COMPASS:
             error(f"Sorry, there is no '{direction}'")
             return
 
-        return self.__dict__.get(direction)
+        destination = self.__dict__.get(direction)
+
+        if not destination:
+            error(f"Sorry, there is no '{direction}' from {self.name}.")
+            return
+
+        new_place = PLACES.get(destination)
+
+        if not new_place:
+            error(f"Ruh roh, raggy! The GM seems to have forgotten the details of {destination}.")
+            return
+
+        PLAYER['place'] = new_place.key
+
+        return new_place
 
 class Item(Collection):
     def __init__(self, key, name, description, price):
         super().__init__(key, name, description)
         self.price = price
 
+# TODO update player to be an object?
 PLAYER = {
-    "place": "home",
+    "place": "home"
 }
 
 PLACES = {
@@ -153,12 +178,8 @@ class Shop(Command):
         print()
 
 class Go(Command):
-    # TODO update this to use the Command method .get_place()
     def do(self):
-        """Moves to the specified location"""
-        
-        print(self.get_place())
-        
+        """Moves to the specified location"""    
         if not self.args:
             error("You must specify a location.")
             return
@@ -166,32 +187,15 @@ class Go(Command):
         debug(f"Trying to go: {self.args}")
 
         direction = self.args[0].lower()
-
-        if direction not in COMPASS:
-            error(f"Sorry, there is no '{direction}'")
-            return
-
-        old_name = PLAYER['place']
-        old_place = PLACES[old_name]
-
-        new_name = old_place.go(direction)
-
-        if not new_name:
-            error(f"Sorry, there is no '{direction}' from {old_place.name.lower()}.")
-            return
-
-        new_place = PLACES.get(new_name)
-
-        if not new_place:
-            error(f"Ruh roh, raggy! The GM seems to have forgotten the details of {new_name}.")
-            return
-
-        PLAYER['place'] = new_name
-
-        header(new_place.name)    
-        wrap(new_place.description)
         
-        print(self.get_place())
+        current_place = self.get_place()
+
+        if current_place:
+            new_place = current_place.go(direction)
+
+            if new_place:
+                header(new_place.name)    
+                wrap(new_place.description)
 
 action_dict = {
     "q": Quit,
@@ -204,10 +208,8 @@ action_dict = {
     "go": Go
 }
 
-
 # class Game():
 #     def __init__(self):
-
 
 def main():
 
