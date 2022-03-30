@@ -1,4 +1,4 @@
-# you finished the pretify part and converting to classes
+#  you finished the pretify part and converting to classes
 # you are on section 4
 # Think about maybe: command class that handles argument parsing
 # maybe: player class where inventory is stored, with add/remove methods
@@ -135,7 +135,7 @@ def debug(message):
     
 def error(message):
     """Prints da error"""
-    print(f"{fg.red('Error:')} {message}", file=stderr)
+    print(f"{fg.red('Error:')} {message}")
 
 def wrap(text):
     # print(MARGIN,text)
