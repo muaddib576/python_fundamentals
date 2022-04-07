@@ -5,7 +5,6 @@
 # Alissa made Game class and Command class. But each command inherets from that class. "Do" method
 # Game class, do_ as methods. Player and Place class
 
-from multiprocessing.dummy import current_process
 from sys import stderr
 from console import fg, bg, fx
 import textwrap
@@ -22,7 +21,7 @@ class Command():
     def __init__(self, args):
         self.args = args
 
-    # TODO add validation to ensure the place a good
+    # TODO add validation to ensure the place is good
     
     def get_place(self):
         """gets the current player location and returns the place object"""
@@ -35,7 +34,8 @@ class Command():
         player_place = PLACES[current_location]
         return player_place
     
-class Collection():
+class Collectable():
+    """Base class for objects with collections"""
     def __init__(self, key, name, description):
         self.key = key
         self.name = name
@@ -44,8 +44,7 @@ class Collection():
     def __repr__(self):
         return f"<{self.__class__.__name__} object={self.name}>"
 
-class Place(Collection):
-    """Base class for objects with collections"""
+class Place(Collectable):
     def __init__(self, key, name, description, north=None, east=None, south=None, west=None):
         super().__init__(key, name, description)
         self.north = north
@@ -55,8 +54,7 @@ class Place(Collection):
 
     # get = __dict__.get <this can replace the method below>
     def get(self, key, default=None):
-        x = self.__dict__.get(key, default)
-        return x
+        return self.__dict__.get(key, default)
 
     def go(self, direction):
         """Validates the requested direction and updates player location"""
@@ -80,7 +78,7 @@ class Place(Collection):
 
         return new_place
 
-class Item(Collection):
+class Item(Collectable):
     def __init__(self, key, name, description, price):
         super().__init__(key, name, description)
         self.price = price
@@ -139,7 +137,13 @@ def error(message):
 
 def wrap(text):
     # print(MARGIN,text)
-    paragraph = textwrap.fill(text, WIDTH, initial_indent=MARGIN, subsequent_indent=MARGIN)
+    paragraph = textwrap.fill(
+        text,
+        WIDTH,
+        initial_indent=MARGIN,
+        subsequent_indent=MARGIN
+    )
+    
     print(paragraph)
 
 def write(text):
@@ -197,6 +201,17 @@ class Go(Command):
                 header(new_place.name)    
                 wrap(new_place.description)
 
+class Examine(Command):
+    def do(self):
+        """Prints a description of the spcified item"""
+        if not self.args:
+            error("You cannot examine nothing.")
+            return
+        
+        debug(f"Trying to examine: {self.args}")
+
+
+
 action_dict = {
     "q": Quit,
     "quit": Quit,
@@ -205,7 +220,9 @@ action_dict = {
     "s": Shop,
     "shop": Shop,
     "g": Go,
-    "go": Go
+    "go": Go,
+    "e": Examine,
+    "examine": Examine,
 }
 
 # class Game():

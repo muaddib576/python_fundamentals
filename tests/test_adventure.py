@@ -3,6 +3,7 @@ import pytest
 import python_fundamentals.adventure as adventure
 from python_fundamentals.adventure import (
     Go,
+    Examine,
     Command,
     error,
     debug,
@@ -58,6 +59,12 @@ def test_go(capsys):
     output = capsys.readouterr().out
 
     assert "The square part of town." in output
+
+def test_examine_no_arg(capsys):
+    Examine([]).do()
+    output = capsys.readouterr().out
+
+    assert output == "Error: You cannot examine nothing.\n"
 
 # split test_place into two functions
 def test_get_place(capsys):
