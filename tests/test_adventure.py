@@ -66,6 +66,9 @@ def test_examine_no_arg(capsys):
 
     assert output == "Error: You cannot examine nothing.\n"
 
+def test_examine_arg(capsys):
+    ...
+
 # split test_place into two functions
 def test_get_place(capsys):
     
@@ -78,3 +81,9 @@ def test_get_place(capsys):
 
     assert output == "Error: It seems the player exists outside the known universe...\n", \
         "A location not in Places should throw an error"
+
+
+#TODO add test_do_shop
+
+# shlex.split('abc 123') == ['abc', '123']
+# shlex.split('abc "xyz blah"') == ['abc', 'xyz blah']

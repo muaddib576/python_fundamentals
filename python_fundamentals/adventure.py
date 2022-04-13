@@ -45,12 +45,13 @@ class Collectable():
         return f"<{self.__class__.__name__} object={self.name}>"
 
 class Place(Collectable):
-    def __init__(self, key, name, description, north=None, east=None, south=None, west=None):
+    def __init__(self, key, name, description, north=None, east=None, south=None, west=None, contents=None):
         super().__init__(key, name, description)
         self.north = north
         self.east = east
         self.south = south
         self.west = west
+        self.contents = contents
 
     # get = __dict__.get <this can replace the method below>
     def get(self, key, default=None):
@@ -79,7 +80,7 @@ class Place(Collectable):
         return new_place
 
 class Item(Collectable):
-    def __init__(self, key, name, description, price):
+    def __init__(self, key, name, description, price=None):
         super().__init__(key, name, description)
         self.price = price
 
@@ -94,6 +95,7 @@ PLACES = {
         name="Your Cottage",
         description="A cozy stone cottage with a desk and a neatly made bed.",
         east="town square",
+        contents=['desk','book']
     ),
     "town square": Place(
         key="town square",
@@ -121,6 +123,16 @@ ITEMS = {
         name="stabbing dagger",
         description="A length of metal honed to a fine point.",
         price=-20,
+    ),
+    "desk": Item(
+        key="desk",
+        name="writing desk",
+        description="A wooden desk with a large leather-bound book open on its surface."
+    ),
+    "book": Item(
+        key="book",
+        name="a book",
+        description="A hefty leather-bound tome open to an interesting passage."
     ),
 }
 
@@ -177,8 +189,9 @@ class Shop(Command):
         header("Whater you buyin'?\n")
 
         for item in ITEMS.values():
-            #format this better {num:>80}
-            write(f"${abs(item.price):>2d}. {item.key.title()}: {item.description}")
+            if item.price:
+                #format this better {num:>80}
+                write(f"${abs(item.price):>2d}. {item.key.title()}: {item.description}")
         print()
 
 class Go(Command):
@@ -210,8 +223,23 @@ class Examine(Command):
         
         debug(f"Trying to examine: {self.args}")
 
+        name = self.args[0].lower()
+        current_place = self.get_place()
 
+        if name not in current_place.contents:
+            error(f"There is no {name} in {current_place.name.lower()}")
+            return
 
+        if name not in ITEMS.keys():
+            error(f'Hmmm, "{name}" seems to be missing from my files.')
+            return
+
+        item = ITEMS[name]
+
+        header(item.name.title())
+        wrap(item.description)
+            
+            
 action_dict = {
     "q": Quit,
     "quit": Quit,
