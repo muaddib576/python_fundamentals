@@ -2,9 +2,12 @@ from copy import deepcopy
 import pytest
 import python_fundamentals.adventure as adventure
 from python_fundamentals.adventure import (
+    PLACES,
     Go,
     Examine,
     Command,
+    Place,
+    Item,
     error,
     debug,
     header,
@@ -64,24 +67,86 @@ def test_examine_no_arg(capsys):
     Examine([]).do()
     output = capsys.readouterr().out
 
-    assert output == "Error: You cannot examine nothing.\n"
+    assert "Error: You cannot examine nothing.\n" in output, \
+        "Passing no argument should throw an error"
 
-def test_examine_arg(capsys):
-    ...
-
-# split test_place into two functions
-def test_get_place(capsys):
+def test_examine_missing_place(capsys):
+    adventure.PLAYER.place = 'shire'
+    adventure.PLACES = {
+        "shire": Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            contents=['grass','hills']
+        )
+    }
     
-    assert Command('args').get_place() == adventure.PLACES[adventure.PLAYER['place']], \
+    Examine(['castle']).do()
+    output = capsys.readouterr().out
+
+    assert "Error: There is no castle in the shire." in output, \
+        "An Examine target not in the current location should throw an error"
+
+def test_examine_missing_item(capsys):
+    adventure.PLAYER.place = 'shire'
+    adventure.PLACES = {
+        "shire": Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            contents=['grass','hills']
+        )
+    }
+    adventure.ITEMS = {}
+
+    Examine(['hills']).do()
+    output = capsys.readouterr().out
+
+    assert 'Hmmm, "hills" seems to be missing from my files.' in output, \
+        "An Examine target not in the the ITEMS dictionary should throw an error"
+
+def test_examine_full(capsys):
+    adventure.PLAYER.place = 'shire'
+    adventure.PLACES = {
+        "shire": Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            contents=['grass','hills']
+        )
+    }
+    adventure.ITEMS = {
+        "grass": Item(
+            key="grass",
+            name="grass blades",
+            description="It's grass.",
+            price=-10,
+        )
+    }
+
+    Examine(['grass']).do()
+    output = capsys.readouterr().out
+
+    assert "It's grass." in output, \
+        "A valid Examine target should print the item description."
+
+def test_get_place_start(capsys):
+    
+    assert Command('args').get_place() == adventure.PLACES[adventure.PLAYER.place], \
         "Starting location should be 'your cottage'"
     
-    adventure.PLAYER['place'] = 'shire'
+def test_get_place_missing_place(capsys):
+    adventure.PLAYER.place = 'shire'
+    adventure.PLACES = {}
+
     Command('args').get_place()
     output = capsys.readouterr().out
 
     assert output == "Error: It seems the player exists outside the known universe...\n", \
         "A location not in Places should throw an error"
 
+def test_look(capsys):
+    ...
 
 #TODO add test_do_shop
 

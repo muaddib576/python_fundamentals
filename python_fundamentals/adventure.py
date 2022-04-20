@@ -25,7 +25,7 @@ class Command():
     
     def get_place(self):
         """gets the current player location and returns the place object"""
-        current_location = PLAYER['place']
+        current_location = PLAYER.place
 
         if current_location not in PLACES.keys():
             error(f"It seems the player exists outside the known universe...")
@@ -75,7 +75,7 @@ class Place(Collectable):
             error(f"Ruh roh, raggy! The GM seems to have forgotten the details of {destination}.")
             return
 
-        PLAYER['place'] = new_place.key
+        PLAYER.place = new_place.key
 
         return new_place
 
@@ -84,10 +84,10 @@ class Item(Collectable):
         super().__init__(key, name, description)
         self.price = price
 
-# TODO update player to be an object?
-PLAYER = {
-    "place": "home"
-}
+class Player():
+    def __init__(self, place=None, inventory={}):
+        self.place = place
+        self.inventory = inventory
 
 PLACES = {
     "home": Place(
@@ -136,6 +136,13 @@ ITEMS = {
     ),
 }
 
+# TODO ask alissa how to do properties for player.place
+PLAYER = Player(
+    place="home",
+    # place=PLACES.get("home"),
+    inventory={},
+)
+
 COMPASS = ['north','east','south','west']
 
 def debug(message):
@@ -180,6 +187,10 @@ class Look(Command):
 
     def do(self):
         """Examines suroundings"""
+
+        debug(f"Trying to look around.")
+
+
         print("You see a vast nothingness.")
 
 class Shop(Command):
@@ -227,7 +238,7 @@ class Examine(Command):
         current_place = self.get_place()
 
         if name not in current_place.contents:
-            error(f"There is no {name} in {current_place.name.lower()}")
+            error(f"There is no {name} in {current_place.name.lower()}.")
             return
 
         if name not in ITEMS.keys():
@@ -265,7 +276,7 @@ def main():
     while True:
         print()
 
-        debug(f"You are at: {PLAYER['place']}")
+        debug(f"You are at: {PLAYER.place}")
 
         reply = input(fg.green("> ")).lower().strip()
 
