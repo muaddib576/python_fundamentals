@@ -132,14 +132,14 @@ def test_examine_full(capsys):
 
 def test_get_place_start(capsys):
     
-    assert Command('args').get_place() == adventure.PLACES[adventure.PLAYER.place], \
+    assert Command('args').player_place == adventure.PLACES[adventure.PLAYER.place], \
         "Starting location should be 'your cottage'"
     
 def test_get_place_missing_place(capsys):
     adventure.PLAYER.place = 'shire'
     adventure.PLACES = {}
 
-    Command('args').get_place()
+    Command('args').player_place
     output = capsys.readouterr().out
 
     assert output == "Error: It seems the player exists outside the known universe...\n", \

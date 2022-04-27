@@ -1,5 +1,4 @@
-#  you finished the pretify part and converting to classes
-# you are on section 4
+# you are on section 5
 # Think about maybe: command class that handles argument parsing
 # maybe: player class where inventory is stored, with add/remove methods
 # Alissa made Game class and Command class. But each command inherets from that class. "Do" method
@@ -23,7 +22,8 @@ class Command():
 
     # TODO add validation to ensure the place is good
     
-    def get_place(self):
+    @property
+    def player_place(self):
         """gets the current player location and returns the place object"""
         current_location = PLAYER.place
 
@@ -216,7 +216,7 @@ class Go(Command):
 
         direction = self.args[0].lower()
         
-        current_place = self.get_place()
+        current_place = self.player_place
 
         if current_place:
             new_place = current_place.go(direction)
@@ -235,7 +235,7 @@ class Examine(Command):
         debug(f"Trying to examine: {self.args}")
 
         name = self.args[0].lower()
-        current_place = self.get_place()
+        current_place = self.player_place
 
         if name not in current_place.contents:
             error(f"There is no {name} in {current_place.name.lower()}.")
