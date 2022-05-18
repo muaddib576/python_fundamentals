@@ -4,6 +4,7 @@
 # Alissa made Game class and Command class. But each command inherets from that class. "Do" method
 # Game class, do_ as methods. Player and Place class
 
+from multiprocessing.dummy import current_process
 from sys import stderr
 from console import fg, bg, fx
 import textwrap
@@ -186,12 +187,24 @@ class Quit(Command):
 class Look(Command):
 
     def do(self):
-        """Examines suroundings"""
+        """Lists the items present in the current location, and all nearby locations"""
 
         debug(f"Trying to look around.")
 
+        current_place = self.player_place
 
-        print("You see a vast nothingness.")
+        # Display info about the current location
+        header(f"{current_place.name}")
+        wrap(f"{current_place.description}")
+
+        # Display list of the items in the current location
+        items = [ITEMS[x].name for x in current_place.contents]
+
+        # insert for loop to format and print the item list
+        # for i in items:
+
+
+        # print("You see a vast nothingness.")
 
 class Shop(Command):
 
