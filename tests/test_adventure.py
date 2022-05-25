@@ -153,6 +153,38 @@ def test_get_place_missing_place(capsys):
     assert output == "Error: It seems the player exists outside the known universe...\n", \
         "A location not in Places should throw an error"
 
+def test_comma_list_3():
+    # GIVEN: a list of 3 or more elements
+    test_list = ['1','2','3']
+    # WHEN: the list is passed to the comma_list() method
+    test_string = Command('args').comma_list(test_list)
+    # THEN: a comma seperated string is returned
+    assert test_string == "1, 2, and 3", " A list of three should be comma seperated"
+
+def test_comma_list_2():
+    # GIVEN: a list of 2 elements
+    test_list = ['1','2']
+    # WHEN: the list is passed to the comma_list() method
+    test_string = Command('args').comma_list(test_list)
+    # THEN: a string with both elements seperated by an 'and' is returned
+    assert test_string == "1 and 2", "A list of 2 should be and seperated"
+
+def test_comma_list_1():
+    # GIVEN: a list of 1 element
+    test_list = ['1']
+    # WHEN: the list is passed to the comma_list() method
+    test_string = Command('args').comma_list(test_list)
+    # THEN: a string with that element is returned
+    assert test_string == "1", "A list of one should return itself"
+
+def test_comma_list_0():
+    # GIVEN: a list of 0 elements
+    test_list = []
+    # WHEN: the list is passed to the comma_list() method
+    test_string = Command('args').comma_list(test_list)
+    # THEN: an error is returned
+    assert test_string == "", "A list of nothing should return an empty string"
+
 def test_look(capsys):
     
     # GIVEN: The player's current location

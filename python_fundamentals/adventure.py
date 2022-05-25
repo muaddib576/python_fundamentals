@@ -35,6 +35,22 @@ class Command():
         player_place = PLACES[current_location]
         return player_place
     
+    def comma_list(self, item_list):
+        """Takes a list and returns a oxford comma formated string"""
+
+        x = len(item_list)
+
+        if x > 2:
+            text = ", ".join(item_list)
+            # splits on the last ", " and then re-joins with an ", and"
+            text = ", and ".join(text.rsplit(", ", 1))
+            return text
+        elif x > 0:
+            text = " and ".join(item_list)
+            return text
+        else:
+            return ""
+
 class Collectable():
     """Base class for objects with collections"""
     def __init__(self, key, name, description):
@@ -96,7 +112,7 @@ PLACES = {
         name="Your Cottage",
         description="A cozy stone cottage with a desk and a neatly made bed.",
         east="town square",
-        contents=['desk','book']
+        contents=['desk','book','bed']
     ),
     "town square": Place(
         key="town square",
@@ -127,13 +143,18 @@ ITEMS = {
     ),
     "desk": Item(
         key="desk",
-        name="writing desk",
+        name="a writing desk",
         description="A wooden desk with a large leather-bound book open on its surface."
     ),
     "book": Item(
         key="book",
         name="a book",
         description="A hefty leather-bound tome open to an interesting passage."
+    ),
+    "bed": Item(
+        key="bed",
+        name="your bed",
+        description="Some cloth stuffed with hay. Hardly any bugs."
     ),
 }
 
@@ -198,9 +219,14 @@ class Look(Command):
         wrap(f"{current_place.description}")
 
         # Display list of the items in the current location
-        items = [ITEMS[x].name for x in current_place.contents]
+        item_names = [ITEMS[x].name for x in current_place.contents]
 
-        # insert for loop to format and print the item list
+        if item_names:
+            wrap(f"You see {self.comma_list(item_names)}.")
+        else:
+            ...
+        
+        
         # for i in items:
 
 
