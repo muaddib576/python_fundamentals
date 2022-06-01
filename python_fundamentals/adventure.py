@@ -1,8 +1,5 @@
-# you are on section 5
-# Think about maybe: command class that handles argument parsing
+# you are on section 6.3
 # maybe: player class where inventory is stored, with add/remove methods
-# Alissa made Game class and Command class. But each command inherets from that class. "Do" method
-# Game class, do_ as methods. Player and Place class
 
 from multiprocessing.dummy import current_process
 from sys import stderr
@@ -97,14 +94,15 @@ class Place(Collectable):
         return new_place
 
 class Item(Collectable):
-    def __init__(self, key, name, description, price=None):
+    def __init__(self, key, name, description, can_take=False, price=None):
         super().__init__(key, name, description)
+        self.can_take = can_take
         self.price = price
 
 class Player():
     def __init__(self, place=None, inventory={}):
-        self.place = place
-        self.inventory = inventory
+        self.place = place,
+        self.inventory = inventory,
 
 PLACES = {
     "home": Place(
@@ -144,17 +142,18 @@ ITEMS = {
     "desk": Item(
         key="desk",
         name="a writing desk",
-        description="A wooden desk with a large leather-bound book open on its surface."
+        description="A wooden desk with a large leather-bound book open on its surface.",
     ),
     "book": Item(
         key="book",
         name="a book",
-        description="A hefty leather-bound tome open to an interesting passage."
+        description="A hefty leather-bound tome open to an interesting passage.",
+        can_take = True,
     ),
     "bed": Item(
         key="bed",
         name="your bed",
-        description="Some cloth stuffed with hay. Hardly any bugs."
+        description="Some cloth stuffed with hay. Hardly any bugs.",
     ),
 }
 
@@ -219,16 +218,15 @@ class Look(Command):
         wrap(f"{current_place.description}")
 
         # Display list of the items in the current location
-        item_names = [ITEMS[x].name for x in current_place.contents]
-
-        if item_names:
+        if current_place.contents:
+            item_names = [ITEMS[x].name for x in current_place.contents]
             wrap(f"You see {self.comma_list(item_names)}.")
-        else:
-            ...
-        
-        
-        # for i in items:
 
+        for direction in ('north','south','east','west'):
+            nearby_name = getattr(current_place, direction)
+
+            if nearby_name:
+                write(f"To the {direction} is {PLACES[nearby_name].name}.")
 
         # print("You see a vast nothingness.")
 
@@ -266,7 +264,7 @@ class Go(Command):
 
 class Examine(Command):
     def do(self):
-        """Prints a description of the spcified item"""
+        """Prints a description of the specified item"""
         if not self.args:
             error("You cannot examine nothing.")
             return
@@ -288,7 +286,35 @@ class Examine(Command):
 
         header(item.name.title())
         wrap(item.description)
-            
+
+class Take(Command):
+    def do(self):
+        """Removes the specified item from the loaction and adds to inventory"""
+        if not self.args:
+            error("You cannot take nothing.")
+            return
+
+        debug(f"Trying to take: {self.args}")
+
+        target = self.args[0].lower()
+        current_place = self.player_place
+
+        if target not in current_place.contents:
+            error(f"Sorry, there is no {target} here.")
+            return
+
+        if target not in ITEMS:
+            error(f"This is embarrasing, but the information about {target} is missing.")
+            return
+
+        target = ITEMS[target]
+
+        if not target.can_take:
+            wrap(f"You try to pick up {target.name}, but are unable to do so.")
+            return
+
+        # TODO create method for adding and removing items
+
             
 action_dict = {
     "q": Quit,
@@ -301,6 +327,9 @@ action_dict = {
     "go": Go,
     "e": Examine,
     "examine": Examine,
+    "t": Take,
+    "take": Take,
+    "grab": Take,
 }
 
 # class Game():

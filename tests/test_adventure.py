@@ -13,6 +13,7 @@ from python_fundamentals.adventure import (
     header,
     write,
     Look,
+    Take,
     )
 
 PLAYER_STATE = deepcopy(adventure.PLAYER)
@@ -185,7 +186,7 @@ def test_comma_list_0():
     # THEN: an error is returned
     assert test_string == "", "A list of nothing should return an empty string"
 
-def test_look(capsys):
+def test_look_place(capsys):
     
     # GIVEN: The player's current location
     adventure.PLAYER.place = 'shire'
@@ -193,23 +194,26 @@ def test_look(capsys):
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
-            # east="mordor",
-            # west="sea",
+        )
+
+    # WHEN: The player activates Look
+    Look('args').do()
+    output = capsys.readouterr().out
+
+    # THEN: The player is told the description of the current location
+    assert "Buncha hobbits" in output, "The description of the current location should print"
+
+def test_look_items(capsys):
+    
+    # GIVEN: The player's current location
+    adventure.PLAYER.place = 'shire'
+    adventure.PLACES["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
             contents=['grass']
         )
-        # "mordor": Place(
-        #     key="mordor",
-        #     name="Mordor",
-        #     description="Buncha orcs.",
-        #     west="shire",
-        # ),
-        # "sea": Place(
-        #     key="sea",
-        #     name="The Sea",
-        #     description="Buncha water.",
-        #     east="shire",
-        # )
-    # }
+
     adventure.ITEMS = {
         "grass": Item(
             key="grass",
@@ -223,13 +227,120 @@ def test_look(capsys):
     Look('args').do()
     output = capsys.readouterr().out
 
-    # THEN: The player is told the description of the current location
-    assert "Buncha hobbits" in output, "The description of the current location should print"
-
-    # AND: told the list of items present in the location
+    # THEN: The player is told the list of items present in the location
     assert "grass blades" in output, "The names of the items in the current locations should print"
 
-    # AND: told the list of nearby places
+def test_look_no_items(capsys):
+    
+    # GIVEN: The player's current location
+    adventure.PLAYER.place = 'shire'
+    adventure.PLACES["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+        )
+
+    # WHEN: The player activates Look
+    Look('args').do()
+    output = capsys.readouterr().out
+
+    # THEN: The player is told the list of items present in the location
+    assert "You see" not in output, "If there are no items in the location, you can't see anything"
+
+def test_look_nearby(capsys):
+    
+    # GIVEN: The player's current location
+    adventure.PLAYER.place = 'shire'
+    adventure.PLACES = {
+        "shire": Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            east="mordor",
+            west="sea",
+        ),
+        "mordor": Place(
+            key="mordor",
+            name="Mordor",
+            description="Buncha orcs.",
+            west="shire",
+        ),
+        "sea": Place(
+            key="sea",
+            name="The Sea",
+            description="Buncha water.",
+            east="shire",
+        )
+    }
+
+    # WHEN: The player activates Look
+    Look('args').do()
+    output = capsys.readouterr().out
+
+    # THEN: The player is told the list of nearby places
+    assert "Mordor" in output, "The names of the nearby locations should print"
+    assert "The Sea" in output, "The names of the nearby locations should print"
+
+def test_look_no_nearby(capsys):
+    
+    # GIVEN: The player's current location
+    adventure.PLAYER.place = 'shire'
+    adventure.PLACES["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+        )
+
+    # WHEN: The player activates Look
+    Look('args').do()
+    output = capsys.readouterr().out
+
+    # THEN: The player is told the list of nearby places
+    assert "To the" not in output, "If there is nothing nearby, the names of the nearby locations should not print"
+
+def test_take_valid_item(capsys):
+    
+    # GIVEN: The player's current location and a valid item
+    adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {}
+    adventure.PLACES["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            contents=['grass']
+        )
+
+    adventure.ITEMS = {
+        "grass": Item(
+            key="grass",
+            name="grass blades",
+            description="It's grass.",
+            can_take=True,
+            price=-10,
+        )
+    }
+
+    # WHEN: The player tries to take a valid item
+    Take(['grass']).do()
+    output = capsys.readouterr().out
+
+    # THEN: The player aquires the item
+    assert 'grass' in adventure.PLAYER.inventory, "The tooken item should be in the player's inventory"
+
+    # AND: the item is removed from the place
+    assert 'grass' not in adventure.PLACES["shire"].contents, "the tooken item should no longer be at the place"
+
+    # AND: the player is informed
+    assert "You pick up" in output, "The player should be told they have aquired the item"
+
+def test_take_invalid_item():
+    ...
+    # GIVEN: The player's current location and a invalid item
+
+    # WHEN: The player tries to take an invalid item
+
+    # THEN: The player gets nothing
+
 
 
 #TODO add test_do_shop
