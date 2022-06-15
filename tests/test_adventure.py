@@ -333,15 +333,88 @@ def test_take_valid_item(capsys):
     # AND: the player is informed
     assert "You pick up" in output, "The player should be told they have aquired the item"
 
-def test_take_invalid_item():
+def test_take_missing_item(capsys):
+    ...
+    # GIVEN: The player's current location and an item that is not present
+    adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {}
+    adventure.PLACES["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            contents=[]
+        )
+
+    # WHEN: The player tries to take the item
+    Take(['grass']).do()
+    output = capsys.readouterr().out
+
+    # THEN: The player is told the item is not present
+    assert "there is no grass here" in output, "The player should be told the desired item is not present"
+
+    # AND: gets nothing
+    assert 'grass' not in adventure.PLAYER.inventory, "The desired item should not be in the player's inventory"
+
+def test_take_invalid_item(capsys):
     ...
     # GIVEN: The player's current location and a invalid item
+    adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {}
+    adventure.PLACES["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            contents=['grass']
+        )
 
-    # WHEN: The player tries to take an invalid item
+    adventure.ITEMS = {}
+    # WHEN: The player tries to take the item
+    Take(['grass']).do()
+    output = capsys.readouterr().out
 
-    # THEN: The player gets nothing
+    # THEN: The player is told the item info is missing
+    assert "information about grass is missing" in output, "The player should be told the item info is missing"    
 
+    # AND: gets nothing
+    assert 'grass' not in adventure.PLAYER.inventory, "The desired item should not be put in the player's inventory"
 
+    # AND: the item is not removed from the location
+    assert 'grass' in adventure.PLACES["shire"].contents, "the desired item should remain at the place"
+
+def test_take_untakable_item(capsys):
+    ...
+    # GIVEN: The player's current location and an untakable item
+    adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {}
+    adventure.PLACES["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            contents=['grass']
+        )
+
+    adventure.ITEMS = {
+        "grass": Item(
+            key="grass",
+            name="grass blades",
+            description="It's grass.",
+            can_take=False,
+            price=-10,
+        )
+    }
+
+    # WHEN: The player tries to take the item
+    Take(['grass']).do()
+    output = capsys.readouterr().out
+
+    # THEN: The player is told the item does not move
+    assert "but it doesn't budge" in output, "The player should be told the item info is missing"    
+
+    # AND: gets nothing
+    assert 'grass' not in adventure.PLAYER.inventory, "The desired item should not be put in the player's inventory"
+
+    # AND: the item is not removed from the location
+    assert 'grass' in adventure.PLACES["shire"].contents, "the desired item should remain at the place"
 
 #TODO add test_do_shop
 

@@ -48,6 +48,12 @@ class Command():
         else:
             return ""
 
+    def add_item():
+        ...
+    
+    def remove_item():
+        ...
+
 class Collectable():
     """Base class for objects with collections"""
     def __init__(self, key, name, description):
@@ -101,8 +107,8 @@ class Item(Collectable):
 
 class Player():
     def __init__(self, place=None, inventory={}):
-        self.place = place,
-        self.inventory = inventory,
+        self.place = place
+        self.inventory = inventory
 
 PLACES = {
     "home": Place(
@@ -310,10 +316,16 @@ class Take(Command):
         target = ITEMS[target]
 
         if not target.can_take:
-            wrap(f"You try to pick up {target.name}, but are unable to do so.")
+            wrap(f"You try to pick up {target.name}, but it doesn't budge.")
             return
 
-        # TODO create method for adding and removing items
+        # TODO create method for adding and removing (in player classe) and adding and removing items (in place class)
+
+        PLAYER.inventory.setdefault(target.key,0)
+        PLAYER.inventory[target.key] += 1
+        current_place.contents.remove(target.key)
+
+        wrap(f"You pick up {target.name} and put it in your bag.")
 
             
 action_dict = {
