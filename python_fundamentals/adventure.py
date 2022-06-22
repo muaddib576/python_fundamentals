@@ -1,5 +1,7 @@
 # you are on section 6.3
 # maybe: player class where inventory is stored, with add/remove methods
+# TODO add this to add method
+# TODO add get() method
 
 from multiprocessing.dummy import current_process
 from sys import stderr
@@ -48,12 +50,6 @@ class Command():
         else:
             return ""
 
-    def add_item():
-        ...
-    
-    def remove_item():
-        ...
-
 class Collectable():
     """Base class for objects with collections"""
     def __init__(self, key, name, description):
@@ -64,14 +60,39 @@ class Collectable():
     def __repr__(self):
         return f"<{self.__class__.__name__} object={self.name}>"
 
-class Place(Collectable):
-    def __init__(self, key, name, description, north=None, east=None, south=None, west=None, contents=None):
+    # TODO add get() method
+
+class Contents():
+    """Class for objects with inventories/contents"""
+    
+    def has_item(self, item):
+        if item in self.inventory:
+            return True
+        else:
+            return False
+    
+    def add(self, item):  
+        if self.has_item(item):
+            self.inventory[item] += 1
+        else:
+            self.inventory.setdefault(item, 1)
+
+    def remove(self, item):        
+        if self.has_item(item):
+            self.inventory[item] -= 1
+        
+        # remove item from inventory if quantity is 0
+        if self.inventory[item] == 0:
+            del self.inventory[item]
+
+class Place(Collectable, Contents):
+    def __init__(self, key, name, description, north=None, east=None, south=None, west=None, inventory={}):
         super().__init__(key, name, description)
         self.north = north
         self.east = east
         self.south = south
         self.west = west
-        self.contents = contents
+        self.inventory = inventory
 
     # get = __dict__.get <this can replace the method below>
     def get(self, key, default=None):
@@ -105,7 +126,7 @@ class Item(Collectable):
         self.can_take = can_take
         self.price = price
 
-class Player():
+class Player(Contents):
     def __init__(self, place=None, inventory={}):
         self.place = place
         self.inventory = inventory
@@ -116,7 +137,10 @@ PLACES = {
         name="Your Cottage",
         description="A cozy stone cottage with a desk and a neatly made bed.",
         east="town square",
-        contents=['desk','book','bed']
+        inventory={'desk':1,
+                   'book':1,
+                   'bed':1
+        }
     ),
     "town square": Place(
         key="town square",
@@ -224,8 +248,8 @@ class Look(Command):
         wrap(f"{current_place.description}")
 
         # Display list of the items in the current location
-        if current_place.contents:
-            item_names = [ITEMS[x].name for x in current_place.contents]
+        if current_place.inventory:
+            item_names = [ITEMS[x].name for x in current_place.inventory]
             wrap(f"You see {self.comma_list(item_names)}.")
 
         for direction in ('north','south','east','west'):
@@ -280,7 +304,7 @@ class Examine(Command):
         name = self.args[0].lower()
         current_place = self.player_place
 
-        if name not in current_place.contents:
+        if name not in current_place.inventory:
             error(f"There is no {name} in {current_place.name.lower()}.")
             return
 
@@ -305,13 +329,15 @@ class Take(Command):
         target = self.args[0].lower()
         current_place = self.player_place
 
-        if target not in current_place.contents:
+        if target not in current_place.inventory:
             error(f"Sorry, there is no {target} here.")
             return
 
+        # TODO add this to add method
         if target not in ITEMS:
-            error(f"This is embarrasing, but the information about {target} is missing.")
-            return
+            raise Exception(f"This is embarrasing, but the information about {target} is missing.")
+            # error(f"This is embarrasing, but the information about {target} is missing.")
+            # return
 
         target = ITEMS[target]
 
@@ -319,11 +345,8 @@ class Take(Command):
             wrap(f"You try to pick up {target.name}, but it doesn't budge.")
             return
 
-        # TODO create method for adding and removing (in player classe) and adding and removing items (in place class)
-
-        PLAYER.inventory.setdefault(target.key,0)
-        PLAYER.inventory[target.key] += 1
-        current_place.contents.remove(target.key)
+        PLAYER.add(target.key)
+        current_place.remove(target.key)
 
         wrap(f"You pick up {target.name} and put it in your bag.")
 
