@@ -1,7 +1,6 @@
 # you are on section 6.3
 # maybe: player class where inventory is stored, with add/remove methods
-# TODO add this to add method
-# TODO add get() method
+# TODO add this to a get_item() method in Item class
 
 from multiprocessing.dummy import current_process
 from sys import stderr
@@ -60,8 +59,6 @@ class Collectable():
     def __repr__(self):
         return f"<{self.__class__.__name__} object={self.name}>"
 
-    # TODO add get() method
-
 class Contents():
     """Class for objects with inventories/contents"""
     
@@ -71,7 +68,11 @@ class Contents():
         else:
             return False
     
-    def add(self, item):  
+    def add(self, item): 
+
+        # if item not in ITEMS:
+            # raise Exception(f"This is embarrasing, but the information about {target} is missing.")
+
         if self.has_item(item):
             self.inventory[item] += 1
         else:
@@ -333,11 +334,14 @@ class Take(Command):
             error(f"Sorry, there is no {target} here.")
             return
 
-        # TODO add this to add method
+        # TODO add this to a get_item() method in Item class
+        # NOTE: you could add .get() to Collectable instead, but you would need to
+        #       rename Place.get() to something else for consistency
+        # NOTE: you will need to make sure that you do not use Item.get() for
+        #       user input (ie, if you are not sure if the key exists). So if the need
+        #       arises, consider creating a new method Item.lookup() or somesuch
         if target not in ITEMS:
             raise Exception(f"This is embarrasing, but the information about {target} is missing.")
-            # error(f"This is embarrasing, but the information about {target} is missing.")
-            # return
 
         target = ITEMS[target]
 

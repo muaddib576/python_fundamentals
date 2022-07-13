@@ -369,20 +369,18 @@ def test_take_invalid_item(capsys):
     adventure.ITEMS = {}
 
     # WHEN: The player tries to take the item
-    info = Take(['grass']).do()
-    # output = capsys.readouterr().out
+    with pytest.raises(Exception) as info:
+        Take(['grass']).do()
 
     # THEN: The player is told the item info is missing
-    # assert "information about grass is missing" in output, "The player should be told the item info is missing"    
-    # TODO figure out what this was supposed to be, look at Alissa's example
     exception = info.value
     assert "This is embarrasing" in str(exception)
 
     # AND: gets nothing
-    # assert 'grass' not in adventure.PLAYER.inventory, "The desired item should not be put in the player's inventory"
+    assert 'grass' not in adventure.PLAYER.inventory, "The desired item should not be put in the player's inventory"
 
     # AND: the item is not removed from the location
-    # assert 'grass' in adventure.PLACES["shire"].inventory, "the desired item should remain at the place"
+    assert 'grass' in adventure.PLACES["shire"].inventory, "the desired item should remain at the place"
 
 def test_raises_example():
     """Example of using pytest.raises to check for an exception.
