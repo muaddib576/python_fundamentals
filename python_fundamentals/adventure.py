@@ -1,6 +1,6 @@
 # you are on section 6.3
 # maybe: player class where inventory is stored, with add/remove methods
-# TODO add this to a get_item() method in Item class
+# TODO update this to use the Collectable get() method
 
 from multiprocessing.dummy import current_process
 from sys import stderr
@@ -59,6 +59,15 @@ class Collectable():
     def __repr__(self):
         return f"<{self.__class__.__name__} object={self.name}>"
 
+    @classmethod
+    def get(self, key, default=None):
+        item = ITEMS.get(key, default)
+
+        if item:
+            return ITEMS.get(key, default)
+        else:
+            raise Exception(f"This is embarrasing, but the information about {key} is missing.")
+
 class Contents():
     """Class for objects with inventories/contents"""
     
@@ -94,10 +103,6 @@ class Place(Collectable, Contents):
         self.south = south
         self.west = west
         self.inventory = inventory
-
-    # get = __dict__.get <this can replace the method below>
-    def get(self, key, default=None):
-        return self.__dict__.get(key, default)
 
     def go(self, direction):
         """Validates the requested direction and updates player location"""
@@ -334,12 +339,7 @@ class Take(Command):
             error(f"Sorry, there is no {target} here.")
             return
 
-        # TODO add this to a get_item() method in Item class
-        # NOTE: you could add .get() to Collectable instead, but you would need to
-        #       rename Place.get() to something else for consistency
-        # NOTE: you will need to make sure that you do not use Item.get() for
-        #       user input (ie, if you are not sure if the key exists). So if the need
-        #       arises, consider creating a new method Item.lookup() or somesuch
+        # TODO update this to use the Collectable get() method
         if target not in ITEMS:
             raise Exception(f"This is embarrasing, but the information about {target} is missing.")
 

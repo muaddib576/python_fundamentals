@@ -2,6 +2,7 @@ from copy import deepcopy
 import pytest
 import python_fundamentals.adventure as adventure
 from python_fundamentals.adventure import (
+    ITEMS,
     PLACES,
     Go,
     Examine,
@@ -34,6 +35,62 @@ def revert():
 def teardown(request):
     """Auto-add teardown method to all tests."""
     request.addfinalizer(revert)
+
+def test_collectable_get():
+    # GIVEN: An item
+    adventure.ITEMS = {}
+    adventure.ITEMS['cup'] = Item(
+        key="cup",
+        name="cup",
+        description="You can drink from it.",
+    )
+
+    # WHEN: get class method is called on the key
+    item = Item.get('cup')
+
+    # THEN: the item object is returned
+    assert item.key == 'cup'
+
+def test_collectable_get_missing():
+    # GIVEN: An item dict
+    adventure.ITEMS = {}
+
+    # WHEN: get() class method is called on an key that is not present
+    with pytest.raises(Exception) as info:
+        Item.get('cup')
+
+    # THEN: An exception is raised for the player
+    exception = info.value
+    assert "This is embarrasing" in str(exception)
+
+@pytest.mark.skip(reason="method to be deleted")
+def test_towards():
+    # GIVEN: Two linked locations
+
+    adventure.PLACES["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            east="mordor"
+        )
+    adventure.PLACES["mordor"] = Place(
+            key="mordor",
+            name="Mordor",
+            description="Buncha orcs.",
+            west="shire"
+        )
+
+
+    # WHEN: One is passed a direction
+    place = PLACES["mordor"]
+
+    # place.get("xxx")
+    # Place.get("mordor")
+
+    destination = place.towards('west')
+
+    # THEN: The linked location is returned
+    assert destination == 'shire'
 
 def test_error(capsys):
     error("error test")
