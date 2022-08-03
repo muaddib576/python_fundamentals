@@ -15,6 +15,7 @@ from python_fundamentals.adventure import (
     write,
     Look,
     Take,
+    Inventory,
     )
 
 PLAYER_STATE = deepcopy(adventure.PLAYER)
@@ -129,48 +130,63 @@ def test_examine_no_arg(capsys):
     assert "Error: You cannot examine nothing.\n" in output, \
         "Passing no argument should throw an error"
 
-def test_examine_missing_from_place(capsys):
+def test_examine_missing_from_place_and_player_inv(capsys):
     # GIVEN: That the item the player wants to examine is not in the current
-    #        place
+    #        place, and not in the player's inventory
     adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {}
     adventure.PLACES = {
         "shire": Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
-            inventory={'grass':1,'hills':1}
+            inventory={}
         )
     }
     
     # WHEN: The player tries to examine it
-    Examine(['castle']).do()
+    Examine(['grass']).do()
     output = capsys.readouterr().out
 
     # THEN: The player should be told they can't
-    assert "Error: There is no castle in the shire." in output, \
-        "An Examine target not in the current location should throw an error"
+    assert "Error: There is no grass in the shire." in output, \
+        "An Examine target not in the current location or player inventory should throw an error"
 
-def test_examine_missing_item(capsys):
+def test_examine_missing_from_place(capsys):
+    # GIVEN: That the item the player wants to examine is not in the current
+    #        place, but is in the player's inventory
     adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {'grass':1}
     adventure.PLACES = {
         "shire": Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
-            inventory={'grass':1,'hills':1}
+            inventory={}
         )
     }
-    adventure.ITEMS = {}
+    adventure.ITEMS = {
+        "grass": Item(
+            key="grass",
+            name="grass blades",
+            description="It's grass.",
+            price=-10,
+        )
+    }
 
-    Examine(['hills']).do()
+    # WHEN: The player examines that item
+    Examine(['grass']).do()
     output = capsys.readouterr().out
 
-    assert 'Hmmm, "hills" seems to be missing from my files.' in output, \
-        "An Examine target not in the the ITEMS dictionary should throw an error"
+    # THEN: The player should be told the description of the item.
+    assert "It's grass." in output, \
+        "A valid Examine target should print the item description."
 
-def test_examine_full(capsys):
-    # GIVEN: The player is in a place that exists and tries to examine an item that is present,
+def test_examine_missing_from_player_inv(capsys):
+    # GIVEN: That the item the player wants to examine is not in the player's inventorty
+    #        but is in the current place
     adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {}
     adventure.PLACES = {
         "shire": Place(
             key="shire",
@@ -195,6 +211,24 @@ def test_examine_full(capsys):
     # THEN: The player should be told the description of the item.
     assert "It's grass." in output, \
         "A valid Examine target should print the item description."
+
+def test_examine_missing_item(capsys):
+    adventure.PLAYER.place = 'shire'
+    adventure.PLACES = {
+        "shire": Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            inventory={'grass':1,'hills':1}
+        )
+    }
+    adventure.ITEMS = {}
+
+    Examine(['hills']).do()
+    output = capsys.readouterr().out
+
+    assert 'Hmmm, "hills" seems to be missing from my files.' in output, \
+        "An Examine target not in the the ITEMS dictionary should throw an error"
 
 def test_get_place_start(capsys):
     
@@ -391,7 +425,6 @@ def test_take_valid_item(capsys):
     assert "You pick up" in output, "The player should be told they have aquired the item"
 
 def test_take_missing_item(capsys):
-    ...
     # GIVEN: The player's current location and an item that is not present
     adventure.PLAYER.place = 'shire'
     adventure.PLAYER.inventory = {}
@@ -413,7 +446,6 @@ def test_take_missing_item(capsys):
     assert 'grass' not in adventure.PLAYER.inventory, "The desired item should not be in the player's inventory"
 
 def test_take_invalid_item(capsys):
-    ...
     # GIVEN: The player's current location and a invalid item
     adventure.PLAYER.place = 'shire'
     adventure.PLAYER.inventory = {}
@@ -454,7 +486,6 @@ def test_raises_example():
     assert "wrong" in str(exception)
 
 def test_take_untakable_item(capsys):
-    ...
     # GIVEN: The player's current location and an untakable item
     adventure.PLAYER.place = 'shire'
     adventure.PLAYER.inventory = {}
@@ -487,6 +518,43 @@ def test_take_untakable_item(capsys):
 
     # AND: the item is not removed from the location
     assert 'grass' in adventure.PLACES["shire"].inventory, "the desired item should remain at the place"
+
+def test_inventory(capsys):
+    # GIVEN: Items in the player inventory
+    adventure.PLAYER.inventory = {'lockpicks':1, 'knife':2}
+    adventure.ITEMS = {
+        "lockpicks": Item(
+            key="lockpicks",
+            name="lockpicking tools",
+            description="A standard theiving kit.",
+        ),
+        "knife": Item(
+            key="knife",
+            name="blunt knife",
+            description="An old knife.",
+        )
+    }
+
+    # WHEN: The inventory is checked
+    Inventory('args').do()
+    output = capsys.readouterr().out
+
+    # THEN: The inventory contents are displayed
+    assert '(x 1) lockpicking tools' in output, "The player should be told the items their inventory"
+
+    # AND: The inventory contents are displayed
+    assert '(x 2) blunt knife' in output, "The player should be told the items their inventory"
+
+def test_inventory_empty(capsys):
+    # GIVEN: An empty player inventory
+    adventure.PLAYER.inventory = {}
+
+    # WHEN: The inventory is checked
+    Inventory('args').do()
+    output = capsys.readouterr().out
+
+    # THEN: The player is told their inventory is empty
+    assert 'empty' in output, "When the inventory is empty, the player should be told this"
 
 #TODO add test_do_shop
 

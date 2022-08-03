@@ -1,6 +1,5 @@
-# you are on section 6.3
+# you are on section 8.1
 # maybe: player class where inventory is stored, with add/remove methods
-# TODO update this to use the Collectable get() method
 
 from multiprocessing.dummy import current_process
 from sys import stderr
@@ -10,10 +9,6 @@ import textwrap
 WIDTH = 60
 MARGIN = ' '*3
 DEBUG = True
-
-# class Object():
-#     """Base class"""
-#     ...
 
 class Command():
     def __init__(self, args):
@@ -145,7 +140,7 @@ PLACES = {
         east="town square",
         inventory={'desk':1,
                    'book':1,
-                   'bed':1
+                   'bed':1,
         }
     ),
     "town square": Place(
@@ -310,7 +305,7 @@ class Examine(Command):
         name = self.args[0].lower()
         current_place = self.player_place
 
-        if name not in current_place.inventory:
+        if (name not in current_place.inventory) and (name not in PLAYER.inventory):
             error(f"There is no {name} in {current_place.name.lower()}.")
             return
 
@@ -339,21 +334,29 @@ class Take(Command):
             error(f"Sorry, there is no {target} here.")
             return
 
-        # TODO update this to use the Collectable get() method
-        if target not in ITEMS:
-            raise Exception(f"This is embarrasing, but the information about {target} is missing.")
+        target_item = Item.get(target)
 
-        target = ITEMS[target]
-
-        if not target.can_take:
-            wrap(f"You try to pick up {target.name}, but it doesn't budge.")
+        if not target_item.can_take:
+            wrap(f"You try to pick up {target_item.name}, but it doesn't budge.")
             return
 
-        PLAYER.add(target.key)
-        current_place.remove(target.key)
+        PLAYER.add(target_item.key)
+        current_place.remove(target_item.key)
 
-        wrap(f"You pick up {target.name} and put it in your bag.")
+        wrap(f"You pick up {target_item.name} and put it in your bag.")
 
+class Inventory(Command):
+    def do(self):
+        """Displayes the current contents of the player inventory"""
+
+        debug("Trying to show player inventory.")
+
+        if not PLAYER.inventory:
+            write("Inventory empty.")
+
+        for name, qty in PLAYER.inventory.items():
+            item = Item.get(name)
+            write(f"(x{qty:>2}) {item.name}")
             
 action_dict = {
     "q": Quit,
@@ -369,6 +372,8 @@ action_dict = {
     "t": Take,
     "take": Take,
     "grab": Take,
+    "inventory": Inventory,
+    "i": Inventory,
 }
 
 # class Game():
