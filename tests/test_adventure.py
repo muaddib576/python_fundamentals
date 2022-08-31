@@ -16,6 +16,7 @@ from python_fundamentals.adventure import (
     Look,
     Take,
     Inventory,
+    Drop,
     )
 
 PLAYER_STATE = deepcopy(adventure.PLAYER)
@@ -555,6 +556,84 @@ def test_inventory_empty(capsys):
 
     # THEN: The player is told their inventory is empty
     assert 'empty' in output, "When the inventory is empty, the player should be told this"
+
+def test_drop_no_arg(capsys):
+    # WHEN: The player calls Drop with no argument
+    Drop([]).do()
+    output = capsys.readouterr().out
+
+    # Then an error is displayed to the player
+    assert "Error: You cannot drop nothing.\n" in output, \
+        "Passing no argument should throw an error"
+
+def test_drop_no_item(capsys):
+    # GIVEN: The items in the player's inventory
+    adventure.PLAYER.inventory = {}
+
+    # WHEN: The player tries to drop an item not in their inventory
+    Drop(['ring']).do()
+    output = capsys.readouterr().out
+
+    # THEN: The player is told they do not have the item to drop
+    assert "You dont have a ring" in output, "The player cannot drop an item not in their inventory"
+
+def test_drop_quantity_one(capsys):
+    # GIVEN: The current location and the items in the player's inventory
+    adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {'ring':1}
+    adventure.PLACES["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            inventory={}
+    )
+    
+    # WHEN: The player tries to drop an item in their inventory
+    Drop(['ring']).do()
+    output = capsys.readouterr().out
+
+    # THEN: The item is removed from the players inventory
+    assert 'ring' not in adventure.PLAYER.inventory, \
+        "The dropped item should be removed from player's inventory"
+    
+    # AND: The item is added to the current location's inventory
+    assert 'ring' in adventure.PLACES["shire"].inventory, \
+        "the dropped item should be added to the current location inventory"
+
+    # AND: The player is informed
+    assert "You dropped a ring on the ground." in output, \
+        "The player should be told they dropped the item"
+
+def test_drop_multiple(capsys):
+    # GIVEN: The current location and the items in the player's inventory
+    adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {'ring':2}
+    adventure.PLACES["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            inventory={'ring':1}
+    )
+    
+    # WHEN: The player tries to drop an item in their inventory
+    Drop(['ring']).do()
+    output = capsys.readouterr().out
+
+    # THEN: The item is removed from the players inventory
+    assert adventure.PLAYER.inventory['ring'] == 1, \
+        "The dropped item quantity should be reduced by 1 in player's inventory"
+    
+    # AND: The item is added to the current location's inventory
+    assert adventure.PLACES["shire"].inventory['ring'] == 2, \
+        "the dropped item quantity should be increased by 1 in the location inventory"
+
+    # AND: The player is informed
+    assert "You dropped a ring on the ground." in output, \
+        "The player should be told they dropped the item"
+
+
+
+
 
 #TODO add test_do_shop
 

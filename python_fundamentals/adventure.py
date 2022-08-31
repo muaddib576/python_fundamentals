@@ -1,4 +1,4 @@
-# you are on section 8.1
+# you are on section 9
 # maybe: player class where inventory is stored, with add/remove methods
 
 from multiprocessing.dummy import current_process
@@ -357,7 +357,29 @@ class Inventory(Command):
         for name, qty in PLAYER.inventory.items():
             item = Item.get(name)
             write(f"(x{qty:>2}) {item.name}")
-            
+
+class Drop(Command):
+    def do(self):
+        """Removed the specified item from the player's inventory and adds it to the location"""
+        if not self.args:
+            error("You cannot drop nothing.")
+            return
+
+        debug(f"Trying to drop: {self.args}")
+
+        name = self.args[0].lower()
+        current_place = self.player_place
+
+        if name not in PLAYER.inventory:
+            error(f"You dont have a {name} to drop.")
+            return
+
+        PLAYER.remove(name)
+        current_place.add(name)
+
+        wrap(f"You dropped a {name} on the ground.")
+
+
 action_dict = {
     "q": Quit,
     "quit": Quit,
@@ -374,10 +396,9 @@ action_dict = {
     "grab": Take,
     "inventory": Inventory,
     "i": Inventory,
+    "drop": Drop,
+    "d": Drop,
 }
-
-# class Game():
-#     def __init__(self):
 
 def main():
 
