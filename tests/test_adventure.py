@@ -9,7 +9,9 @@ from python_fundamentals.adventure import (
     Command,
     Place,
     Item,
+    InvalidItemError,
     error,
+    abort,
     debug,
     header,
     write,
@@ -99,6 +101,10 @@ def test_error(capsys):
     output = capsys.readouterr().out
     
     assert output == "Error: error test\n"
+
+def test_abort():
+    with pytest.raises(SystemExit):
+        abort("abort test")
 
 def test_debug(capsys):
     debug("debug test")
@@ -225,11 +231,8 @@ def test_examine_missing_item(capsys):
     }
     adventure.ITEMS = {}
 
-    Examine(['hills']).do()
-    output = capsys.readouterr().out
-
-    assert 'Hmmm, "hills" seems to be missing from my files.' in output, \
-        "An Examine target not in the the ITEMS dictionary should throw an error"
+    with pytest.raises(InvalidItemError) as info:
+        Examine(['hills']).do()
 
 def test_get_place_start(capsys):
     
@@ -446,7 +449,7 @@ def test_take_missing_item(capsys):
     # AND: gets nothing
     assert 'grass' not in adventure.PLAYER.inventory, "The desired item should not be in the player's inventory"
 
-def test_take_invalid_item(capsys):
+def test_take_invalid_item():
     # GIVEN: The player's current location and a invalid item
     adventure.PLAYER.place = 'shire'
     adventure.PLAYER.inventory = {}

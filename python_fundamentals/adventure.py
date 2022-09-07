@@ -1,4 +1,4 @@
-# you are on section 9
+# you are on section 9.2 you need to move the current get method to the Items class, and then add a seperate get method to the Places class
 # maybe: player class where inventory is stored, with add/remove methods
 
 from multiprocessing.dummy import current_process
@@ -9,6 +9,9 @@ import textwrap
 WIDTH = 60
 MARGIN = ' '*3
 DEBUG = True
+
+class InvalidItemError(Exception):
+    ...
 
 class Command():
     def __init__(self, args):
@@ -61,7 +64,7 @@ class Collectable():
         if item:
             return ITEMS.get(key, default)
         else:
-            raise Exception(f"This is embarrasing, but the information about {key} is missing.")
+            raise InvalidItemError(f"This is embarrasing, but the information about {key} is missing.")
 
 class Contents():
     """Class for objects with inventories/contents"""
@@ -73,9 +76,6 @@ class Contents():
             return False
     
     def add(self, item): 
-
-        # if item not in ITEMS:
-            # raise Exception(f"This is embarrasing, but the information about {target} is missing.")
 
         if self.has_item(item):
             self.inventory[item] += 1
@@ -114,8 +114,7 @@ class Place(Collectable, Contents):
         new_place = PLACES.get(destination)
 
         if not new_place:
-            error(f"Ruh roh, raggy! The GM seems to have forgotten the details of {destination}.")
-            return
+            abort(f"Ruh roh, raggy! The GM seems to have forgotten the details of {destination}.")
 
         PLAYER.place = new_place.key
 
@@ -206,6 +205,11 @@ def error(message):
     """Prints da error"""
     print(f"{fg.red('Error:')} {message}")
 
+def abort(message):
+    """Prints fatal error message and exits the program"""
+    error(message)
+    exit(1)
+
 def wrap(text):
     # print(MARGIN,text)
     paragraph = textwrap.fill(
@@ -259,8 +263,6 @@ class Look(Command):
             if nearby_name:
                 write(f"To the {direction} is {PLACES[nearby_name].name}.")
 
-        # print("You see a vast nothingness.")
-
 class Shop(Command):
 
     def do(self):
@@ -309,11 +311,7 @@ class Examine(Command):
             error(f"There is no {name} in {current_place.name.lower()}.")
             return
 
-        if name not in ITEMS.keys():
-            error(f'Hmmm, "{name}" seems to be missing from my files.')
-            return
-
-        item = ITEMS[name]
+        item = Item.get(name)
 
         header(item.name.title())
         wrap(item.description)
@@ -427,7 +425,10 @@ def main():
 
             klass = action_dict[command]
             cmd = klass(args)
-            cmd.do()
+            try:
+                cmd.do()
+            except (InvalidItemError) as e:
+                abort(str(e))
 
 
         else:
