@@ -4,12 +4,15 @@ import python_fundamentals.adventure as adventure
 from python_fundamentals.adventure import (
     ITEMS,
     PLACES,
+    PLAYER,
+    Contents,
     Go,
     Examine,
     Command,
     Place,
     Item,
     InvalidItemError,
+    InvalidPlaceError,
     error,
     abort,
     debug,
@@ -243,11 +246,8 @@ def test_get_place_missing_place(capsys):
     adventure.PLAYER.place = 'shire'
     adventure.PLACES = {}
 
-    Command('args').player_place
-    output = capsys.readouterr().out
-
-    assert output == "Error: It seems the player exists outside the known universe...\n", \
-        "A location not in Places should throw an error"
+    with pytest.raises(InvalidPlaceError) as info:
+        Command('args').player_place
 
 def test_comma_list_3():
     # GIVEN: a list of 3 or more elements
@@ -634,7 +634,39 @@ def test_drop_multiple(capsys):
     assert "You dropped a ring on the ground." in output, \
         "The player should be told they dropped the item"
 
+# TODO rename these tests, and add some versions of these tests for Item
+def test_player_has_true():
+    # GIVEN: The player's inventory
+    adventure.PLAYER.inventory = {'ring':2}
 
+    # WHEN: player_has is called for an item/quantity the player possesses, THEN True is returned
+    assert adventure.PLAYER.has_item('ring', 1)
+
+def test_player_has_false():
+    # GIVEN: The player's inventory
+    adventure.PLAYER.inventory = {}
+
+    # WHEN: player_has is called for an item/quantity the player does not possess
+    assert adventure.PLAYER.has_item('ring', 1) == False
+
+def test_player_has_false_quatity():
+    # GIVEN: The player's inventory
+    adventure.PLAYER.inventory = {'ring':2}
+
+    # WHEN: player_has is called for an item/quantity the player does not possess
+    assert adventure.PLAYER.has_item('ring', 3) == False
+
+def test_place_has():
+    # GIVEN:
+    # WHEN: 
+    # THEN: 
+    ...
+
+def test_is_for_sale():
+    # GIVEN:
+    # WHEN: 
+    # THEN:
+    ... 
 
 
 

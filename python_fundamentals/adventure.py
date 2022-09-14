@@ -1,4 +1,4 @@
-# you are on section 9.2 you need to move the current get method to the Items class, and then add a seperate get method to the Places class
+# you are on section 9.4
 # maybe: player class where inventory is stored, with add/remove methods
 
 from multiprocessing.dummy import current_process
@@ -13,6 +13,9 @@ DEBUG = True
 class InvalidItemError(Exception):
     ...
 
+class InvalidPlaceError(Exception):
+    ...
+
 class Command():
     def __init__(self, args):
         self.args = args
@@ -24,11 +27,8 @@ class Command():
         """gets the current player location and returns the place object"""
         current_location = PLAYER.place
 
-        if current_location not in PLACES.keys():
-            error(f"It seems the player exists outside the known universe...")
-            return
+        player_place = Place.get(current_location)
         
-        player_place = PLACES[current_location]
         return player_place
     
     def comma_list(self, item_list):
@@ -57,32 +57,25 @@ class Collectable():
     def __repr__(self):
         return f"<{self.__class__.__name__} object={self.name}>"
 
-    @classmethod
-    def get(self, key, default=None):
-        item = ITEMS.get(key, default)
-
-        if item:
-            return ITEMS.get(key, default)
-        else:
-            raise InvalidItemError(f"This is embarrasing, but the information about {key} is missing.")
-
 class Contents():
     """Class for objects with inventories/contents"""
     
-    def has_item(self, item):
-        if item in self.inventory:
-            return True
-        else:
-            return False
+    # move this to Contents
+    def has_item(self, key, qty=1):
+        """Return True if Object inventroy has at least the specified quantity of key, else False"""
+        # breakpoint
+        # breakpoint()
+        return key in self.inventory and self.inventory[key] >= qty
     
     def add(self, item): 
-
+        """Adds 1 item"""
         if self.has_item(item):
             self.inventory[item] += 1
         else:
             self.inventory.setdefault(item, 1)
 
-    def remove(self, item):        
+    def remove(self, item):
+        """Remove 1 item"""        
         if self.has_item(item):
             self.inventory[item] -= 1
         
@@ -111,7 +104,7 @@ class Place(Collectable, Contents):
             error(f"Sorry, there is no '{direction}' from {self.name}.")
             return
 
-        new_place = PLACES.get(destination)
+        new_place = Place.get(destination)
 
         if not new_place:
             abort(f"Ruh roh, raggy! The GM seems to have forgotten the details of {destination}.")
@@ -120,11 +113,32 @@ class Place(Collectable, Contents):
 
         return new_place
 
+    @classmethod
+    def get(self, key, default=None):
+        """Takes a place key and returns the Place's instance"""
+        place = PLACES.get(key, default)
+
+        if place:
+            return place
+        else:
+            raise InvalidPlaceError(f"This is embarrasing, but the information about {key} is missing.")
+
+
 class Item(Collectable):
     def __init__(self, key, name, description, can_take=False, price=None):
         super().__init__(key, name, description)
         self.can_take = can_take
         self.price = price
+
+    @classmethod
+    def get(self, key, default=None):
+        """Takes an item key and returns the Item's instance"""
+        item = ITEMS.get(key, default)
+
+        if item:
+            return item
+        else:
+            raise InvalidItemError(f"This is embarrasing, but the information about {key} is missing.")
 
 class Player(Contents):
     def __init__(self, place=None, inventory={}):
@@ -261,7 +275,7 @@ class Look(Command):
             nearby_name = getattr(current_place, direction)
 
             if nearby_name:
-                write(f"To the {direction} is {PLACES[nearby_name].name}.")
+                write(f"To the {direction} is {Place.get(nearby_name).name}.")
 
 class Shop(Command):
 
