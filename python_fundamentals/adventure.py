@@ -1,4 +1,4 @@
-# you are on section 9.4
+# you are on section 9.5 (you have not started yet)
 # maybe: player class where inventory is stored, with add/remove methods
 
 from multiprocessing.dummy import current_process
@@ -139,6 +139,10 @@ class Item(Collectable):
             return item
         else:
             raise InvalidItemError(f"This is embarrasing, but the information about {key} is missing.")
+
+    def is_for_sale(self):
+        """Returns True if item has a price"""
+        return self.price != None
 
 class Player(Contents):
     def __init__(self, place=None, inventory={}):
@@ -284,7 +288,7 @@ class Shop(Command):
         header("Whater you buyin'?\n")
 
         for item in ITEMS.values():
-            if item.price:
+            if item.is_for_sale():
                 #format this better {num:>80}
                 write(f"${abs(item.price):>2d}. {item.key.title()}: {item.description}")
         print()
@@ -321,7 +325,8 @@ class Examine(Command):
         name = self.args[0].lower()
         current_place = self.player_place
 
-        if (name not in current_place.inventory) and (name not in PLAYER.inventory):
+        if not (current_place.has_item(name) or
+                PLAYER.has_item(name)):
             error(f"There is no {name} in {current_place.name.lower()}.")
             return
 
@@ -342,7 +347,7 @@ class Take(Command):
         target = self.args[0].lower()
         current_place = self.player_place
 
-        if target not in current_place.inventory:
+        if not current_place.has_item(target):
             error(f"Sorry, there is no {target} here.")
             return
 
@@ -382,15 +387,13 @@ class Drop(Command):
         name = self.args[0].lower()
         current_place = self.player_place
 
-        if name not in PLAYER.inventory:
-            error(f"You dont have a {name} to drop.")
+        if PLAYER.has_item(name):
+            PLAYER.remove(name)
+            current_place.add(name)
+            wrap(f"You dropped a {name} on the ground.")
             return
 
-        PLAYER.remove(name)
-        current_place.add(name)
-
-        wrap(f"You dropped a {name} on the ground.")
-
+        error(f"You dont have a {name} to drop.")
 
 action_dict = {
     "q": Quit,

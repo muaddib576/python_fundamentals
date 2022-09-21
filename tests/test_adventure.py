@@ -639,34 +639,88 @@ def test_player_has_true():
     # GIVEN: The player's inventory
     adventure.PLAYER.inventory = {'ring':2}
 
-    # WHEN: player_has is called for an item/quantity the player possesses, THEN True is returned
-    assert adventure.PLAYER.has_item('ring', 1)
+    # WHEN: has_item() is called for an item/quantity the player possesses
+    assert adventure.PLAYER.has_item('ring', 1), \
+        "Should return True if the player has at least the specified qty"
 
 def test_player_has_false():
     # GIVEN: The player's inventory
     adventure.PLAYER.inventory = {}
 
-    # WHEN: player_has is called for an item/quantity the player does not possess
-    assert adventure.PLAYER.has_item('ring', 1) == False
+    # WHEN: has_item() is called for an item/quantity the player does not possess
+    assert adventure.PLAYER.has_item('ring', 1) == False, \
+        "Should return False if the player does not have the item"
 
-def test_player_has_false_quatity():
+def test_player_has_false_quantity():
     # GIVEN: The player's inventory
     adventure.PLAYER.inventory = {'ring':2}
 
-    # WHEN: player_has is called for an item/quantity the player does not possess
-    assert adventure.PLAYER.has_item('ring', 3) == False
+    # WHEN: has_tiem() is called for an item/quantity the player does not possess
+    assert adventure.PLAYER.has_item('ring', 3) == False, \
+        "Should return False if the player does not have the specified qty"
 
-def test_place_has():
-    # GIVEN:
-    # WHEN: 
-    # THEN: 
-    ...
+def test_place_has_true():
+    # GIVEN: A place with an inventory
+    adventure.PLACES["shire"] = Place(
+        key="shire",
+        name="The Shire",
+        description="Buncha hobbits.",
+        inventory={'ring':2} 
+    )
+
+    # WHEN: has_item() is called for an item/quantity the place possesses
+    assert adventure.PLACES["shire"].has_item('ring', 1) == True, \
+        "Should return True if the place has at least the specified qty"
+
+def test_place_has_false():
+    # GIVEN: A place with an inventory
+    adventure.PLACES["shire"] = Place(
+        key="shire",
+        name="The Shire",
+        description="Buncha hobbits.",
+        inventory={} 
+    )
+
+    # WHEN: has_item() is called for an item/quantity the place possesses
+    assert adventure.PLACES["shire"].has_item('ring', 1) == False, \
+        "Should return False if the place does not have the item"
+
+def test_place_has_false_quantity():
+    # GIVEN: A place with an inventory
+    adventure.PLACES["shire"] = Place(
+        key="shire",
+        name="The Shire",
+        description="Buncha hobbits.",
+        inventory={'ring':1} 
+    )
+
+    # WHEN: has_item() is called for an item/quantity the place possesses
+    assert adventure.PLACES["shire"].has_item('ring', 2) == False, \
+        "Should return False if the place does not have the specified qty"
 
 def test_is_for_sale():
-    # GIVEN:
-    # WHEN: 
-    # THEN:
-    ... 
+    # GIVEN: An item with a price
+    adventure.ITEMS = {
+        "lockpicks": Item(
+            key="lockpicks",
+            name="lockpicking tools",
+            description="A standard theiving kit.",
+            price=-10
+        ),
+        "knife": Item(
+            key="knife",
+            name="blunt knife",
+            description="An old knife.",
+        )
+    }
+
+    # THEN: An item with a price returns True
+    assert adventure.ITEMS["lockpicks"].is_for_sale(), \
+        "An item with a price should return True"
+    
+    # AND: An item without a price returns False
+    assert not adventure.ITEMS["knife"].is_for_sale(), \
+        "An item without a price should return False"
 
 
 
