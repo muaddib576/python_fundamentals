@@ -1,4 +1,4 @@
-# you are on section 9.5 (you have not started yet)
+# you are on section 9.5 (TODO write the method for test_order_args_qty())
 # maybe: player class where inventory is stored, with add/remove methods
 
 from multiprocessing.dummy import current_process
@@ -63,24 +63,23 @@ class Contents():
     # move this to Contents
     def has_item(self, key, qty=1):
         """Return True if Object inventroy has at least the specified quantity of key, else False"""
-        # breakpoint
-        # breakpoint()
+
         return key in self.inventory and self.inventory[key] >= qty
     
-    def add(self, item): 
-        """Adds 1 item"""
-        if self.has_item(item):
-            self.inventory[item] += 1
+    def add(self, item, qty=1): 
+        """Adds X item"""
+        if self.has_item(item, qty):
+            self.inventory[item] += qty
         else:
-            self.inventory.setdefault(item, 1)
+            self.inventory.setdefault(item, qty)
 
-    def remove(self, item):
-        """Remove 1 item"""        
-        if self.has_item(item):
-            self.inventory[item] -= 1
+    def remove(self, item, qty=1):
+        """Remove X item"""
+        if self.has_item(item, qty):
+            self.inventory[item] -= qty
         
-        # remove item from inventory if quantity is 0
-        if self.inventory[item] == 0:
+        # remove item from inventory if quantity is 0 or less
+        if self.inventory[item] <= 0:
             del self.inventory[item]
 
 class Place(Collectable, Contents):

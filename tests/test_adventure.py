@@ -560,6 +560,27 @@ def test_inventory_empty(capsys):
     # THEN: The player is told their inventory is empty
     assert 'empty' in output, "When the inventory is empty, the player should be told this"
 
+
+@pytest.mark.parametrize(
+    ["args", "expected"], [
+    ([1,'command'],('command',1)),
+    (['command',1],('command',1)),
+])
+
+def test_order_args_qty(args, expected):
+    # GIVEN: args consistenting of a string and qty in arbitrary order
+    # THEN: The args are parsed correctly
+    assert Command('args').order_args(args) == expected
+
+@pytest.mark.parametrize(
+    ["a", "b", "expected"], [
+    (1, 1, 2),
+    (2, 2, 4),
+])
+def test_example(a, b, expected):
+    assert a + b == expected
+
+
 def test_drop_no_arg(capsys):
     # WHEN: The player calls Drop with no argument
     Drop([]).do()
@@ -721,7 +742,6 @@ def test_is_for_sale():
     # AND: An item without a price returns False
     assert not adventure.ITEMS["knife"].is_for_sale(), \
         "An item without a price should return False"
-
 
 
 #TODO add test_do_shop
