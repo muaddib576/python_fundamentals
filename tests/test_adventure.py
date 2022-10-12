@@ -563,14 +563,23 @@ def test_inventory_empty(capsys):
 
 @pytest.mark.parametrize(
     ["args", "expected"], [
-    ([1,'command'],('command',1)),
-    (['command',1],('command',1)),
+    (['1','thing'],['thing',1]),
+    (['thing','1'],['thing',1]),
+    # note: this is not ideal, but works for now
+    (['thing', '1', 'option'],['option', 'thing', 1]),
+    (['2', 'thing', '1', 'option'],['option', 'thing', 2, 1]),
 ])
 
 def test_order_args_qty(args, expected):
     # GIVEN: args consistenting of a string and qty in arbitrary order
     # THEN: The args are parsed correctly
-    assert Command('args').order_args(args) == expected
+    # Command(args).order_args_qty()
+
+    cmd = Command(args)
+    cmd.order_args_qty()
+
+    assert cmd.args == expected
+    # assert Command(args).order_args_qty() == expected
 
 @pytest.mark.parametrize(
     ["a", "b", "expected"], [
@@ -613,7 +622,7 @@ def test_drop_quantity_one(capsys):
     )
     
     # WHEN: The player tries to drop an item in their inventory
-    Drop(['ring']).do()
+    Drop(['ring', 1]).do()
     output = capsys.readouterr().out
 
     # THEN: The item is removed from the players inventory
@@ -625,7 +634,7 @@ def test_drop_quantity_one(capsys):
         "the dropped item should be added to the current location inventory"
 
     # AND: The player is informed
-    assert "You dropped a ring on the ground." in output, \
+    assert "You dropped 1 ring on the ground." in output, \
         "The player should be told they dropped the item"
 
 def test_drop_multiple(capsys):
@@ -640,7 +649,7 @@ def test_drop_multiple(capsys):
     )
     
     # WHEN: The player tries to drop an item in their inventory
-    Drop(['ring']).do()
+    Drop(['ring', 1]).do()
     output = capsys.readouterr().out
 
     # THEN: The item is removed from the players inventory
@@ -652,7 +661,7 @@ def test_drop_multiple(capsys):
         "the dropped item quantity should be increased by 1 in the location inventory"
 
     # AND: The player is informed
-    assert "You dropped a ring on the ground." in output, \
+    assert "You dropped 1 ring on the ground." in output, \
         "The player should be told they dropped the item"
 
 # TODO rename these tests, and add some versions of these tests for Item

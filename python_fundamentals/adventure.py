@@ -1,5 +1,4 @@
-# you are on section 9.5 (TODO write the method for test_order_args_qty())
-# maybe: player class where inventory is stored, with add/remove methods
+# you are on section 9.5 (TODO update Take command to use order_args_qty())
 
 from multiprocessing.dummy import current_process
 from sys import stderr
@@ -46,6 +45,18 @@ class Command():
             return text
         else:
             return ""
+
+    def order_args_qty(self):
+        """Takes args list and puts the qty at end of list"""
+        
+        ordered_args = []
+        for x in self.args:
+            try:
+                ordered_args.append(int(x))
+            except ValueError:
+                ordered_args = [x] + ordered_args
+        
+        self.args = ordered_args
 
 class Collectable():
     """Base class for objects with collections"""
@@ -155,7 +166,7 @@ PLACES = {
         description="A cozy stone cottage with a desk and a neatly made bed.",
         east="town square",
         inventory={'desk':1,
-                   'book':1,
+                   'book':12,
                    'bed':1,
         }
     ),
@@ -381,15 +392,22 @@ class Drop(Command):
             error("You cannot drop nothing.")
             return
 
+        self.order_args_qty()
+
         debug(f"Trying to drop: {self.args}")
 
         name = self.args[0].lower()
+        
+        qty = 1
+        if isinstance(self.args[-1], int):
+            qty = self.args[-1]
+
         current_place = self.player_place
 
-        if PLAYER.has_item(name):
-            PLAYER.remove(name)
+        if PLAYER.has_item(name,qty):
+            PLAYER.remove(name,qty)
             current_place.add(name)
-            wrap(f"You dropped a {name} on the ground.")
+            wrap(f"You dropped {qty} {name} on the ground.")
             return
 
         error(f"You dont have a {name} to drop.")
