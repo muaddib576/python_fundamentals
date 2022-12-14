@@ -523,6 +523,76 @@ def test_take_untakable_item(capsys):
     # AND: the item is not removed from the location
     assert 'grass' in adventure.PLACES["shire"].inventory, "the desired item should remain at the place"
 
+def test_take_quantity_one(capsys):
+    # GIVEN: The current location with items present and player's inventory
+    adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {}
+    adventure.PLACES["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            inventory={'ring': 1}
+    ) 
+    adventure.ITEMS = {
+        "ring": Item(
+            key="ring",
+            name="ring",
+            description="A metal circle.",
+            can_take=True,
+        )
+    }
+
+    # WHEN: The player tries to take an item from the place
+    Take(['ring', 1]).do()
+    output = capsys.readouterr().out
+    
+    # THEN: The item is removed from the current location's inventory
+    assert 'ring' not in adventure.PLACES["shire"].inventory, \
+        "the tooken item should be removed from the current location inventory"
+
+    # AND: The item is added to the player's inventory
+    assert 'ring' in adventure.PLAYER.inventory, \
+        "The tooken item should be added to player's inventory"
+
+    # AND: The player is informed
+    assert "You pick up 1 ring and put it in your bag." in output, \
+        "The player should be told they picked up the item"
+
+def test_take_multiple(capsys):
+    # GIVEN: The current location and the items in the player's inventory
+    adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {}
+    adventure.PLACES["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            inventory={'ring':10}
+    )  
+    adventure.ITEMS = {
+        "ring": Item(
+            key="ring",
+            name="ring",
+            description="A metal circle.",
+            can_take=True,
+        )
+    }
+
+    # WHEN: The player tries to drop an item in their inventory
+    Take(['ring', 3]).do()
+    output = capsys.readouterr().out
+
+    # THEN: The item is removed to the current location's inventory
+    assert adventure.PLACES["shire"].inventory['ring'] == 7, \
+        "the tooken item quantity should be decreased by 3 in the location's inventory"
+
+    # AND: The item is added from the players inventory
+    assert adventure.PLAYER.inventory['ring'] == 3, \
+        "The tooken item quantity should be increased by 3 in player's inventory"
+
+    # AND: The player is informed
+    assert "You pick up 3 ring and put it in your bag." in output, \
+        "The player should be told they took the item"
+
 def test_inventory(capsys):
     # GIVEN: Items in the player inventory
     adventure.PLAYER.inventory = {'lockpicks':1, 'knife':2}

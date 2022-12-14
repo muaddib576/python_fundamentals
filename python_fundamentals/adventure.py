@@ -1,4 +1,4 @@
-# you are on section 9.5 (TODO update Take command to use order_args_qty())
+# you are on section 10
 
 from multiprocessing.dummy import current_process
 from sys import stderr
@@ -166,7 +166,7 @@ PLACES = {
         description="A cozy stone cottage with a desk and a neatly made bed.",
         east="town square",
         inventory={'desk':1,
-                   'book':12,
+                   'book':1,
                    'bed':1,
         }
     ),
@@ -352,9 +352,16 @@ class Take(Command):
             error("You cannot take nothing.")
             return
 
+        self.order_args_qty()
+
         debug(f"Trying to take: {self.args}")
 
         target = self.args[0].lower()
+
+        qty = 1
+        if isinstance(self.args[-1], int):
+            qty = self.args[-1]
+
         current_place = self.player_place
 
         if not current_place.has_item(target):
@@ -367,10 +374,10 @@ class Take(Command):
             wrap(f"You try to pick up {target_item.name}, but it doesn't budge.")
             return
 
-        PLAYER.add(target_item.key)
-        current_place.remove(target_item.key)
+        PLAYER.add(target_item.key, qty)
+        current_place.remove(target_item.key, qty)
 
-        wrap(f"You pick up {target_item.name} and put it in your bag.")
+        wrap(f"You pick up {qty} {target_item.name} and put it in your bag.")
 
 class Inventory(Command):
     def do(self):
