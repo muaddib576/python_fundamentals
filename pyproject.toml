@@ -9,8 +9,8 @@ python = "^3.8"
 asciinema = "^2.0.2"
 console = "^0.9907"
 
-[tool.poetry.dev-dependencies]
-pytest = "^5.2"
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.2.0"
 ipython = "^7.25.0"
 
 [build-system]

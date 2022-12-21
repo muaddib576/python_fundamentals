@@ -1,4 +1,4 @@
-# you are on section 10
+# you are on section 10.2, you need to finish the shop tests before moving to 10.3
 
 from multiprocessing.dummy import current_process
 from sys import stderr
@@ -31,7 +31,7 @@ class Command():
         return player_place
     
     def comma_list(self, item_list):
-        """Takes a list and returns a oxford comma formated string"""
+        """Takes a list and returns a oxford comma formatted string"""
 
         x = len(item_list)
 
@@ -73,7 +73,7 @@ class Contents():
     
     # move this to Contents
     def has_item(self, key, qty=1):
-        """Return True if Object inventroy has at least the specified quantity of key, else False"""
+        """Return True if Object inventory has at least the specified quantity of key, else False"""
 
         return key in self.inventory and self.inventory[key] >= qty
     
@@ -94,13 +94,23 @@ class Contents():
             del self.inventory[item]
 
 class Place(Collectable, Contents):
-    def __init__(self, key, name, description, north=None, east=None, south=None, west=None, inventory={}):
+    def __init__(self, key, name, description, north=None, east=None, south=None, west=None, can=None, inventory=None):
         super().__init__(key, name, description)
         self.north = north
         self.east = east
         self.south = south
         self.west = west
+
+        if not can:
+            can = []
+            
+        if not inventory:
+            inventory = {}
+
+        self.can = can
         self.inventory = inventory
+
+
 
     def go(self, direction):
         """Validates the requested direction and updates player location"""
@@ -133,6 +143,11 @@ class Place(Collectable, Contents):
         else:
             raise InvalidPlaceError(f"This is embarrasing, but the information about {key} is missing.")
 
+    def place_can(self, command):
+        """Returns TRUE if the command is valid given the place"""
+
+        return command in self.can
+
 
 class Item(Collectable):
     def __init__(self, key, name, description, can_take=False, price=None):
@@ -164,17 +179,29 @@ PLACES = {
         key="home",
         name="Your Cottage",
         description="A cozy stone cottage with a desk and a neatly made bed.",
-        east="town square",
+        east="town-square",
         inventory={'desk':1,
                    'book':1,
                    'bed':1,
-        }
+        },
     ),
-    "town square": Place(
-        key="town square",
+    "town-square": Place(
+        key="town-square",
         name="Town Square",
         description="The square part of town.",
+        north="market",
         west="home",
+    ),
+    "market": Place(
+        key="market",
+        name="Yee ol' Market",
+        description="A dusty store with rows of shelves overflowing with what appears to be junk. "\
+            "A large wooden sign hangs above the clerk.",
+        south="town-square",
+        can=['shop'],
+        inventory={'potion':5,
+                   'dagger':1,
+        },
     ),
 }
 
@@ -188,7 +215,7 @@ ITEMS = {
     "lockpicks": Item(
         key="lockpicks",
         name="lockpicking tools",
-        description="A standard theiving kit.",
+        description="A standard thieving kit.",
         price=-8,
     ),
     "dagger": Item(
@@ -297,10 +324,18 @@ class Shop(Command):
         """Does the shop, duh"""
         header("Whater you buyin'?\n")
 
-        for item in ITEMS.values():
+        current_place = self.player_place
+
+        if not current_place.place_can('shop'):
+            error(f"Sorry, you can't shop here.")
+            return
+
+        for key, qty in current_place.inventory.items():
+            item = ITEMS.get(key)
             if item.is_for_sale():
                 #format this better {num:>80}
-                write(f"${abs(item.price):>2d}. {item.key.title()}: {item.description}")
+                write(f"${abs(item.price):>2d}. {item.name.title()} x{qty} : {item.description}")
+
         print()
 
 class Go(Command):

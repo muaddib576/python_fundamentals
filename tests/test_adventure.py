@@ -22,6 +22,7 @@ from python_fundamentals.adventure import (
     Take,
     Inventory,
     Drop,
+    Shop,
     )
 
 PLAYER_STATE = deepcopy(adventure.PLAYER)
@@ -823,7 +824,49 @@ def test_is_for_sale():
         "An item without a price should return False"
 
 
-#TODO add test_do_shop
+# TODO add more shop tests, this one only covers part of what determines if an item shops in the shop
+def test_shop_for_sale(capsys):
+    # GIVEN: A place with inventory
+    adventure.PLAYER.place = 'shire'
+    adventure.PLACES["shire"] = Place(
+        key="shire",
+        name="The Shire",
+        description="Buncha hobbits.",
+        can=['shop'],
+        inventory={'ring':1,
+                   'stew':1, 
+        } 
+    )
+    adventure.ITEMS = {
+        "ring": Item(
+            key="ring",
+            name="The Ring",
+            description="Not a normal ring.",
+        ),
+        "stew": Item(
+            key="stew",
+            name="Rabbit Stew",
+            description="A bowl of rabbit stew.",
+            price=-10
+        ),
+    }
+    
+    # WHEN: The Shop command is called
+    Shop('args').do()
+    output = capsys.readouterr().out
+
+    # THEN: items that are for sale are printed
+    assert "Rabbit Stew" in output, \
+        "The player should be told the item with a price is for sale."
+
+    # AND: items that are not for sale are not printed
+    assert "The Ring" not in output, \
+        "The player should not be told the item without a price is for sale."
+
+
+    # test_shop_can_shop
+
+
 
 # shlex.split('abc 123') == ['abc', '123']
 # shlex.split('abc "xyz blah"') == ['abc', 'xyz blah']
