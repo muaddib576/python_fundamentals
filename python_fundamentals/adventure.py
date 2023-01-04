@@ -1,4 +1,9 @@
-# you are on section 10.2, you need to finish the shop tests before moving to 10.3
+"""."""
+
+# you are on section 10.3, you need to write a test for the player trying to buy
+# a qty higher than the place's inventory (you also need to fix your take commands
+# for this too)\
+# then you can write the Buy command
 
 from multiprocessing.dummy import current_process
 from sys import stderr
@@ -242,7 +247,6 @@ ITEMS = {
     ),
 }
 
-# TODO ask alissa how to do properties for player.place
 PLAYER = Player(
     place="home",
     # place=PLACES.get("home"),
@@ -322,13 +326,14 @@ class Shop(Command):
 
     def do(self):
         """Does the shop, duh"""
-        header("Whater you buyin'?\n")
 
         current_place = self.player_place
 
         if not current_place.place_can('shop'):
             error(f"Sorry, you can't shop here.")
             return
+
+        header("Whater you buyin'?\n")
 
         for key, qty in current_place.inventory.items():
             item = ITEMS.get(key)
@@ -501,6 +506,8 @@ def main():
 
             klass = action_dict[command]
             cmd = klass(args)
+            # TODO change things to make args positional
+            # cmd = klass(*args)
             try:
                 cmd.do()
             except (InvalidItemError) as e:
