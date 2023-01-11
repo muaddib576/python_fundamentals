@@ -23,6 +23,7 @@ from python_fundamentals.adventure import (
     Inventory,
     Drop,
     Shop,
+    Buy,
     )
 
 PLAYER_STATE = deepcopy(adventure.PLAYER)
@@ -240,7 +241,7 @@ def test_examine_missing_item(capsys):
 
 def test_get_place_start(capsys):
     
-    assert Command('args').player_place == adventure.PLACES[adventure.PLAYER.place], \
+    assert Command([]).player_place == adventure.PLACES[adventure.PLAYER.place], \
         "Starting location should be 'your cottage'"
     
 def test_get_place_missing_place(capsys):
@@ -248,13 +249,13 @@ def test_get_place_missing_place(capsys):
     adventure.PLACES = {}
 
     with pytest.raises(InvalidPlaceError) as info:
-        Command('args').player_place
+        Command([]).player_place
 
 def test_comma_list_3():
     # GIVEN: a list of 3 or more elements
     test_list = ['1','2','3']
     # WHEN: the list is passed to the comma_list() method
-    test_string = Command('args').comma_list(test_list)
+    test_string = Command([]).comma_list(test_list)
     # THEN: a comma seperated string is returned
     assert test_string == "1, 2, and 3", " A list of three should be comma seperated"
 
@@ -262,7 +263,7 @@ def test_comma_list_2():
     # GIVEN: a list of 2 elements
     test_list = ['1','2']
     # WHEN: the list is passed to the comma_list() method
-    test_string = Command('args').comma_list(test_list)
+    test_string = Command([]).comma_list(test_list)
     # THEN: a string with both elements seperated by an 'and' is returned
     assert test_string == "1 and 2", "A list of 2 should be and seperated"
 
@@ -270,7 +271,7 @@ def test_comma_list_1():
     # GIVEN: a list of 1 element
     test_list = ['1']
     # WHEN: the list is passed to the comma_list() method
-    test_string = Command('args').comma_list(test_list)
+    test_string = Command([]).comma_list(test_list)
     # THEN: a string with that element is returned
     assert test_string == "1", "A list of one should return itself"
 
@@ -278,7 +279,7 @@ def test_comma_list_0():
     # GIVEN: a list of 0 elements
     test_list = []
     # WHEN: the list is passed to the comma_list() method
-    test_string = Command('args').comma_list(test_list)
+    test_string = Command([]).comma_list(test_list)
     # THEN: an error is returned
     assert test_string == "", "A list of nothing should return an empty string"
 
@@ -293,7 +294,7 @@ def test_look_place(capsys):
         )
 
     # WHEN: The player activates Look
-    Look('args').do()
+    Look([]).do()
     output = capsys.readouterr().out
 
     # THEN: The player is told the description of the current location
@@ -320,7 +321,7 @@ def test_look_items(capsys):
     }
 
     # WHEN: The player activates Look
-    Look('args').do()
+    Look([]).do()
     output = capsys.readouterr().out
 
     # THEN: The player is told the list of items present in the location
@@ -337,7 +338,7 @@ def test_look_no_items(capsys):
         )
 
     # WHEN: The player activates Look
-    Look('args').do()
+    Look([]).do()
     output = capsys.readouterr().out
 
     # THEN: The player is told the list of items present in the location
@@ -370,7 +371,7 @@ def test_look_nearby(capsys):
     }
 
     # WHEN: The player activates Look
-    Look('args').do()
+    Look([]).do()
     output = capsys.readouterr().out
 
     # THEN: The player is told the list of nearby places
@@ -388,7 +389,7 @@ def test_look_no_nearby(capsys):
         )
 
     # WHEN: The player activates Look
-    Look('args').do()
+    Look([]).do()
     output = capsys.readouterr().out
 
     # THEN: The player is told the list of nearby places
@@ -445,7 +446,7 @@ def test_take_missing_item(capsys):
     output = capsys.readouterr().out
 
     # THEN: The player is told the item is not present
-    assert "there is no grass here" in output, "The player should be told the desired item is not present"
+    assert "there are not 1 grass here" in output, "The player should be told the desired item is not present"
 
     # AND: gets nothing
     assert 'grass' not in adventure.PLAYER.inventory, "The desired item should not be in the player's inventory"
@@ -559,7 +560,7 @@ def test_take_quantity_one(capsys):
     assert "You pick up 1 ring and put it in your bag." in output, \
         "The player should be told they picked up the item"
 
-def test_take_multiple(capsys):
+def test_take_qty(capsys):
     # GIVEN: The current location and the items in the player's inventory
     adventure.PLAYER.place = 'shire'
     adventure.PLAYER.inventory = {}
@@ -578,11 +579,11 @@ def test_take_multiple(capsys):
         )
     }
 
-    # WHEN: The player tries to drop an item in their inventory
+    # WHEN: The player tries to take an item
     Take(['ring', 3]).do()
     output = capsys.readouterr().out
 
-    # THEN: The item is removed to the current location's inventory
+    # THEN: The item is removed from the current location's inventory
     assert adventure.PLACES["shire"].inventory['ring'] == 7, \
         "the tooken item quantity should be decreased by 3 in the location's inventory"
 
@@ -593,6 +594,41 @@ def test_take_multiple(capsys):
     # AND: The player is informed
     assert "You pick up 3 ring and put it in your bag." in output, \
         "The player should be told they took the item"
+
+def test_take_invalid_qty(capsys):
+    # GIVEN: The current location and the items in the player's inventory
+    adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {}
+    adventure.PLACES["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            inventory={'ring':3}
+    )  
+    adventure.ITEMS = {
+        "ring": Item(
+            key="ring",
+            name="ring",
+            description="A metal circle.",
+            can_take=True,
+        )
+    }
+
+    # WHEN: The player tries to take an invalid qty an item
+    Take(['ring', 4]).do()
+    output = capsys.readouterr().out
+
+    # THEN: The item is not removed from the current location's inventory
+    assert adventure.PLACES["shire"].inventory['ring'] == 3, \
+        "the tooken item quantity should be decreased by 3 in the location's inventory"
+
+    # AND: The item is not added from the players inventory
+    assert "ring" not in adventure.PLAYER.inventory.keys(), \
+        "The invalid qty item should not be added to the player's inventory"
+
+    # AND: The player is informed
+    assert "Sorry, there are not 4 ring here" in output, \
+        "The player should be told there are not enough"
 
 def test_inventory(capsys):
     # GIVEN: Items in the player inventory
@@ -611,7 +647,7 @@ def test_inventory(capsys):
     }
 
     # WHEN: The inventory is checked
-    Inventory('args').do()
+    Inventory([]).do()
     output = capsys.readouterr().out
 
     # THEN: The inventory contents are displayed
@@ -625,7 +661,7 @@ def test_inventory_empty(capsys):
     adventure.PLAYER.inventory = {}
 
     # WHEN: The inventory is checked
-    Inventory('args').do()
+    Inventory([]).do()
     output = capsys.readouterr().out
 
     # THEN: The player is told their inventory is empty
@@ -679,7 +715,7 @@ def test_drop_no_item(capsys):
     output = capsys.readouterr().out
 
     # THEN: The player is told they do not have the item to drop
-    assert "You dont have a ring" in output, "The player cannot drop an item not in their inventory"
+    assert "You dont have 1 ring to drop" in output, "The player cannot drop an item not in their inventory"
 
 def test_drop_quantity_one(capsys):
     # GIVEN: The current location and the items in the player's inventory
@@ -708,7 +744,7 @@ def test_drop_quantity_one(capsys):
     assert "You dropped 1 ring on the ground." in output, \
         "The player should be told they dropped the item"
 
-def test_drop_multiple(capsys):
+def test_drop_qty(capsys):
     # GIVEN: The current location and the items in the player's inventory
     adventure.PLAYER.place = 'shire'
     adventure.PLAYER.inventory = {'ring':2}
@@ -734,6 +770,33 @@ def test_drop_multiple(capsys):
     # AND: The player is informed
     assert "You dropped 1 ring on the ground." in output, \
         "The player should be told they dropped the item"
+
+def test_drop_invalid_qty(capsys):
+    # GIVEN: The current location and the items in the player's inventory
+    adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {'ring':2}
+    adventure.PLACES["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            inventory={'ring':1}
+    )
+    
+    # WHEN: The player tries to drop an item in their inventory
+    Drop(['ring', 3]).do()
+    output = capsys.readouterr().out
+
+    # THEN: The item is not removed from the players inventory
+    assert adventure.PLAYER.inventory['ring'] == 2, \
+        "The invalid qty item should not be removed from the players's inventory"
+    
+    # AND: The item is not added to the current location's inventory
+    assert adventure.PLACES["shire"].inventory['ring'] == 1, \
+        "The invalid qty item should not be added to the location's inventory"
+
+    # AND: The player is informed
+    assert "You dont have 3 ring to drop." in output, \
+        "The player should be told they do not have enough of the qty"
 
 # TODO rename these tests, and add some versions of these tests for Item
 def test_player_has_true():
@@ -823,10 +886,9 @@ def test_is_for_sale():
     assert not adventure.ITEMS["knife"].is_for_sale(), \
         "An item without a price should return False"
 
-
-# TODO add more shop tests, this one only covers part of what determines if an item shops in the shop
-def test_shop_for_sale(capsys):
-    # GIVEN: A place with inventory
+# TODO add more shop tests, this one only covers part of what determines if an item shows in the shop
+def test_shop_can(capsys):
+    # GIVEN: A place that can "shop" and has an inventory
     adventure.PLAYER.place = 'shire'
     adventure.PLACES["shire"] = Place(
         key="shire",
@@ -852,7 +914,7 @@ def test_shop_for_sale(capsys):
     }
     
     # WHEN: The Shop command is called
-    Shop('args').do()
+    Shop([]).do()
     output = capsys.readouterr().out
 
     # THEN: items that are for sale are printed
@@ -863,10 +925,290 @@ def test_shop_for_sale(capsys):
     assert "The Ring" not in output, \
         "The player should not be told the item without a price is for sale."
 
+def test_shop_no_can(capsys):
+    # GIVEN: A place that does not have can = ["shop"]
+    adventure.PLAYER.place = 'shire'
+    adventure.PLACES["shire"] = Place(
+        key="shire",
+        name="The Shire",
+        description="Buncha hobbits.",
+        inventory={'ring':1,
+                   'stew':1, 
+        } 
+    )
+    adventure.ITEMS = {
+        "stew": Item(
+            key="stew",
+            name="Rabbit Stew",
+            description="A bowl of rabbit stew.",
+            price=-10
+        ),
+    }
+    
+    # WHEN: The Shop command is called
+    Shop([]).do()
+    output = capsys.readouterr().out
 
-    # test_shop_can_shop
+    # THEN: items that are for sale are printed
+    assert "Sorry, you can't shop here." in output, \
+        "The player should be told they are unable to shop."
 
+def test_buy_no_arg(capsys):
+    adventure.PLAYER.place = 'shire'
+    adventure.PLACES["shire"] = Place(
+        key="shire",
+        name="The Shire",
+        description="Buncha hobbits.",
+        can=['shop'],
+    )
+    # WHEN: The player calls buy with no argument
+    Buy([]).do()
+    output = capsys.readouterr().out
 
+    # Then an error is displayed to the player
+    assert "Error: You cannot buy nothing.\n" in output, \
+        "Passing no argument should throw an error"
+
+def test_buy_no_can(capsys):
+    # GIVEN: A place that does not have can = ["shop"]
+    adventure.PLAYER.place = 'shire'
+    adventure.PLACES["shire"] = Place(
+        key="shire",
+        name="The Shire",
+        description="Buncha hobbits.",
+    )
+    
+    # WHEN: The Buy command is called
+    Buy(['stew']).do()
+    output = capsys.readouterr().out
+
+    # THEN: the player is told they cannot shop here
+    assert "Sorry, you can't shop here." in output, \
+        "The player should be told they are unable to shop."
+
+def test_buy_no_shop(capsys):
+    # GIVEN: A place that cannot "shop"
+    adventure.PLAYER.place = 'shire'
+    adventure.PLACES["shire"] = Place(
+        key="shire",
+        name="The Shire",
+        description="Buncha hobbits.",
+        # can=['shop'],
+        inventory={'stew':1, 
+        } 
+    )
+    
+    # WHEN: The Buy command is called
+    Buy(['stew']).do()
+    output = capsys.readouterr().out
+
+    # THEN: the player is told they cannot shop here
+    assert "Sorry, you can't shop here." in output, \
+        "The player should not be told they are unable to shop."
+
+def test_buy_not_for_sale(capsys):
+    # GIVEN: A place that can "shop" and has an inventory without a price
+    adventure.PLAYER.place = 'shire'
+    adventure.PLACES["shire"] = Place(
+        key="shire",
+        name="The Shire",
+        description="Buncha hobbits.",
+        can=['shop'],
+        inventory={'ring':1,
+        } 
+    )
+    adventure.ITEMS = {
+        "ring": Item(
+            key="ring",
+            name="The Ring",
+            description="Not a normal ring.",
+        ),
+    }
+    
+    # WHEN: The Buy command is called
+    Buy(['ring']).do()
+    output = capsys.readouterr().out
+
+    # THEN: items that are for sale are printed
+    assert "Sorry, that item is not for sale" in output, \
+        "The player should be told the item without a price is not for sale."
+
+def test_buy_for_sale(capsys):
+    # GIVEN: A place that can "shop" and has an inventory with a price
+    adventure.PLAYER.place = 'shire'
+    adventure.PLACES["shire"] = Place(
+        key="shire",
+        name="The Shire",
+        description="Buncha hobbits.",
+        can=['shop'],
+        inventory={'stew':1, 
+        } 
+    )
+    adventure.ITEMS = {
+        "stew": Item(
+            key="stew",
+            name="Rabbit Stew",
+            description="A bowl of rabbit stew.",
+            price=-10
+        ),
+    }
+    
+    # WHEN: The Buy command is called
+    Buy(['stew']).do()
+    output = capsys.readouterr().out
+
+    # THEN: the player is not told the item is not for sale
+    assert "Sorry, Rabbit Stew is not for sale" not in output, \
+        "The player should not be told the item with a price is not for sale."
+
+def test_buy_no_money(capsys):
+    # GIVEN: A place that can "shop" and has an inventory with a price, and a poor player
+    adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {'gems':1}
+    adventure.PLACES["shire"] = Place(
+        key="shire",
+        name="The Shire",
+        description="Buncha hobbits.",
+        can=['shop'],
+        inventory={'stew':1, 
+        } 
+    )
+    adventure.ITEMS = {
+        "stew": Item(
+            key="stew",
+            name="Rabbit Stew",
+            description="A bowl of rabbit stew.",
+            price=-10
+        ),
+    }
+    
+    # WHEN: The Buy command is called
+    Buy(['stew']).do()
+    output = capsys.readouterr().out
+
+    # THEN: the player is not told they cannot afford the item
+    assert "Sorry, you can't afford Rabbit Stew" not in output, \
+        "The player should not be told they are unable to afford the item."
+
+def test_buy_no_qty(capsys):
+    # GIVEN: A place that can "shop" and has a single item with a price, and a moneyed player
+    adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {'gems':50}
+    adventure.PLACES["shire"] = Place(
+        key="shire",
+        name="The Shire",
+        description="Buncha hobbits.",
+        can=['shop'],
+        inventory={'stew':1, 
+        } 
+    )
+    adventure.ITEMS = {
+        "stew": Item(
+            key="stew",
+            name="Rabbit Stew",
+            description="A bowl of rabbit stew.",
+            price=-10
+        ),
+    }
+    
+    # WHEN: The Buy command is called
+    Buy(['stew']).do()
+    output = capsys.readouterr().out
+
+    # THEN: The player aquires the item
+    assert 'stew' in adventure.PLAYER.inventory, "The bought item should be in the player's inventory"
+
+    # AND: the item is removed from the place
+    assert 'stew' not in adventure.PLACES["shire"].inventory, "the bought item should no longer be at the place"
+
+    # AND: The player's gems are reduced by the cost of the item
+    assert adventure.PLAYER.inventory['gems'] == 40, "The place's gems should be increased by the cost of the item"
+
+    # AND: The place's gems are increased by the cost of the item
+    assert adventure.PLACES["shire"].inventory['gems'] == 10, "The players gems should be reduced by the cost of the item"
+
+    # AND: the player is informed
+    assert "You bought 1 Rabbit Stew for 10 gems" in output, "The player should be told they have bought the item"
+
+def test_buy_invalid_qty(capsys):
+    # GIVEN: A place that can "shop" and has a multiple items with a price, and a moneyed player
+    adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {'gems':50}
+    adventure.PLACES["shire"] = Place(
+        key="shire",
+        name="The Shire",
+        description="Buncha hobbits.",
+        can=['shop'],
+        inventory={'stew':2, 
+        } 
+    )
+    adventure.ITEMS = {
+        "stew": Item(
+            key="stew",
+            name="Rabbit Stew",
+            description="A bowl of rabbit stew.",
+            price=-10
+        ),
+    }
+    
+    # WHEN: The Buy command is called with a qty greater than the location's inventory
+    Buy(['stew', 3]).do()
+    output = capsys.readouterr().out
+
+    # THEN: The player should acquire 0 of the item
+    assert 'stew' not in adventure.PLAYER.inventory.keys(), "The invalid qty purchase should not be in the player's inventory"
+
+    # AND: the location's item qty should not change
+    assert adventure.PLACES["shire"].inventory['stew'] == 2, "The invalid qty purchase attempt should not change the location inv"
+
+    # AND: The player's gems should not change
+    assert adventure.PLAYER.inventory['gems'] == 50, "The invalid qty purchase should not change the player's gems"
+
+    # AND: The place's gems are increased by the cost of the item
+    assert 'gems' not in adventure.PLACES["shire"].inventory.keys(), "The invalid qty purchase should not change the place's gems"
+
+    # AND: the player is informed
+    assert "Sorry, there are not 3 Rabbit Stew here." in output, "The player should be told the location does not have the requested qty"
+
+def test_buy_qty(capsys):
+    # GIVEN: A place that can "shop" and has a multiple items with a price, and a moneyed player
+    adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {'gems':50}
+    adventure.PLACES["shire"] = Place(
+        key="shire",
+        name="The Shire",
+        description="Buncha hobbits.",
+        can=['shop'],
+        inventory={'stew':5, 
+        } 
+    )
+    adventure.ITEMS = {
+        "stew": Item(
+            key="stew",
+            name="Rabbit Stew",
+            description="A bowl of rabbit stew.",
+            price=-10
+        ),
+    }
+    
+    # WHEN: The Buy command is called with a qty >1
+    Buy(['stew', 3]).do()
+    output = capsys.readouterr().out
+
+    # THEN: The player acquires the qty of the item
+    assert adventure.PLAYER.inventory['stew'] == 3, "The bought item qty should be in the player's inventory"
+
+    # AND: the item is removed from the place
+    assert adventure.PLACES["shire"].inventory['stew'] == 2, "the bought item qty should be removed from the place"
+
+    # AND: The player's gems are reduced by the cost of the item
+    assert adventure.PLAYER.inventory['gems'] == 20, "The players gems should be reduced by the cost of the items"
+
+    # AND: The place's gems are increased by the cost of the item
+    assert adventure.PLACES["shire"].inventory['gems'] == 30, "The place's gems should be increased by the cost of the items"
+
+    # AND: the player is informed
+    assert "You bought 3 Rabbit Stew" in output, "The player should be told they have bought the item"
 
 # shlex.split('abc 123') == ['abc', '123']
 # shlex.split('abc "xyz blah"') == ['abc', 'xyz blah']

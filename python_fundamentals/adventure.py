@@ -1,4 +1,10 @@
-# you are on section 10.2, you need to finish the shop tests before moving to 10.3
+"""."""
+
+# You are on 10.4
+# all the player commands use the item keys,\
+# but the text displayed to the player is the item names
+# you should do something to fix that
+# TODO generate this dynamically with a dunder method called "subclasses" or somesuch: line 511
 
 from multiprocessing.dummy import current_process
 from sys import stderr
@@ -240,13 +246,17 @@ ITEMS = {
         name="your bed",
         description="Some cloth stuffed with hay. Hardly any bugs.",
     ),
+    "gems": Item(
+        key="gems",
+        name="gems",
+        description="The realm's primary currency. They also look pretty.",
+    ),
 }
 
-# TODO ask alissa how to do properties for player.place
 PLAYER = Player(
     place="home",
     # place=PLACES.get("home"),
-    inventory={},
+    inventory={'gems':50,},
 )
 
 COMPASS = ['north','east','south','west']
@@ -288,14 +298,12 @@ def header(title):
     print()
 
 class Quit(Command):
-
     def do(self):
         """Ends the game"""
         write("Goodbye.")
         quit()
 
 class Look(Command):
-
     def do(self):
         """Lists the items present in the current location, and all nearby locations"""
 
@@ -319,16 +327,16 @@ class Look(Command):
                 write(f"To the {direction} is {Place.get(nearby_name).name}.")
 
 class Shop(Command):
-
     def do(self):
         """Does the shop, duh"""
-        header("Whater you buyin'?\n")
 
         current_place = self.player_place
 
         if not current_place.place_can('shop'):
             error(f"Sorry, you can't shop here.")
             return
+
+        header("Whater you buyin'?\n")
 
         for key, qty in current_place.inventory.items():
             item = ITEMS.get(key)
@@ -337,6 +345,53 @@ class Shop(Command):
                 write(f"${abs(item.price):>2d}. {item.name.title()} x{qty} : {item.description}")
 
         print()
+
+class Buy(Command):
+    def do(self):
+        """Exchanges the players gems for items in shops"""
+
+        current_place = self.player_place
+
+        if not current_place.place_can('shop'):
+            error(f"Sorry, you can't shop here.")
+            return    
+
+        if not self.args:
+            error("You cannot buy nothing.")
+            return
+
+        self.order_args_qty()
+
+        debug(f"Trying to buy: {self.args}")
+
+        target = self.args[0].lower()
+        target_item = Item.get(target)
+
+        qty = 1
+        if isinstance(self.args[-1], int):
+            qty = self.args[-1]
+
+        if not target_item.is_for_sale():
+            error("Sorry, that item is not for sale.")
+            return
+
+        if not current_place.has_item(target,qty):
+            error(f"Sorry, there are not {qty} {target_item.name} here.")
+            return
+
+        item_cost = abs(target_item.price) * qty
+
+        if PLAYER.inventory['gems'] - item_cost < 0:
+            error(f"Sorry, you do not have enough gems.")
+            return
+
+        PLAYER.add(target_item.key, qty)
+        PLAYER.remove('gems',item_cost)
+
+        current_place.remove(target_item.key, qty)
+        current_place.add('gems',item_cost)
+
+        wrap(f"You bought {qty} {target_item.name} for {item_cost} gems and put it in your bag.")
 
 class Go(Command):
     def do(self):
@@ -399,8 +454,8 @@ class Take(Command):
 
         current_place = self.player_place
 
-        if not current_place.has_item(target):
-            error(f"Sorry, there is no {target} here.")
+        if not current_place.has_item(target,qty):
+            error(f"Sorry, there are not {qty} {target} here.")
             return
 
         target_item = Item.get(target)
@@ -452,8 +507,9 @@ class Drop(Command):
             wrap(f"You dropped {qty} {name} on the ground.")
             return
 
-        error(f"You dont have a {name} to drop.")
+        error(f"You dont have {qty} {name} to drop.")
 
+# TODO generate this dynamically with a dunder method called "subclasses" or somesuch: line 511
 action_dict = {
     "q": Quit,
     "quit": Quit,
@@ -472,6 +528,8 @@ action_dict = {
     "i": Inventory,
     "drop": Drop,
     "d": Drop,
+    "buy": Buy,
+    "b": Buy,
 }
 
 def main():
@@ -501,6 +559,8 @@ def main():
 
             klass = action_dict[command]
             cmd = klass(args)
+            # TODO change things to make args positional
+            # cmd = klass(*args)
             try:
                 cmd.do()
             except (InvalidItemError) as e:
