@@ -1,10 +1,11 @@
 """."""
 
-# You are on 10.4
+# You are on 10.4 (you are on part C)
 # all the player commands use the item keys,\
 # but the text displayed to the player is the item names
 # you should do something to fix that
 # TODO generate this dynamically with a dunder method called "subclasses" or somesuch: line 511
+# TODO write test for the added functionality of the wrap() function
 
 from multiprocessing.dummy import current_process
 from sys import stderr
@@ -215,7 +216,7 @@ ITEMS = {
     "potion": Item(
         key="potion",
         name="healing potion",
-        description="A magical liquid that improves your life's outlook.",
+        description="A magical liquid that improves your life's outlook. The rest of this text is me testing my margins to see what I can do to make this all more readable.",
         price=-10,
     ),
     "lockpicks": Item(
@@ -227,7 +228,7 @@ ITEMS = {
     "dagger": Item(
         key="dagger",
         name="stabbing dagger",
-        description="A length of metal honed to a fine point.",
+        description="A length of metal honed to a fine point. The rest of this text is me testing my margins to see what I can do to make this all more readable.",
         price=-20,
     ),
     "desk": Item(
@@ -254,7 +255,8 @@ ITEMS = {
 }
 
 PLAYER = Player(
-    place="home",
+    # place="home",
+    place="market",
     # place=PLACES.get("home"),
     inventory={'gems':50,},
 )
@@ -275,13 +277,13 @@ def abort(message):
     error(message)
     exit(1)
 
-def wrap(text):
-    # print(MARGIN,text)
+def wrap(text, width=WIDTH, initial_indent=MARGIN, subsequent_indent=MARGIN):
+
     paragraph = textwrap.fill(
         text,
-        WIDTH,
-        initial_indent=MARGIN,
-        subsequent_indent=MARGIN
+        width,
+        initial_indent=initial_indent,
+        subsequent_indent=subsequent_indent
     )
     
     print(paragraph)
@@ -341,8 +343,15 @@ class Shop(Command):
         for key, qty in current_place.inventory.items():
             item = ITEMS.get(key)
             if item.is_for_sale():
-                #format this better {num:>80}
-                write(f"${abs(item.price):>2d}. {item.name.title()} x{qty} : {item.description}")
+
+                prefix_text = f"${abs(item.price):>2d}. {item.name.title()} x{qty} : "
+                full_text = f"{prefix_text}{item.description}"
+
+                prefix_len = ' ' * len(f"{MARGIN}{prefix_text}")
+
+                wrap(text=full_text,
+                     subsequent_indent=prefix_len
+                )
 
         print()
 
