@@ -1,6 +1,6 @@
 """."""
 
-# You are on 10.4 (you are on part C)
+# You are on 11 - check that you have all the listed ones
 # all the player commands use the item keys,\
 # but the text displayed to the player is the item names
 # you should do something to fix that
@@ -215,7 +215,7 @@ ITEMS = {
     "potion": Item(
         key="potion",
         name="healing potion",
-        description="A magical liquid that improves your life's outlook. The rest of this text is me testing my margins to see what I can do to make this all more readable.",
+        description="A magical liquid that improves your life's outlook.",
         price=-10,
     ),
     "lockpicks": Item(
@@ -227,7 +227,7 @@ ITEMS = {
     "dagger": Item(
         key="dagger",
         name="stabbing dagger",
-        description="A length of metal honed to a fine point. The rest of this text is me testing my margins to see what I can do to make this all more readable.",
+        description="A length of metal honed to a fine point.",
         price=-20,
     ),
     "desk": Item(
@@ -435,20 +435,28 @@ class Examine(Command):
 
         name = self.args[0].lower()
         current_place = self.player_place
-
-        if not (current_place.has_item(name) or
-                PLAYER.has_item(name)):
-            error(f"There is no {name} in {current_place.name.lower()}.")
-            return
-
         item = Item.get(name)
 
-        header(item.name.title())
-        wrap(item.description)
+        if current_place.has_item(name):
+            header(item.name.title())
+            
+            if current_place.place_can('shop') and item.is_for_sale():
+                wrap(f"{item.description} The shop has {current_place.inventory[item.key]}, you can buy one for {abs(item.price)} gems.")
+                return
+            
+            wrap(item.description)
+            return
+
+        if PLAYER.has_item(name):
+            header(item.name.title())
+            wrap(item.description)
+            return
+            
+        error(f"There is no {name} in {current_place.name.lower()}.")
 
 class Take(Command):
     def do(self):
-        """Removes the specified item from the loaction and adds to inventory"""
+        """Removes the specified item from the location and adds to inventory"""
         if not self.args:
             error("You cannot take nothing.")
             return

@@ -185,6 +185,14 @@ def test_examine_missing_from_place_and_player_inv(capsys):
             inventory={}
         )
     }
+    adventure.ITEMS = {
+        "grass": Item(
+            key="grass",
+            name="grass blades",
+            description="It's grass.",
+            price=-10,
+        )
+    }
     
     # WHEN: The player tries to examine it
     Examine(['grass']).do()
@@ -268,6 +276,37 @@ def test_examine_missing_item(capsys):
 
     with pytest.raises(InvalidItemError) as info:
         Examine(['hills']).do()
+
+def test_examine_in_shop(capsys):
+    # GIVEN: That the item the player wants to examine is not in the player's inventorty
+    #        but is in the current place, and the current place is a shop
+    adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {}
+    adventure.PLACES = {
+        "shire": Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            inventory={'grass':3,'hills':1},
+            can=['shop']
+        )
+    }
+    adventure.ITEMS = {
+        "grass": Item(
+            key="grass",
+            name="grass blades",
+            description="It's grass.",
+            price=-10,
+        )
+    }
+
+    # WHEN: The player examines that item
+    Examine(['grass']).do()
+    output = capsys.readouterr().out
+
+    # THEN: The player should be told the description of the item and its price.
+    assert "It's grass. The shop has 3, you can buy one for 10 gems." in output, \
+        "An Examine target should print the item description. Also, if the location can shop, the quantity/price."
 
 def test_get_place_start(capsys):
     assert Command([]).player_place == adventure.PLACES[adventure.PLAYER.place], \
