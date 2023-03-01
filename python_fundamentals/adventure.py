@@ -4,8 +4,7 @@
 # all the player commands use the item keys,\
 # but the text displayed to the player is the item names
 # you should do something to fix that
-# TODO generate this dynamically with a dunder method called "subclasses" or somesuch: line 511
-# TODO write test for the added functionality of the wrap() function
+# TODO generate this dynamically with a dunder method called "subclasses" or somesuch: line 511 (do eventually)
 
 from multiprocessing.dummy import current_process
 from sys import stderr
@@ -255,8 +254,8 @@ ITEMS = {
 }
 
 PLAYER = Player(
-    # place="home",
-    place="market",
+    place="home",
+    # place="market",
     # place=PLACES.get("home"),
     inventory={'gems':50,},
 )
@@ -277,7 +276,10 @@ def abort(message):
     error(message)
     exit(1)
 
-def wrap(text, width=WIDTH, initial_indent=MARGIN, subsequent_indent=MARGIN):
+def wrap(text, width=None, initial_indent=None, subsequent_indent=None):
+    width = width or WIDTH
+    initial_indent = initial_indent or MARGIN
+    subsequent_indent = subsequent_indent or MARGIN
 
     paragraph = textwrap.fill(
         text,

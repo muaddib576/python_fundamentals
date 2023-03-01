@@ -18,6 +18,7 @@ from python_fundamentals.adventure import (
     debug,
     header,
     write,
+    wrap,
     Look,
     Take,
     Inventory,
@@ -30,6 +31,7 @@ PLAYER_STATE = deepcopy(adventure.PLAYER)
 PLACES_STATE = deepcopy(adventure.PLACES)
 ITEMS_STATE = deepcopy(adventure.ITEMS)
 MARGIN_STATE = deepcopy(adventure.MARGIN)
+WIDTH_STATE = deepcopy(adventure.WIDTH)
 
 
 def revert():
@@ -38,6 +40,7 @@ def revert():
     adventure.PLACES = deepcopy(PLACES_STATE)
     adventure.ITEMS = deepcopy(ITEMS_STATE)
     adventure.MARGIN = deepcopy(MARGIN_STATE)
+    adventure.WIDTH = deepcopy(WIDTH_STATE)
 
 
 @pytest.fixture(autouse=True)
@@ -129,7 +132,34 @@ def test_write(capsys):
 
     assert output == f"{adventure.MARGIN}write test\n"
 
+def test_wrap(capsys):
+    # GIVEN: The default WIDTH and MARGIN
+    adventure.WIDTH = 10
+    adventure.MARGIN = ' '*3
+
+    # WHEN: the wrap function is called
+    test_string = '*' * 14
+    wrap(test_string)
+    output = capsys.readouterr().out
+
+    # THEN: the default WIDTH and MARGIN are used
+    assert output == f"{adventure.MARGIN}*******\n{adventure.MARGIN}*******\n"
+
+def test_wrap_custom(capsys):
+    # WHEN: the wrap function is passed custom width and margin values
+    test_string = '*' * 11
+    width = 10
+    initial_indent = ' '*4
+    subsequent_indent = ' '*5
+
+    wrap(test_string, width, initial_indent, subsequent_indent)
+    output = capsys.readouterr().out
+
+    # THEN: the specified indent values are used
+    assert output == f"{initial_indent}******\n{subsequent_indent}*****\n"
+
 def test_go(capsys):
+    adventure.PLAYER.place = 'home'
     Go(['east']).do()
     output = capsys.readouterr().out
 
