@@ -270,7 +270,6 @@ def test_examine_missing_item(capsys):
         Examine(['hills']).do()
 
 def test_get_place_start(capsys):
-    
     assert Command([]).player_place == adventure.PLACES[adventure.PLAYER.place], \
         "Starting location should be 'your cottage'"
     
@@ -991,6 +990,7 @@ def test_buy_no_arg(capsys):
         description="Buncha hobbits.",
         can=['shop'],
     )
+
     # WHEN: The player calls buy with no argument
     Buy([]).do()
     output = capsys.readouterr().out
@@ -1015,26 +1015,6 @@ def test_buy_no_can(capsys):
     # THEN: the player is told they cannot shop here
     assert "Sorry, you can't shop here." in output, \
         "The player should be told they are unable to shop."
-
-def test_buy_no_shop(capsys):
-    # GIVEN: A place that cannot "shop"
-    adventure.PLAYER.place = 'shire'
-    adventure.PLACES["shire"] = Place(
-        key="shire",
-        name="The Shire",
-        description="Buncha hobbits.",
-        # can=['shop'],
-        inventory={'stew':1, 
-        } 
-    )
-    
-    # WHEN: The Buy command is called
-    Buy(['stew']).do()
-    output = capsys.readouterr().out
-
-    # THEN: the player is told they cannot shop here
-    assert "Sorry, you can't shop here." in output, \
-        "The player should not be told they are unable to shop."
 
 def test_buy_not_for_sale(capsys):
     # GIVEN: A place that can "shop" and has an inventory without a price
@@ -1225,7 +1205,7 @@ def test_buy_qty(capsys):
     Buy(['stew', 3]).do()
     output = capsys.readouterr().out
 
-    # THEN: The player acquires the qty of the item
+    # THEN: The player aquires the qty of the item
     assert adventure.PLAYER.inventory['stew'] == 3, "The bought item qty should be in the player's inventory"
 
     # AND: the item is removed from the place
