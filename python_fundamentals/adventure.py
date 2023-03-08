@@ -435,6 +435,7 @@ class Examine(Command):
 
         name = self.args[0].lower()
         current_place = self.player_place
+        # TODO the following line assumes that the item exists in the ITEMS dictionary. You should create a "no item here" message.
         item = Item.get(name)
 
         if current_place.has_item(name):
@@ -528,6 +529,22 @@ class Drop(Command):
 
         error(f"You dont have {qty} {name} to drop.")
 
+class Read(Command):
+    def do(self):
+        """Prints any writing on the specified item"""
+        if not self.args:
+            error("You cannot read nothing.")
+            return
+        
+        debug(f"Trying to read: {self.args}")
+
+        target = self.args[0].lower()
+        current_place = self.player_place
+
+        if not current_place.has_item(target) or PLAYER.has_item(target):
+            error(f"There is no {target} here.")
+
+
 # TODO generate this dynamically with a dunder method called "subclasses" or somesuch: line 511
 action_dict = {
     "q": Quit,
@@ -543,12 +560,14 @@ action_dict = {
     "t": Take,
     "take": Take,
     "grab": Take,
+    "i": Inventory,    
     "inventory": Inventory,
-    "i": Inventory,
+    "d": Drop,    
     "drop": Drop,
-    "d": Drop,
-    "buy": Buy,
     "b": Buy,
+    "buy": Buy,
+    "r": Read,
+    "read": Read,
 }
 
 def main():

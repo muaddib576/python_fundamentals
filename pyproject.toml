@@ -19,3 +19,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 test_paths = ["tests"]
+filterwarnings = [
+    "ignore",                 # ignore warnings
+    "default:::python_fundamentals"  # except triggered by this package
+]

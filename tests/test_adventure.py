@@ -25,6 +25,7 @@ from python_fundamentals.adventure import (
     Drop,
     Shop,
     Buy,
+    Read,
     )
 
 PLAYER_STATE = deepcopy(adventure.PLAYER)
@@ -103,6 +104,11 @@ def test_towards():
 
     # THEN: The linked location is returned
     assert destination == 'shire'
+
+def test_teardown():
+    """Test that item key added in previous test does not persist"""
+    assert "shire" not in adventure.PLACES, \
+        """Each test should have a fresh data set"""
 
 def test_error(capsys):
     error("error test")
@@ -1258,6 +1264,44 @@ def test_buy_qty(capsys):
 
     # AND: the player is informed
     assert "You bought 3 Rabbit Stew" in output, "The player should be told they have bought the item"
+
+def test_read_no_arg(capsys):
+    # WHEN: The player calls read with no argument
+    Read([]).do()
+    output = capsys.readouterr().out
+
+    # Then an error is displayed to the player
+    assert "Error: You cannot read nothing.\n" in output, \
+        "Passing no argument should throw an error"
+
+def test_read_no_item(capsys):
+    # GIVEN: a location and player inventory
+    adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {}
+    adventure.PLACES["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            inventory={}
+        )
+
+    # WHEN: the player tries to read an item that is not present
+    Read(['magazine']).do()
+    output = capsys.readouterr().out
+    
+    # THEN: the plater is told the item is not present
+    assert "There is no magazine here." in output, \
+        "The player should be told the desired item is not present"
+
+def test_read_no_writing():
+    ...
+
+def test_read():
+    ...
+
+def test_read_formatting():
+    # you might not need this, and instead could update the test_wrap() function
+    ...
 
 # shlex.split('abc 123') == ['abc', '123']
 # shlex.split('abc "xyz blah"') == ['abc', 'xyz blah']
