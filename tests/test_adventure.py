@@ -1293,11 +1293,121 @@ def test_read_no_item(capsys):
     assert "There is no magazine here." in output, \
         "The player should be told the desired item is not present"
 
-def test_read_no_writing():
-    ...
+def test_read_place_no_writing(capsys):
+    # GIVEN: a location with an item that has no writing
+    adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {}
+    adventure.PLACES["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            inventory={"stew":1}
+        )
+    adventure.ITEMS = {
+        "stew": Item(
+            key="stew",
+            name="Rabbit Stew",
+            description="A bowl of rabbit stew.",
+        )
+    }
 
-def test_read():
-    ...
+    # WHEN: the player tries to read the item without writing
+    Read(['stew']).do()
+    output = capsys.readouterr().out
+    
+    # THEN: the player is told the item has nothing to read
+    assert "There is nothing to read." in output, \
+        "The player should be told the item has nothing to read"
+
+def test_read_player_no_writing(capsys):
+    # GIVEN: a player inventory with an item that has no writing
+    adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {"stew":1}
+    adventure.PLACES["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            inventory={}
+        )
+    adventure.ITEMS = {
+        "stew": Item(
+            key="stew",
+            name="Rabbit Stew",
+            description="A bowl of rabbit stew.",
+        )
+    }
+
+    # WHEN: the player tries to read the item without writing
+    Read(['stew']).do()
+    output = capsys.readouterr().out
+    
+    # THEN: the player is told the item has nothing to read
+    assert "There is nothing to read." in output, \
+        "The player should be told the item has nothing to read"
+
+def test_read_place(capsys):
+    # GIVEN: a place inventory with an item that has writing
+    adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {}
+    adventure.PLACES["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            inventory={"magazine":1}
+        )
+    adventure.ITEMS = {
+        "magazine": Item(
+            key="magazine",
+            name="Old Magazine",
+            description="A popular magazine.",
+            writing={"title":"Hobbiton Times",
+                     "message":"blah blah blah blah blah",
+            },
+        )
+    }
+
+    # WHEN: the player tries to read the item with writing
+    Read(['magazine']).do()
+    output = capsys.readouterr().out
+    
+    # THEN: the player is told the title and message
+    assert "Hobbiton Times" in output, \
+        "The player should be told the item's title"
+    
+    assert "blah blah blah blah blah" in output, \
+        "The player should be told the item's message"
+
+def test_read_player(capsys):
+    # GIVEN: a player inventory with an item that has writing
+    adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {"magazine":1}
+    adventure.PLACES["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            inventory={}
+        )
+    adventure.ITEMS = {
+        "magazine": Item(
+            key="magazine",
+            name="Old Magazine",
+            description="A popular magazine.",
+            writing={"title":"Hobbiton Times",
+                     "message":"blah blah blah blah blah",
+            },
+        )
+    }
+
+    # WHEN: the player tries to read the item with writing
+    Read(['magazine']).do()
+    output = capsys.readouterr().out
+    
+    # THEN: the player is told the title and message
+    assert "Hobbiton Times" in output, \
+        "The player should be told the item's title"
+    
+    assert "blah blah blah blah blah" in output, \
+        "The player should be told the item's message"
 
 def test_read_formatting():
     # you might not need this, and instead could update the test_wrap() function

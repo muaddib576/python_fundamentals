@@ -1,6 +1,6 @@
 """."""
 
-# You are on 11 - check that you have all the listed ones
+# You are on 12
 # all the player commands use the item keys,\
 # but the text displayed to the player is the item names
 # you should do something to fix that
@@ -156,8 +156,9 @@ class Place(Collectable, Contents):
 
 
 class Item(Collectable):
-    def __init__(self, key, name, description, can_take=False, price=None):
+    def __init__(self, key, name, description, writing=None, can_take=False, price=None):
         super().__init__(key, name, description)
+        self.writing = writing
         self.can_take = can_take
         self.price = price
 
@@ -239,6 +240,9 @@ ITEMS = {
         key="book",
         name="a book",
         description="A hefty leather-bound tome open to an interesting passage.",
+        writing={'title':"Temp Title",
+                 'message':"This is a temporary message"
+        },
         can_take = True,
     ),
     "bed": Item(
@@ -541,9 +545,20 @@ class Read(Command):
         target = self.args[0].lower()
         current_place = self.player_place
 
-        if not current_place.has_item(target) or PLAYER.has_item(target):
+        if not (current_place.has_item(target) or PLAYER.has_item(target)):
             error(f"There is no {target} here.")
+            return
+        
+        target_item = Item.get(target)
 
+        if target_item.writing == None:
+            error("There is nothing to read.")
+            return
+
+        # this is possibly temporary, pending formatting decisions
+        wrap(target_item.writing["title"])
+        wrap(target_item.writing["message"])       
+        
 
 # TODO generate this dynamically with a dunder method called "subclasses" or somesuch: line 511
 action_dict = {
