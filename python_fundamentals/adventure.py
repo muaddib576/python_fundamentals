@@ -1,6 +1,6 @@
 """."""
 
-# You are on 12
+# You are on 12. Next up is formatting
 # all the player commands use the item keys,\
 # but the text displayed to the player is the item names
 # you should do something to fix that
@@ -240,8 +240,13 @@ ITEMS = {
         key="book",
         name="a book",
         description="A hefty leather-bound tome open to an interesting passage.",
-        writing={'title':"Temp Title",
-                 'message':"This is a temporary message"
+        writing={'title':"The book is open to a page that reads:",
+                 'message': ("The break in your line of fate may indicate "
+                             "a change in location or career.",
+
+                             "You have more than one life line, which may "
+                             "indicate you are a cat.",
+                 )
         },
         can_take = True,
     ),
@@ -285,14 +290,22 @@ def wrap(text, width=None, initial_indent=None, subsequent_indent=None):
     initial_indent = initial_indent or MARGIN
     subsequent_indent = subsequent_indent or MARGIN
 
-    paragraph = textwrap.fill(
-        text,
-        width,
-        initial_indent=initial_indent,
-        subsequent_indent=subsequent_indent
-    )
+    if isinstance(text, str):
+        text = (text,)
+
+    blocks = []
+
+    for stanza in text:
+        paragraph = textwrap.fill(
+            stanza,
+            width,
+            initial_indent=initial_indent,
+            subsequent_indent=subsequent_indent
+        )
+        
+        blocks.append(paragraph)
     
-    print(paragraph)
+    print(*blocks, sep="\n\n")
 
 def write(text):
     print(MARGIN, text, sep="")
@@ -555,9 +568,13 @@ class Read(Command):
             error("There is nothing to read.")
             return
 
-        # this is possibly temporary, pending formatting decisions
+        # read_contents = f"{target_item.writing["title"]}\n{target_item.writing["message"]}"
+
+        # wrap(read_contents, subsequent_indent=MARGIN*2)
+
         wrap(target_item.writing["title"])
-        wrap(target_item.writing["message"])       
+        print("\n")
+        wrap(target_item.writing["message"], initial_indent=MARGIN*2, subsequent_indent=MARGIN*2)       
         
 
 # TODO generate this dynamically with a dunder method called "subclasses" or somesuch: line 511
