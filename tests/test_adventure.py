@@ -762,15 +762,6 @@ def test_order_args_qty(args, expected):
     assert cmd.args == expected
     # assert Command(args).order_args_qty() == expected
 
-@pytest.mark.parametrize(
-    ["a", "b", "expected"], [
-    (1, 1, 2),
-    (2, 2, 4),
-])
-def test_example(a, b, expected):
-    assert a + b == expected
-
-
 def test_drop_no_arg(capsys):
     # WHEN: The player calls Drop with no argument
     Drop([]).do()
@@ -1409,9 +1400,25 @@ def test_read_player(capsys):
     assert "blah blah blah blah blah" in output, \
         "The player should be told the item's message"
 
-def test_read_formatting():
-    # you might not need this, and instead could update the test_wrap() function
+@pytest.mark.parametrize(
+    ["a", "b", "expected"], [
+    (1, 1, 2),
+    (2, 2, 4),
+])
+def test_example(a, b, expected):
+    assert a + b == expected
+
+@pytest.mark.parametrize(
+        ['start','amount','result','message'], [
+        (50, 10, 60, "A positive number should be added to health"),
+        (50, -10, 40, "A negative number should be subtracted from health"),
+        (50, -51, 0, "Heath should not drop below 0"),
+        (50, 51, 100, "Heath should not go above the max_health"),
+])
+
+def test_health_change():
     ...
+
 
 # shlex.split('abc 123') == ['abc', '123']
 # shlex.split('abc "xyz blah"') == ['abc', 'xyz blah']

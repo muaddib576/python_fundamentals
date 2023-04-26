@@ -1,6 +1,6 @@
 """."""
 
-# You are on 12. Next up is formatting
+# You are on 13.
 # all the player commands use the item keys,\
 # but the text displayed to the player is the item names
 # you should do something to fix that
@@ -568,12 +568,8 @@ class Read(Command):
             error("There is nothing to read.")
             return
 
-        # read_contents = f"{target_item.writing["title"]}\n{target_item.writing["message"]}"
-
-        # wrap(read_contents, subsequent_indent=MARGIN*2)
-
         wrap(target_item.writing["title"])
-        print("\n")
+        print()
         wrap(target_item.writing["message"], initial_indent=MARGIN*2, subsequent_indent=MARGIN*2)       
         
 
