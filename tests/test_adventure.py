@@ -1409,15 +1409,22 @@ def test_example(a, b, expected):
     assert a + b == expected
 
 @pytest.mark.parametrize(
-        ['start','amount','result','message'], [
+        ['start','amount','expected','message'], [
         (50, 10, 60, "A positive number should be added to health"),
         (50, -10, 40, "A negative number should be subtracted from health"),
         (50, -51, 0, "Heath should not drop below 0"),
-        (50, 51, 100, "Heath should not go above the max_health"),
+        (50, 51, adventure.PLAYER.MAX_HEALTH, "Health should not go above the {adventure.PLAYER.MAX_HEALTH}"),
 ])
+def test_change_health(start, amount, expected, message):
+    # GIVEN: the player's initial health
+    adventure.PLAYER.current_health = start
 
-def test_health_change():
-    ...
+    # WHEN: the health_change method is called
+    adventure.PLAYER.change_health(amount)
+    
+    # THEN: the player's health should be changed by the # passed to health_change
+    assert adventure.PLAYER.current_health == expected, message
+
 
 
 # shlex.split('abc 123') == ['abc', '123']

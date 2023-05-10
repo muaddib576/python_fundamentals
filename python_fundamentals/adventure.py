@@ -1,6 +1,6 @@
 """."""
 
-# You are on 13.
+# You mostly finished 13, but see BAR TODO
 # all the player commands use the item keys,\
 # but the text displayed to the player is the item names
 # you should do something to fix that
@@ -9,11 +9,18 @@
 from multiprocessing.dummy import current_process
 from sys import stderr
 from console import fg, bg, fx
+from console.progress import ProgressBar
 import textwrap
 
 WIDTH = 60
 MARGIN = ' '*3
 DEBUG = True
+BAR = ProgressBar(
+    # TODO remove the hardcoded 100 so you can reference the Player class' MAX_HEALTH
+    total=(100 + .1),
+    width=(WIDTH - len("Health") - len("100%")),
+    clear_left=False,
+)
 
 class InvalidItemError(Exception):
     ...
@@ -63,6 +70,11 @@ class Command():
                 ordered_args = [x] + ordered_args
         
         self.args = ordered_args
+
+    def health_bar(self):
+        """Displays the current health bar"""
+        print()
+        write(f"Health {BAR(PLAYER.current_health)}")
 
 class Collectable():
     """Base class for objects with collections"""
@@ -177,9 +189,20 @@ class Item(Collectable):
         return self.price != None
 
 class Player(Contents):
-    def __init__(self, place=None, inventory={}):
+    MAX_HEALTH = 100
+    def __init__(self, place=None, current_health=None, inventory={}):
         self.place = place
+        self.current_health = current_health
         self.inventory = inventory
+
+    def change_health(self, amount):
+        """Adjusts the players health by the given amount. Does not drop below 0 or above max."""
+        self.current_health += amount
+
+        if self.current_health > self.MAX_HEALTH:
+            self.current_health = self.MAX_HEALTH
+        elif self.current_health < 0:
+            self.current_health = 0
 
 PLACES = {
     "home": Place(
@@ -264,8 +287,7 @@ ITEMS = {
 
 PLAYER = Player(
     place="home",
-    # place="market",
-    # place=PLACES.get("home"),
+    current_health = 100,
     inventory={'gems':50,},
 )
 
@@ -508,9 +530,11 @@ class Take(Command):
 
 class Inventory(Command):
     def do(self):
-        """Displayes the current contents of the player inventory"""
+        """Displays the current contents of the player inventory"""
 
         debug("Trying to show player inventory.")
+
+        self.health_bar()
 
         if not PLAYER.inventory:
             write("Inventory empty.")
