@@ -1,6 +1,6 @@
 """."""
 
-# You mostly finished 13, but see BAR TODO
+# You are on part 14. Plan is to add the dragon(s) as an subclass of the Items class and Contents
 # all the player commands use the item keys,\
 # but the text displayed to the player is the item names
 # you should do something to fix that
@@ -15,9 +15,9 @@ import textwrap
 WIDTH = 60
 MARGIN = ' '*3
 DEBUG = True
+MAX_HEALTH = 100
 BAR = ProgressBar(
-    # TODO remove the hardcoded 100 so you can reference the Player class' MAX_HEALTH
-    total=(100 + .1),
+    total=(MAX_HEALTH + .1),
     width=(WIDTH - len("Health") - len("100%")),
     clear_left=False,
 )
@@ -128,8 +128,6 @@ class Place(Collectable, Contents):
         self.can = can
         self.inventory = inventory
 
-
-
     def go(self, direction):
         """Validates the requested direction and updates player location"""
         if direction not in COMPASS:
@@ -189,7 +187,6 @@ class Item(Collectable):
         return self.price != None
 
 class Player(Contents):
-    MAX_HEALTH = 100
     def __init__(self, place=None, current_health=None, inventory={}):
         self.place = place
         self.current_health = current_health
@@ -535,6 +532,8 @@ class Inventory(Command):
         debug("Trying to show player inventory.")
 
         self.health_bar()
+
+        print()
 
         if not PLAYER.inventory:
             write("Inventory empty.")

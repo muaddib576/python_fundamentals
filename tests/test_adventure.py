@@ -1425,6 +1425,26 @@ def test_change_health(start, amount, expected, message):
     # THEN: the player's health should be changed by the # passed to health_change
     assert adventure.PLAYER.current_health == expected, message
 
+def test_pet_no_arg():
+    ...
+
+def test_pet_cant():
+    ...
+
+def test_pet_no_color():
+    ...
+
+def test_pet_invalid_color():
+    ...
+
+def test_pet_cheerful():
+    ...
+
+def test_pet_cranky():
+    ...
+
+def test_pet_lonely():
+    ...
 
 
 # shlex.split('abc 123') == ['abc', '123']
