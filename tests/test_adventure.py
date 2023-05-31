@@ -2,6 +2,7 @@ from copy import deepcopy
 import pytest
 import python_fundamentals.adventure as adventure
 from python_fundamentals.adventure import (
+    MAX_HEALTH,
     ITEMS,
     PLACES,
     PLAYER,
@@ -26,6 +27,7 @@ from python_fundamentals.adventure import (
     Shop,
     Buy,
     Read,
+    Pet,
     )
 
 PLAYER_STATE = deepcopy(adventure.PLAYER)
@@ -1413,7 +1415,7 @@ def test_example(a, b, expected):
         (50, 10, 60, "A positive number should be added to health"),
         (50, -10, 40, "A negative number should be subtracted from health"),
         (50, -51, 0, "Heath should not drop below 0"),
-        (50, 51, adventure.PLAYER.MAX_HEALTH, "Health should not go above the {adventure.PLAYER.MAX_HEALTH}"),
+        (50, 51, MAX_HEALTH, "Health should not go above {MAX_HEALTH}"),
 ])
 def test_change_health(start, amount, expected, message):
     # GIVEN: the player's initial health
@@ -1425,26 +1427,60 @@ def test_change_health(start, amount, expected, message):
     # THEN: the player's health should be changed by the # passed to health_change
     assert adventure.PLAYER.current_health == expected, message
 
-def test_pet_no_arg():
-    ...
+def test_pet_no_arg(capsys):
+    Pet([]).do()
+    output = capsys.readouterr().out
 
-def test_pet_cant():
-    ...
+    assert "Error: You cannot pet nothing.\n" in output, \
+        "Passing no argument should throw an error"
+
+def test_pet_cant(capsys):
+    # GIVEN: a place where you can't pet anything
+    adventure.PLAYER.place = 'shire'
+    adventure.PLACES["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            can=[],
+        )
+    
+    # WHEN: the player tries to pet anything
+    Pet(['kitty']).do()
+    output = capsys.readouterr().out
+    
+    # THEN: the player is told they cannot pet at this location
+    assert "You cannot do that here." in output, \
+        "The player should be told petting isn't an option at the current location"
 
 def test_pet_no_color():
     ...
+    # GIVEN: The player is at a location that accepts petting
+    # WHEN: The player tries to pet but does not specify the color
+    # THEN: The player is told they must specify
 
 def test_pet_invalid_color():
     ...
+    # GIVEN:
+    # WHEN:
+    # THEN:
 
 def test_pet_cheerful():
     ...
+    # GIVEN:
+    # WHEN:
+    # THEN:
 
 def test_pet_cranky():
     ...
+    # GIVEN:
+    # WHEN:
+    # THEN:
 
 def test_pet_lonely():
     ...
+    # GIVEN:
+    # WHEN:
+    # THEN:
 
 
 # shlex.split('abc 123') == ['abc', '123']

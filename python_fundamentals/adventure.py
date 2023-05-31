@@ -1,6 +1,6 @@
 """."""
 
-# You are on part 14. Plan is to add the dragon(s) as an subclass of the Items class and Contents
+# You are on part 14.4 (maybe you can instantiate the dragons as colors, and then randomly assigned the moods from a list that gets popped when the player Pets each one?)
 # all the player commands use the item keys,\
 # but the text displayed to the player is the item names
 # you should do something to fix that
@@ -196,10 +196,22 @@ class Player(Contents):
         """Adjusts the players health by the given amount. Does not drop below 0 or above max."""
         self.current_health += amount
 
-        if self.current_health > self.MAX_HEALTH:
-            self.current_health = self.MAX_HEALTH
+        if self.current_health > MAX_HEALTH:
+            self.current_health = MAX_HEALTH
         elif self.current_health < 0:
             self.current_health = 0
+
+class Dragon(Item, Contents):
+    def __init__(self, key, name, description):
+        super().__init__(key, name, description)
+
+DRAGONS = {
+    "red": Dragon(
+        key="red",
+        name="Red Dragon",
+        description="It's red.",
+    ),
+}
 
 PLACES = {
     "home": Place(
@@ -594,7 +606,19 @@ class Read(Command):
         wrap(target_item.writing["title"])
         print()
         wrap(target_item.writing["message"], initial_indent=MARGIN*2, subsequent_indent=MARGIN*2)       
-        
+
+class Pet(Command):
+    def do(self):
+        """Performs the Pet action on the specified dragon"""
+        if not self.args:
+            error("You cannot pet nothing.")
+            return
+
+        current_place = self.player_place
+
+        if not current_place.place_can('pet'):
+            error(f"You cannot do that here.")
+            return
 
 # TODO generate this dynamically with a dunder method called "subclasses" or somesuch: line 511
 action_dict = {
