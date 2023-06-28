@@ -1,6 +1,6 @@
 """."""
 
-# You are on part 14.4 (maybe you can instantiate the dragons as colors, and then randomly assigned the moods from a list that gets popped when the player Pets each one?)
+# You are on part 14.5 (maybe you can instantiate the dragons as colors, and then randomly assigned the moods from a list that gets popped when the player Pets each one?)
 # all the player commands use the item keys,\
 # but the text displayed to the player is the item names
 # you should do something to fix that
@@ -619,6 +619,26 @@ class Pet(Command):
         if not current_place.place_can('pet'):
             error(f"You cannot do that here.")
             return
+        
+        target_set = False
+        for word in ['head','dragon']:
+            if word in self.args: #TODO you need to lower the args
+                self.args.remove(word)
+                target_set = True
+        
+        if not target_set:
+            error("What are you trying to pet?")
+            return
+        
+        if not self.args:
+            error("Which dragon's head do you want to pet?")
+            return
+
+        color = self.args[0].lower()
+
+        if color not in DRAGONS.keys():
+            error("You do not see such dragon.")
+            return
 
 # TODO generate this dynamically with a dunder method called "subclasses" or somesuch: line 511
 action_dict = {
@@ -643,6 +663,8 @@ action_dict = {
     "buy": Buy,
     "r": Read,
     "read": Read,
+    "p": Pet,
+    "pet": Pet,
 }
 
 def main():

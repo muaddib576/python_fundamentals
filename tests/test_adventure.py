@@ -6,12 +6,14 @@ from python_fundamentals.adventure import (
     ITEMS,
     PLACES,
     PLAYER,
+    DRAGONS,
     Contents,
     Go,
     Examine,
     Command,
     Place,
     Item,
+    Dragon,
     InvalidItemError,
     InvalidPlaceError,
     error,
@@ -32,6 +34,7 @@ from python_fundamentals.adventure import (
 
 PLAYER_STATE = deepcopy(adventure.PLAYER)
 PLACES_STATE = deepcopy(adventure.PLACES)
+DRAGONS_STATE = deepcopy(adventure.DRAGONS)
 ITEMS_STATE = deepcopy(adventure.ITEMS)
 MARGIN_STATE = deepcopy(adventure.MARGIN)
 WIDTH_STATE = deepcopy(adventure.WIDTH)
@@ -41,6 +44,7 @@ def revert():
     """Revert game data to its original state."""
     adventure.PLAYER = deepcopy(PLAYER_STATE)
     adventure.PLACES = deepcopy(PLACES_STATE)
+    adventure.DRAGONS = deepcopy(DRAGONS_STATE)
     adventure.ITEMS = deepcopy(ITEMS_STATE)
     adventure.MARGIN = deepcopy(MARGIN_STATE)
     adventure.WIDTH = deepcopy(WIDTH_STATE)
@@ -1452,17 +1456,66 @@ def test_pet_cant(capsys):
     assert "You cannot do that here." in output, \
         "The player should be told petting isn't an option at the current location"
 
-def test_pet_no_color():
-    ...
+def test_pet_no_target(capsys):
     # GIVEN: The player is at a location that accepts petting
-    # WHEN: The player tries to pet but does not specify the color
-    # THEN: The player is told they must specify
+    adventure.PLAYER.place = 'shire'
+    adventure.PLACES["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            can=['pet'],
+        )
+    
+    # WHEN: The player tries to pet but does not specify the 'dragon' or 'head'
+    Pet(['red']).do()
+    output = capsys.readouterr().out
 
-def test_pet_invalid_color():
-    ...
-    # GIVEN:
-    # WHEN:
-    # THEN:
+    # THEN: The player is told they must specify
+    assert "What are you trying to pet?" in output, \
+        "If 'dragon' or 'head' is not specified, the player should be told to specify the target for the pets."
+
+def test_pet_no_color(capsys):
+    # GIVEN: The player is at a location that accepts petting
+    adventure.PLAYER.place = 'shire'
+    adventure.PLACES["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            can=['pet'],
+        )
+    
+    # WHEN: The player tries to pet but does not specify the color
+    Pet(['dragon', 'head']).do()
+    output = capsys.readouterr().out
+
+    # THEN: The player is told they must specify
+    assert "Which dragon's head do you want to pet?" in output, \
+        "The player should be told they must specify which dragon they want to pet."
+
+def test_pet_invalid_color(capsys):
+    # GIVEN: The player is at a location that accepts petting and a list of valid colors
+    adventure.PLAYER.place = 'shire'
+    adventure.PLACES["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            can=['pet'],
+        )
+    adventure.DRAGONS = {
+            "red": Dragon(
+                key="red",
+                name="Red Dragon",
+                description="It's red.",
+            ),
+        }
+    
+    # WHEN: The player tries to pet but does not specify a valid color
+    Pet(['beige', 'head']).do()
+    output = capsys.readouterr().out
+
+    # THEN: The player is told the color is invalid
+    assert "You do not see such dragon." in output, \
+        "The player should be told the color is not valid."
 
 def test_pet_cheerful():
     ...
