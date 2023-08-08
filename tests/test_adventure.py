@@ -1514,8 +1514,17 @@ def test_pet_invalid_color(capsys):
     output = capsys.readouterr().out
 
     # THEN: The player is told the color is invalid
-    assert "You do not see such dragon." in output, \
+    assert "You do not see such a dragon." in output, \
         "The player should be told the color is not valid."
+
+def test_dragon():
+    dragon = Dragon(
+                key="red",
+                name="Red Dragon",
+                description="It's red.",
+            )
+    
+    breakpoint()
 
 def test_pet_cheerful():
     ...
@@ -1525,7 +1534,7 @@ def test_pet_cheerful():
 
 def test_pet_cranky():
     ...
-    # GIVEN:
+# GIVEN:
     # WHEN:
     # THEN:
 

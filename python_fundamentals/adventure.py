@@ -1,6 +1,6 @@
 """."""
 
-# You are on part 14.5 (maybe you can instantiate the dragons as colors, and then randomly assigned the moods from a list that gets popped when the player Pets each one?)
+# You are on part 14.5 (you created the constructor logic to randomly assign each mood to each dragon. You NEED to write tests for that. Also the way it was written SHOULD allow for a new dragon to be instantiated in the test
 # all the player commands use the item keys,\
 # but the text displayed to the player is the item names
 # you should do something to fix that
@@ -11,6 +11,7 @@ from sys import stderr
 from console import fg, bg, fx
 from console.progress import ProgressBar
 import textwrap
+from random import choice
 
 WIDTH = 60
 MARGIN = ' '*3
@@ -202,14 +203,48 @@ class Player(Contents):
             self.current_health = 0
 
 class Dragon(Item, Contents):
-    def __init__(self, key, name, description):
+    MOODS = [
+        {"mood": "cheerful", "treasure": [3, 15], "damage": []},
+        {"mood": "grumpy", "treasure": [], "damage": [3, 15]},
+        {"mood": "lonely", "treasure": [8, 25], "damage": [8, 25]},
+    ]
+
+    def __init__(self, key, name, description, mood=None, treasure=None, damage=None):
         super().__init__(key, name, description)
+        self.mood = mood
+        self.treasure = treasure
+        self.damage = damage
+        self._init_mood()
+        
+    def _init_mood(self):
+        if not self.__class__.MOODS:
+            return
+
+        mood = choice(self.__class__.MOODS)
+
+        self.mood = self.mood or mood["mood"]
+        self.treasure = self.treasure or mood["treasure"]
+        self.damage = self.damage or mood["damage"]
+        self.__class__.MOODS.remove(mood)
 
 DRAGONS = {
     "red": Dragon(
         key="red",
-        name="Red Dragon",
+        name="Red Dragon Head",
         description="It's red.",
+        # mood="",
+        # damage=(),
+        # treasure=(),
+    ),
+    "black": Dragon(
+        key="black",
+        name="Black Dragon Head",
+        description="It's black.",
+    ),
+    "silver": Dragon(
+        key="silver",
+        name="Silver Dragon Head",
+        description="It's silver.",
     ),
 }
 
@@ -229,6 +264,7 @@ PLACES = {
         name="Town Square",
         description="The square part of town.",
         north="market",
+        east="woods",
         west="home",
     ),
     "market": Place(
@@ -241,6 +277,27 @@ PLACES = {
         inventory={'potion':5,
                    'dagger':1,
         },
+    ),
+    "woods": Place(
+        key="woods",
+        name="The Woods",
+        description="Significantly more trees than the Town.",
+        east="hill",
+        west="town-square",
+    ),
+    "hill": Place(
+        key="hill",
+        name="Grassy hill",
+        description="The trees have given way to an expansive hill covered in rustling grass.",
+        west="woods",
+        south="cave",
+    ),
+    "cave": Place(
+        key="cave",
+        name="Foreboding Cave",
+        description="A big ol' cave entrance.",
+        north="hill",
+        can=['pet'],
     ),
 }
 
@@ -637,7 +694,7 @@ class Pet(Command):
         color = self.args[0].lower()
 
         if color not in DRAGONS.keys():
-            error("You do not see such dragon.")
+            error("You do not see such a dragon.")
             return
 
 # TODO generate this dynamically with a dunder method called "subclasses" or somesuch: line 511
