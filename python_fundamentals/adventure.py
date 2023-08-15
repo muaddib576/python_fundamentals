@@ -1,6 +1,6 @@
 """."""
 
-# You are on part 14.5 (you created the constructor logic to randomly assign each mood to each dragon. You NEED to write tests for that. Also the way it was written SHOULD allow for a new dragon to be instantiated in the test
+# You are on part 14.7
 # all the player commands use the item keys,\
 # but the text displayed to the player is the item names
 # you should do something to fix that
@@ -11,7 +11,7 @@ from sys import stderr
 from console import fg, bg, fx
 from console.progress import ProgressBar
 import textwrap
-from random import choice
+from random import choice, randint
 
 WIDTH = 60
 MARGIN = ' '*3
@@ -696,6 +696,17 @@ class Pet(Command):
         if color not in DRAGONS.keys():
             error("You do not see such a dragon.")
             return
+        
+        target_dragon = DRAGONS[color]
+
+        wrap(f"You pet the {target_dragon.key} head, it seems {target_dragon.mood}.")
+
+        treasure_range = target_dragon.treasure or [0,0]
+        treasure_amount = randint(*treasure_range)
+
+        if treasure_amount != 0:
+            PLAYER.add('gems', treasure_amount)
+            wrap(f"The dragon gives you {treasure_amount} gems!")
 
 # TODO generate this dynamically with a dunder method called "subclasses" or somesuch: line 511
 action_dict = {

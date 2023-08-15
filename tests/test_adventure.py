@@ -1517,28 +1517,129 @@ def test_pet_invalid_color(capsys):
     assert "You do not see such a dragon." in output, \
         "The player should be told the color is not valid."
 
-def test_dragon():
-    dragon = Dragon(
-                key="red",
-                name="Red Dragon",
-                description="It's red.",
+def test_pet(capsys):
+    # GIVEN: A dragon and a mood, and a player at a location that allows petting
+    adventure.PLAYER.place = 'mountain'
+    adventure.PLACES["mountain"] = Place(
+            key="mountain",
+            name="The Misty Mountain",
+            description="Big ol rock.",
+            can=['pet'],
+        )
+    adventure.Dragon.MOODS = [
+        {"mood": "moody", "treasure": [], "damage": []}
+    ]
+    adventure.DRAGONS = {
+            "purple": Dragon(
+                key="purple",
+                name="Purple Dragon",
+                description="It's purple.",
             )
+    }
     
-    breakpoint()
+    # WHEN: the player pets the dragon
+    Pet(['purple', 'head']).do()
+    output = capsys.readouterr().out
 
-def test_pet_cheerful():
+    # THEN: the mood is assigned, the player is told, and the mood is removed
+    assert "You pet the purple head, it seems moody." in output, \
+        "The player should be told they pet the head and the mood"
+
+def test_moods_assignment():
+    # GIVEN: A dragon and a mood
+    adventure.Dragon.MOODS = [
+        {"mood": "moody", "treasure": [1,1], "damage": [2,2]}
+    ]
+    adventure.DRAGONS = {
+            "purple": Dragon(
+                key="purple",
+                name="Purple Dragon",
+                description="It's purple.",
+            )
+    }
+    
+    # THEN: the instantiated dragon should have the mood assigned, and the mood should be removed
+    assert adventure.DRAGONS["purple"].mood == "moody", "The mood should be assigned"
+    assert adventure.DRAGONS["purple"].treasure == [1,1], "The treasure should be assigned"
+    assert adventure.DRAGONS["purple"].damage == [2,2], "The damage should be assigned"
+    assert {"mood": "moody", "treasure": [], "damage": []} not in adventure.Dragon.MOODS, \
+        "The mood should be removed from the list after assignment"
+
+def test_pet_treasure(capsys):
+    # GIVEN: A dragon with treasure
+    adventure.PLAYER.place = 'mountain'
+    adventure.PLAYER.inventory = {'gems':10}
+    adventure.PLACES["mountain"] = Place(
+            key="mountain",
+            name="The Misty Mountain",
+            description="Big ol rock.",
+            can=['pet'],
+        )
+    adventure.DRAGONS = {
+            "purple": Dragon(
+                key="purple",
+                name="Purple Dragon",
+                description="It's purple.",
+                mood="generous",
+                treasure=[5, 5],
+                damage=[]
+            )
+    }
+
+    # WHEN: the player pets the dragon
+    Pet(['purple', 'head']).do()
+    output = capsys.readouterr().out
+
+    # THEN: The player should receive some gems and be told about it.
+    assert adventure.PLAYER.inventory['gems'] == 15, \
+        "The gems should be added to the player's inventory"
+    assert "5 gems" in output, \
+        "The player should be told they received gems"
+
+def test_pet_no_treasure(capsys):
+    # GIVEN: A dragon with no treasure
+    adventure.PLAYER.place = 'mountain'
+    adventure.PLAYER.inventory = {'gems':10}
+    adventure.PLACES["mountain"] = Place(
+            key="mountain",
+            name="The Misty Mountain",
+            description="Big ol rock.",
+            can=['pet'],
+        )
+    adventure.DRAGONS = {
+            "purple": Dragon(
+                key="purple",
+                name="Purple Dragon",
+                description="It's purple.",
+                mood="generous",
+                treasure=[],
+                damage=[]
+            )
+    }
+
+    # WHEN: the player pets the dragon
+    Pet(['purple', 'head']).do()
+    output = capsys.readouterr().out
+
+    # THEN: The player should not receive gems, and not be told about it.
+    assert adventure.PLAYER.inventory['gems'] == 10, \
+        "The players gems should be unchanged"
+    assert "The dragon gives you" not in output, \
+        "The player should not be told they received gems"
+
+def test_pet_damage():
     ...
     # GIVEN:
     # WHEN:
     # THEN:
 
-def test_pet_cranky():
+def test_pet_no_damage():
     ...
-# GIVEN:
+    # GIVEN:
     # WHEN:
     # THEN:
 
-def test_pet_lonely():
+def test_pet_treasure_and_damage():
     ...
     # GIVEN:
     # WHEN:
