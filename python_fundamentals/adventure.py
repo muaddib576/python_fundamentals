@@ -1,6 +1,6 @@
 """."""
 
-# You are on part 14.7
+# You are on part 14.8
 # all the player commands use the item keys,\
 # but the text displayed to the player is the item names
 # you should do something to fix that
@@ -98,10 +98,8 @@ class Contents():
     
     def add(self, item, qty=1): 
         """Adds X item"""
-        if self.has_item(item, qty):
-            self.inventory[item] += qty
-        else:
-            self.inventory.setdefault(item, qty)
+        self.inventory.setdefault(item, 0)
+        self.inventory[item] += qty
 
     def remove(self, item, qty=1):
         """Remove X item"""
@@ -704,9 +702,18 @@ class Pet(Command):
         treasure_range = target_dragon.treasure or [0,0]
         treasure_amount = randint(*treasure_range)
 
-        if treasure_amount != 0:
+        if treasure_amount:
             PLAYER.add('gems', treasure_amount)
             wrap(f"The dragon gives you {treasure_amount} gems!")
+
+        damage_range = target_dragon.damage or [0,0]
+        damage_amount = randint(*damage_range)
+
+        if damage_amount:
+            PLAYER.change_health(-damage_amount)
+            wrap(f"The dragon head snorts fire at you, dealing {damage_amount} damage!")
+
+
 
 # TODO generate this dynamically with a dunder method called "subclasses" or somesuch: line 511
 action_dict = {

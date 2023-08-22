@@ -170,6 +170,23 @@ def test_wrap_custom(capsys):
     # THEN: the specified indent values are used
     assert output == f"{initial_indent}******\n{subsequent_indent}*****\n"
 
+@pytest.mark.parametrize(
+        ['start','amount','expected','message'], [
+        (10, 1, 11, ""),
+        (10, 10, 20, ""),
+        (10, 11, 21, ""),
+        (10, 15, 25, ""),
+])
+def test_add(start, amount, expected, message):
+    # GIVEN: the player's initial gems
+    adventure.PLAYER.inventory = {'gems':start}
+
+    # WHEN: the add method is called
+    adventure.PLAYER.add('gems', amount)
+    
+    # THEN: the player's health should be changed by the # passed to health_change
+    assert adventure.PLAYER.inventory['gems'] == expected, message
+
 def test_go(capsys):
     adventure.PLAYER.place = 'home'
     Go(['east']).do()
@@ -1627,24 +1644,103 @@ def test_pet_no_treasure(capsys):
     assert "The dragon gives you" not in output, \
         "The player should not be told they received gems"
 
-def test_pet_damage():
-    ...
-    # GIVEN:
-    # WHEN:
-    # THEN:
+def test_pet_damage(capsys):
+    # GIVEN: A dragon with that does damage
+    adventure.PLAYER.place = 'mountain'
+    adventure.PLAYER.current_health = 50
+    adventure.PLACES["mountain"] = Place(
+            key="mountain",
+            name="The Misty Mountain",
+            description="Big ol rock.",
+            can=['pet'],
+        )
+    adventure.DRAGONS = {
+            "purple": Dragon(
+                key="purple",
+                name="Purple Dragon",
+                description="It's purple.",
+                mood="generous",
+                treasure=[],
+                damage=[7,7]
+            )
+    }
 
-def test_pet_no_damage():
-    ...
-    # GIVEN:
-    # WHEN:
-    # THEN:
+    # WHEN: the player pets the dragon
+    Pet(['purple', 'head']).do()
+    output = capsys.readouterr().out
 
-def test_pet_treasure_and_damage():
-    ...
-    # GIVEN:
-    # WHEN:
-    # THEN:
+    # THEN: The player should receive some damage and be told about it.
+    assert adventure.PLAYER.current_health == 43, \
+        "The players health should be reduced by the damage amount"
+    assert "7 damage" in output, \
+        "The player should be told they received damage"
 
+def test_pet_no_damage(capsys):
+    # GIVEN: A dragon with that does damage
+    adventure.PLAYER.place = 'mountain'
+    adventure.PLAYER.current_health = 50
+    adventure.PLACES["mountain"] = Place(
+            key="mountain",
+            name="The Misty Mountain",
+            description="Big ol rock.",
+            can=['pet'],
+        )
+    adventure.DRAGONS = {
+            "purple": Dragon(
+                key="purple",
+                name="Purple Dragon",
+                description="It's purple.",
+                mood="generous",
+                treasure=[],
+                damage=[]
+            )
+    }
+
+    # WHEN: the player pets the dragon
+    Pet(['purple', 'head']).do()
+    output = capsys.readouterr().out
+
+    # THEN: The player should receive some damage and be told about it.
+    assert adventure.PLAYER.current_health == 50, \
+        "The players health should be unchanged"
+    assert "damage" not in output, \
+        "The player should not be told they received damage"
+
+def test_pet_treasure_and_damage(capsys):
+    # GIVEN: A dragon with that does damage and gives treasure
+    adventure.PLAYER.place = 'mountain'
+    adventure.PLAYER.current_health = 50
+    adventure.PLAYER.inventory = {'gems':10}
+    adventure.PLACES["mountain"] = Place(
+            key="mountain",
+            name="The Misty Mountain",
+            description="Big ol rock.",
+            can=['pet'],
+        )
+    adventure.DRAGONS = {
+            "purple": Dragon(
+                key="purple",
+                name="Purple Dragon",
+                description="It's purple.",
+                mood="generous",
+                treasure=[15,15],
+                damage=[5,5]
+            )
+    }
+
+    # WHEN: the player pets the dragon
+    Pet(['purple', 'head']).do()
+    output = capsys.readouterr().out
+
+    # THEN: The player should receive some damage and treasure be told about it.
+    assert adventure.PLAYER.current_health == 45, \
+        "The players health should be reduced by the damage amount"
+    assert "5 damage" in output, \
+        "The player should be told they received damage"
+    assert adventure.PLAYER.inventory['gems'] == 25, \
+        "The gems should be added to the player's inventory"
+    assert "15 gems" in output, \
+        "The player should be told they received gems"
 
 # shlex.split('abc 123') == ['abc', '123']
 # shlex.split('abc "xyz blah"') == ['abc', 'xyz blah']
