@@ -38,6 +38,7 @@ DRAGONS_STATE = deepcopy(adventure.DRAGONS)
 ITEMS_STATE = deepcopy(adventure.ITEMS)
 MARGIN_STATE = deepcopy(adventure.MARGIN)
 WIDTH_STATE = deepcopy(adventure.WIDTH)
+adventure.DELAY = 0
 
 
 def revert():
@@ -1559,8 +1560,11 @@ def test_pet(capsys):
     output = capsys.readouterr().out
 
     # THEN: the mood is assigned, the player is told, and the mood is removed
-    assert "You pet the purple head, it seems moody." in output, \
+    assert "gently pet the dragon's purple head" in output, \
         "The player should be told they pet the head and the mood"
+    
+    assert "blinks moody eyes and peers at you" in output, \
+        "The player should be told the dragon's mood"
 
 def test_moods_assignment():
     # GIVEN: A dragon and a mood

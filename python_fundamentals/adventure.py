@@ -1,6 +1,6 @@
 """."""
 
-# You are on part 14.8
+# You are on part 14.9. You have added custom messages to the moods list, but you need write the treasure/damage values to the DRAGON instantiations, so that the tpl.format() will work properly. You also need to update the tests for this change. --REVIST THIS THINKING NEXT WEEK WITH ALISSA
 # all the player commands use the item keys,\
 # but the text displayed to the player is the item names
 # you should do something to fix that
@@ -12,9 +12,11 @@ from console import fg, bg, fx
 from console.progress import ProgressBar
 import textwrap
 from random import choice, randint
+from time import sleep
 
 WIDTH = 60
 MARGIN = ' '*3
+DELAY = 1
 DEBUG = True
 MAX_HEALTH = 100
 BAR = ProgressBar(
@@ -76,6 +78,13 @@ class Command():
         """Displays the current health bar"""
         print()
         write(f"Health {BAR(PLAYER.current_health)}")
+
+    def text_delay(self, sentences):
+        """Prints the elements from the variable with a DELAY between each"""
+        for text in sentences:
+            print()
+            write(text)
+            sleep(DELAY)
 
 class Collectable():
     """Base class for objects with collections"""
@@ -202,9 +211,28 @@ class Player(Contents):
 
 class Dragon(Item, Contents):
     MOODS = [
-        {"mood": "cheerful", "treasure": [3, 15], "damage": []},
-        {"mood": "grumpy", "treasure": [], "damage": [3, 15]},
-        {"mood": "lonely", "treasure": [8, 25], "damage": [8, 25]},
+        {
+            "mood": "cheerful",
+            "treasure": [3, 15],
+            "damage": [],
+            "message": ("thinks you're adorable! He gives you {treasure_amount} gems!"),
+        },
+        {
+            "mood": "grumpy",
+            "treasure": [],
+            "damage": [3, 15],
+            "message": ("wants to be left alone. The heat from his mighty sigh "
+                        "singes your hair, costing you {damage_amount} in health."
+            ),
+        },
+        {
+            "mood": "lonely",
+            "treasure": [8, 25],
+            "damage": [8, 25],
+            "message": ("is just SO happy to see you! He gives you a whopping "
+                        "{treasure_amount} gems! Then he hugs you, squeezes you, and calls "
+                        "you George... costing you {damage_amount} in health."),
+        },
     ]
 
     def __init__(self, key, name, description, mood=None, treasure=None, damage=None):
@@ -697,23 +725,29 @@ class Pet(Command):
         
         target_dragon = DRAGONS[color]
 
-        wrap(f"You pet the {target_dragon.key} head, it seems {target_dragon.mood}.")
-
         treasure_range = target_dragon.treasure or [0,0]
         treasure_amount = randint(*treasure_range)
-
-        if treasure_amount:
-            PLAYER.add('gems', treasure_amount)
-            wrap(f"The dragon gives you {treasure_amount} gems!")
 
         damage_range = target_dragon.damage or [0,0]
         damage_amount = randint(*damage_range)
 
+        sentences = [
+            "You slowly creep forward...",
+            "...gingerly reach out your hand...",
+            f"...and gently pet the dragon's {target_dragon.key} head.",
+            "...",
+            f"He blinks {target_dragon.mood} eyes and peers at you...",
+        ]
+
+        if treasure_amount:
+            PLAYER.add('gems', treasure_amount)
+            sentences += [f"...and thoughtfully places {treasure_amount} gems in your hand!"]
+
         if damage_amount:
             PLAYER.change_health(-damage_amount)
-            wrap(f"The dragon head snorts fire at you, dealing {damage_amount} damage!")
+            sentences += [f"...then without warning the head snorts fire at you, dealing {damage_amount} damage!"]
 
-
+        self.text_delay(sentences)
 
 # TODO generate this dynamically with a dunder method called "subclasses" or somesuch: line 511
 action_dict = {
