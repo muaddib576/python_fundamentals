@@ -1,6 +1,6 @@
 """."""
 
-# You are on part 14.9. You have added custom messages to the moods list, but you need write the treasure/damage values to the DRAGON instantiations, so that the tpl.format() will work properly. You also need to update the tests for this change. --REVIST THIS THINKING NEXT WEEK WITH ALISSA
+# You are on part 14.9. You got the string formatting working, but you might want to re-structure it a bit (you took a screenshot of Alissa's example in the terminal)
 # all the player commands use the item keys,\
 # but the text displayed to the player is the item names
 # you should do something to fix that
@@ -215,14 +215,14 @@ class Dragon(Item, Contents):
             "mood": "cheerful",
             "treasure": [3, 15],
             "damage": [],
-            "message": ("thinks you're adorable! He gives you {treasure_amount} gems!"),
+            "message": ("thinks you're adorable! He gives you {treasure} gems!"),
         },
         {
             "mood": "grumpy",
             "treasure": [],
             "damage": [3, 15],
             "message": ("wants to be left alone. The heat from his mighty sigh "
-                        "singes your hair, costing you {damage_amount} in health."
+                        "singes your hair, costing you {damage} in health."
             ),
         },
         {
@@ -230,16 +230,17 @@ class Dragon(Item, Contents):
             "treasure": [8, 25],
             "damage": [8, 25],
             "message": ("is just SO happy to see you! He gives you a whopping "
-                        "{treasure_amount} gems! Then he hugs you, squeezes you, and calls "
-                        "you George... costing you {damage_amount} in health."),
+                        "{treasure} gems! Then he hugs you, squeezes you, and calls "
+                        "you George... costing you {damage} in health."),
         },
     ]
 
-    def __init__(self, key, name, description, mood=None, treasure=None, damage=None):
+    def __init__(self, key, name, description, mood=None, treasure=None, damage=None, message=None):
         super().__init__(key, name, description)
         self.mood = mood
         self.treasure = treasure
         self.damage = damage
+        self.message = message
         self._init_mood()
         
     def _init_mood(self):
@@ -251,6 +252,7 @@ class Dragon(Item, Contents):
         self.mood = self.mood or mood["mood"]
         self.treasure = self.treasure or mood["treasure"]
         self.damage = self.damage or mood["damage"]
+        self.message = self.message or mood["message"]
         self.__class__.MOODS.remove(mood)
 
 DRAGONS = {
@@ -378,7 +380,8 @@ ITEMS = {
 }
 
 PLAYER = Player(
-    place="home",
+    # place="home",
+    place="cave",
     current_health = 100,
     inventory={'gems':50,},
 )
@@ -739,15 +742,22 @@ class Pet(Command):
             f"He blinks {target_dragon.mood} eyes and peers at you...",
         ]
 
-        if treasure_amount:
-            PLAYER.add('gems', treasure_amount)
-            sentences += [f"...and thoughtfully places {treasure_amount} gems in your hand!"]
+        # if treasure_amount:
+        #     PLAYER.add('gems', treasure_amount)
+        #     sentences += [f"...and thoughtfully places {treasure_amount} gems in your hand!"]
 
-        if damage_amount:
-            PLAYER.change_health(-damage_amount)
-            sentences += [f"...then without warning the head snorts fire at you, dealing {damage_amount} damage!"]
+        # if damage_amount:
+        #     PLAYER.change_health(-damage_amount)
+        #     sentences += [f"...then without warning the head snorts fire at you, dealing {damage_amount} damage!"]
+
+        message_text = target_dragon.message
+        message_text = message_text.format(treasure=treasure_amount, damage=damage_amount)
+
+        mood_text = "The dragon's {0.mood} {0.key} head"
+        mood_text = f"{mood_text.format(target_dragon)} {message_text}"
 
         self.text_delay(sentences)
+        wrap(mood_text)
 
 # TODO generate this dynamically with a dunder method called "subclasses" or somesuch: line 511
 action_dict = {
