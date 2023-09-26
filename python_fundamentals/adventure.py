@@ -1,6 +1,6 @@
 """."""
 
-# You are on part 14.9. You got the string formatting working, but you might want to re-structure it a bit (you took a screenshot of Alissa's example in the terminal)
+# You are on part 14.9. You are working on getting your tests to pass (some might need to be completely rewritten due to the dragon messaging refactor). You need to change the players health/gems when petting.
 # all the player commands use the item keys,\
 # but the text displayed to the player is the item names
 # you should do something to fix that
@@ -254,6 +254,31 @@ class Dragon(Item, Contents):
         self.damage = self.damage or mood["damage"]
         self.message = self.message or mood["message"]
         self.__class__.MOODS.remove(mood)
+
+    def calc_treasure(self):
+        """Returns an int value from within the Dragon's treasure range"""
+        treasure_range = self.treasure or [0,0]
+        treasure_amount = randint(*treasure_range)
+
+        return treasure_amount
+
+    def calc_damage(self):
+        """Returns an int value from within the Dragon's damage range"""
+
+        damage_range = self.damage or [0,0]
+        damage_amount = randint(*damage_range)
+
+        return damage_amount
+
+    def mood_text(self, treasure_amount, damage_amount):
+        """Given a treasure and damage amount, returns the formatted text specific to the dragon's mood"""
+
+        message_text = self.message
+        message_text = message_text.format(treasure=treasure_amount, damage=damage_amount)
+
+        mood_text = f"The dragon's {self.mood} {self.key} head {message_text}"
+
+        return mood_text
 
 DRAGONS = {
     "red": Dragon(
@@ -728,36 +753,19 @@ class Pet(Command):
         
         target_dragon = DRAGONS[color]
 
-        treasure_range = target_dragon.treasure or [0,0]
-        treasure_amount = randint(*treasure_range)
-
-        damage_range = target_dragon.damage or [0,0]
-        damage_amount = randint(*damage_range)
+        treasure = target_dragon.calc_treasure()
+        damage = target_dragon.calc_damage()
 
         sentences = [
             "You slowly creep forward...",
             "...gingerly reach out your hand...",
             f"...and gently pet the dragon's {target_dragon.key} head.",
             "...",
-            f"He blinks {target_dragon.mood} eyes and peers at you...",
+            f"He blinks his eyes and peers at you...",
         ]
 
-        # if treasure_amount:
-        #     PLAYER.add('gems', treasure_amount)
-        #     sentences += [f"...and thoughtfully places {treasure_amount} gems in your hand!"]
-
-        # if damage_amount:
-        #     PLAYER.change_health(-damage_amount)
-        #     sentences += [f"...then without warning the head snorts fire at you, dealing {damage_amount} damage!"]
-
-        message_text = target_dragon.message
-        message_text = message_text.format(treasure=treasure_amount, damage=damage_amount)
-
-        mood_text = "The dragon's {0.mood} {0.key} head"
-        mood_text = f"{mood_text.format(target_dragon)} {message_text}"
-
         self.text_delay(sentences)
-        wrap(mood_text)
+        wrap(target_dragon.mood_text(treasure, damage))
 
 # TODO generate this dynamically with a dunder method called "subclasses" or somesuch: line 511
 action_dict = {

@@ -1545,7 +1545,7 @@ def test_pet(capsys):
             can=['pet'],
         )
     adventure.Dragon.MOODS = [
-        {"mood": "moody", "treasure": [], "damage": []}
+        {"mood": "moody", "treasure": [], "damage": [], "message": ("")}
     ]
     adventure.DRAGONS = {
             "purple": Dragon(
@@ -1559,17 +1559,14 @@ def test_pet(capsys):
     Pet(['purple', 'head']).do()
     output = capsys.readouterr().out
 
-    # THEN: the mood is assigned, the player is told, and the mood is removed
-    assert "gently pet the dragon's purple head" in output, \
-        "The player should be told they pet the head and the mood"
-    
-    assert "blinks moody eyes and peers at you" in output, \
-        "The player should be told the dragon's mood"
+    # THEN: the mood is assigned, the player is told
+    assert "dragon's moody purple head" in output, \
+        "The player should be told the head color and the mood"
 
 def test_moods_assignment():
     # GIVEN: A dragon and a mood
     adventure.Dragon.MOODS = [
-        {"mood": "moody", "treasure": [1,1], "damage": [2,2]}
+        {"mood": "moody", "treasure": [1,1], "damage": [2,2], "message": ("snorts at you.")}
     ]
     adventure.DRAGONS = {
             "purple": Dragon(
@@ -1583,7 +1580,8 @@ def test_moods_assignment():
     assert adventure.DRAGONS["purple"].mood == "moody", "The mood should be assigned"
     assert adventure.DRAGONS["purple"].treasure == [1,1], "The treasure should be assigned"
     assert adventure.DRAGONS["purple"].damage == [2,2], "The damage should be assigned"
-    assert {"mood": "moody", "treasure": [], "damage": []} not in adventure.Dragon.MOODS, \
+    assert adventure.DRAGONS["purple"].message == "snorts at you.", "The message should be assigned"
+    assert len(adventure.Dragon.MOODS) == 0, \
         "The mood should be removed from the list after assignment"
 
 def test_pet_treasure(capsys):
@@ -1603,7 +1601,7 @@ def test_pet_treasure(capsys):
                 description="It's purple.",
                 mood="generous",
                 treasure=[5, 5],
-                damage=[]
+                damage=[],
             )
     }
 
