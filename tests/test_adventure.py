@@ -1602,6 +1602,7 @@ def test_pet_treasure(capsys):
                 mood="generous",
                 treasure=[5, 5],
                 damage=[],
+                message="thinks you're adorable! He gives you {treasure} gems!",
             )
     }
 
@@ -1632,7 +1633,8 @@ def test_pet_no_treasure(capsys):
                 description="It's purple.",
                 mood="generous",
                 treasure=[],
-                damage=[]
+                damage=[],
+                message="",
             )
     }
 
@@ -1643,7 +1645,7 @@ def test_pet_no_treasure(capsys):
     # THEN: The player should not receive gems, and not be told about it.
     assert adventure.PLAYER.inventory['gems'] == 10, \
         "The players gems should be unchanged"
-    assert "The dragon gives you" not in output, \
+    assert "gems" not in output, \
         "The player should not be told they received gems"
 
 def test_pet_damage(capsys):
@@ -1663,7 +1665,8 @@ def test_pet_damage(capsys):
                 description="It's purple.",
                 mood="generous",
                 treasure=[],
-                damage=[7,7]
+                damage=[7,7],
+                message="singes your hair, costing you {damage} in health.",
             )
     }
 
@@ -1674,7 +1677,7 @@ def test_pet_damage(capsys):
     # THEN: The player should receive some damage and be told about it.
     assert adventure.PLAYER.current_health == 43, \
         "The players health should be reduced by the damage amount"
-    assert "7 damage" in output, \
+    assert "costing you 7 in health" in output, \
         "The player should be told they received damage"
 
 def test_pet_no_damage(capsys):
@@ -1694,7 +1697,8 @@ def test_pet_no_damage(capsys):
                 description="It's purple.",
                 mood="generous",
                 treasure=[],
-                damage=[]
+                damage=[],
+                message="",
             )
     }
 
@@ -1705,7 +1709,7 @@ def test_pet_no_damage(capsys):
     # THEN: The player should receive some damage and be told about it.
     assert adventure.PLAYER.current_health == 50, \
         "The players health should be unchanged"
-    assert "damage" not in output, \
+    assert "in health" not in output, \
         "The player should not be told they received damage"
 
 def test_pet_treasure_and_damage(capsys):
@@ -1726,7 +1730,8 @@ def test_pet_treasure_and_damage(capsys):
                 description="It's purple.",
                 mood="generous",
                 treasure=[15,15],
-                damage=[5,5]
+                damage=[5,5],
+                message="He gives you {treasure} gems! But bites, costing you {damage} in health.",
             )
     }
 
@@ -1737,7 +1742,7 @@ def test_pet_treasure_and_damage(capsys):
     # THEN: The player should receive some damage and treasure be told about it.
     assert adventure.PLAYER.current_health == 45, \
         "The players health should be reduced by the damage amount"
-    assert "5 damage" in output, \
+    assert "costing you 5 in health" in output, \
         "The player should be told they received damage"
     assert adventure.PLAYER.inventory['gems'] == 25, \
         "The gems should be added to the player's inventory"

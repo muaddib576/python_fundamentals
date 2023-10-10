@@ -1,6 +1,6 @@
 """."""
 
-# You are on part 14.9. You are working on getting your tests to pass (some might need to be completely rewritten due to the dragon messaging refactor). You need to change the players health/gems when petting.
+# You are on part 14.10 - Unsure if I should add unified Dragon item?
 # all the player commands use the item keys,\
 # but the text displayed to the player is the item names
 # you should do something to fix that
@@ -755,6 +755,9 @@ class Pet(Command):
 
         treasure = target_dragon.calc_treasure()
         damage = target_dragon.calc_damage()
+
+        PLAYER.add("gems",treasure)
+        PLAYER.change_health(-damage)
 
         sentences = [
             "You slowly creep forward...",
