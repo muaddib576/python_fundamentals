@@ -6,14 +6,14 @@ from python_fundamentals.adventure import (
     ITEMS,
     PLACES,
     PLAYER,
-    DRAGONS,
+    DRAGON_HEADS,
     Contents,
     Go,
     Examine,
     Command,
     Place,
     Item,
-    Dragon,
+    Dragon_head,
     InvalidItemError,
     InvalidPlaceError,
     error,
@@ -34,7 +34,7 @@ from python_fundamentals.adventure import (
 
 PLAYER_STATE = deepcopy(adventure.PLAYER)
 PLACES_STATE = deepcopy(adventure.PLACES)
-DRAGONS_STATE = deepcopy(adventure.DRAGONS)
+DRAGON_HEADS_STATE = deepcopy(adventure.DRAGON_HEADS)
 ITEMS_STATE = deepcopy(adventure.ITEMS)
 MARGIN_STATE = deepcopy(adventure.MARGIN)
 WIDTH_STATE = deepcopy(adventure.WIDTH)
@@ -45,7 +45,7 @@ def revert():
     """Revert game data to its original state."""
     adventure.PLAYER = deepcopy(PLAYER_STATE)
     adventure.PLACES = deepcopy(PLACES_STATE)
-    adventure.DRAGONS = deepcopy(DRAGONS_STATE)
+    adventure.DRAGON_HEADS = deepcopy(DRAGON_HEADS_STATE)
     adventure.ITEMS = deepcopy(ITEMS_STATE)
     adventure.MARGIN = deepcopy(MARGIN_STATE)
     adventure.WIDTH = deepcopy(WIDTH_STATE)
@@ -1519,8 +1519,8 @@ def test_pet_invalid_color(capsys):
             description="Buncha hobbits.",
             can=['pet'],
         )
-    adventure.DRAGONS = {
-            "red": Dragon(
+    adventure.DRAGON_HEADS = {
+            "red": Dragon_head(
                 key="red",
                 name="Red Dragon",
                 description="It's red.",
@@ -1544,11 +1544,11 @@ def test_pet(capsys):
             description="Big ol rock.",
             can=['pet'],
         )
-    adventure.Dragon.MOODS = [
+    adventure.Dragon_head.MOODS = [
         {"mood": "moody", "treasure": [], "damage": [], "message": ("")}
     ]
-    adventure.DRAGONS = {
-            "purple": Dragon(
+    adventure.DRAGON_HEADS = {
+            "purple": Dragon_head(
                 key="purple",
                 name="Purple Dragon",
                 description="It's purple.",
@@ -1565,11 +1565,11 @@ def test_pet(capsys):
 
 def test_moods_assignment():
     # GIVEN: A dragon and a mood
-    adventure.Dragon.MOODS = [
+    adventure.Dragon_head.MOODS = [
         {"mood": "moody", "treasure": [1,1], "damage": [2,2], "message": ("snorts at you.")}
     ]
-    adventure.DRAGONS = {
-            "purple": Dragon(
+    adventure.DRAGON_HEADS = {
+            "purple": Dragon_head(
                 key="purple",
                 name="Purple Dragon",
                 description="It's purple.",
@@ -1577,11 +1577,11 @@ def test_moods_assignment():
     }
     
     # THEN: the instantiated dragon should have the mood assigned, and the mood should be removed
-    assert adventure.DRAGONS["purple"].mood == "moody", "The mood should be assigned"
-    assert adventure.DRAGONS["purple"].treasure == [1,1], "The treasure should be assigned"
-    assert adventure.DRAGONS["purple"].damage == [2,2], "The damage should be assigned"
-    assert adventure.DRAGONS["purple"].message == "snorts at you.", "The message should be assigned"
-    assert len(adventure.Dragon.MOODS) == 0, \
+    assert adventure.DRAGON_HEADS["purple"].mood == "moody", "The mood should be assigned"
+    assert adventure.DRAGON_HEADS["purple"].treasure == [1,1], "The treasure should be assigned"
+    assert adventure.DRAGON_HEADS["purple"].damage == [2,2], "The damage should be assigned"
+    assert adventure.DRAGON_HEADS["purple"].message == "snorts at you.", "The message should be assigned"
+    assert len(adventure.Dragon_head.MOODS) == 0, \
         "The mood should be removed from the list after assignment"
 
 def test_pet_treasure(capsys):
@@ -1594,8 +1594,8 @@ def test_pet_treasure(capsys):
             description="Big ol rock.",
             can=['pet'],
         )
-    adventure.DRAGONS = {
-            "purple": Dragon(
+    adventure.DRAGON_HEADS = {
+            "purple": Dragon_head(
                 key="purple",
                 name="Purple Dragon",
                 description="It's purple.",
@@ -1626,8 +1626,8 @@ def test_pet_no_treasure(capsys):
             description="Big ol rock.",
             can=['pet'],
         )
-    adventure.DRAGONS = {
-            "purple": Dragon(
+    adventure.DRAGON_HEADS = {
+            "purple": Dragon_head(
                 key="purple",
                 name="Purple Dragon",
                 description="It's purple.",
@@ -1658,8 +1658,8 @@ def test_pet_damage(capsys):
             description="Big ol rock.",
             can=['pet'],
         )
-    adventure.DRAGONS = {
-            "purple": Dragon(
+    adventure.DRAGON_HEADS = {
+            "purple": Dragon_head(
                 key="purple",
                 name="Purple Dragon",
                 description="It's purple.",
@@ -1690,8 +1690,8 @@ def test_pet_no_damage(capsys):
             description="Big ol rock.",
             can=['pet'],
         )
-    adventure.DRAGONS = {
-            "purple": Dragon(
+    adventure.DRAGON_HEADS = {
+            "purple": Dragon_head(
                 key="purple",
                 name="Purple Dragon",
                 description="It's purple.",
@@ -1723,8 +1723,8 @@ def test_pet_treasure_and_damage(capsys):
             description="Big ol rock.",
             can=['pet'],
         )
-    adventure.DRAGONS = {
-            "purple": Dragon(
+    adventure.DRAGON_HEADS = {
+            "purple": Dragon_head(
                 key="purple",
                 name="Purple Dragon",
                 description="It's purple.",
@@ -1748,6 +1748,41 @@ def test_pet_treasure_and_damage(capsys):
         "The gems should be added to the player's inventory"
     assert "15 gems" in output, \
         "The player should be told they received gems"
+
+def test_consume_no_arg(capsys):
+    # WHEN: the player attempts to eat/drink but does not specify an item
+    # THEN: the player is told they must specify an item
+    ...
+
+def test_consume_no_item(capsys):
+    # GIVEN: an empty player inventory
+    # WHEN: the player attempts to eat/drink an item not in the player's inventory
+    # THEN: the player is told they must possess an item to eat/drink it
+    ...
+
+def test_consume_invalid_item(capsys):
+    # GIVEN: a non-consumable item in the player's inventory
+    # WHEN: the player ties to eat/drink the item
+    # THEN: the player it told they cannot eat/drink that particular item
+    ...
+
+def test_consume_eat(capsys):
+    # GIVEN: an eatable item in the player's inventory
+    # WHEN: the player tries to eat the item
+    # THEN: The players health is adjusted by the appropriate amount
+    # THEN: The player is told they ate the item
+    # THEN: The player is told their health was adjusted
+    ...
+
+def test_consume_drink(capsys):
+    # GIVEN: a drinkable item in the player's inventory
+    # WHEN: the player tries to drink the item
+    # THEN: The players health is adjusted by the appropriate amount
+    # THEN: The player is told they drank the item
+    # THEN: The player is told their health was adjusted
+    ...
+
+
 
 # shlex.split('abc 123') == ['abc', '123']
 # shlex.split('abc "xyz blah"') == ['abc', 'xyz blah']

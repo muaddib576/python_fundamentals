@@ -1,6 +1,6 @@
 """."""
 
-# You are on part 14.10 - Unsure if I should add unified Dragon item?
+# You are on part 15 - You started writing tests, but just did an outline
 # all the player commands use the item keys,\
 # but the text displayed to the player is the item names
 # you should do something to fix that
@@ -209,7 +209,7 @@ class Player(Contents):
         elif self.current_health < 0:
             self.current_health = 0
 
-class Dragon(Item, Contents):
+class Dragon_head(Item, Contents):
     MOODS = [
         {
             "mood": "cheerful",
@@ -280,8 +280,8 @@ class Dragon(Item, Contents):
 
         return mood_text
 
-DRAGONS = {
-    "red": Dragon(
+DRAGON_HEADS = {
+    "red": Dragon_head(
         key="red",
         name="Red Dragon Head",
         description="It's red.",
@@ -289,12 +289,12 @@ DRAGONS = {
         # damage=(),
         # treasure=(),
     ),
-    "black": Dragon(
+    "black": Dragon_head(
         key="black",
         name="Black Dragon Head",
         description="It's black.",
     ),
-    "silver": Dragon(
+    "silver": Dragon_head(
         key="silver",
         name="Silver Dragon Head",
         description="It's silver.",
@@ -351,6 +351,8 @@ PLACES = {
         description="A big ol' cave entrance.",
         north="hill",
         can=['pet'],
+        inventory={'dragon':1,
+        },
     ),
 }
 
@@ -401,6 +403,13 @@ ITEMS = {
         key="gems",
         name="gems",
         description="The realm's primary currency. They also look pretty.",
+    ),
+    "dragon": Item(
+        key="dragon",
+        name="dragon",
+        description= (f"A large dragon with heads of {', '.join(list(DRAGON_HEADS.keys())[0:-1])}, " \
+                      f"and {list(DRAGON_HEADS.keys())[-1]}."
+        )
     ),
 }
 
@@ -747,11 +756,11 @@ class Pet(Command):
 
         color = self.args[0].lower()
 
-        if color not in DRAGONS.keys():
+        if color not in DRAGON_HEADS.keys():
             error("You do not see such a dragon.")
             return
         
-        target_dragon = DRAGONS[color]
+        target_dragon = DRAGON_HEADS[color]
 
         treasure = target_dragon.calc_treasure()
         damage = target_dragon.calc_damage()
