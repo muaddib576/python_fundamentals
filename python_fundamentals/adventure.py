@@ -1,6 +1,6 @@
 """."""
 
-# You are on part 15 - You started writing tests, but just did an outline
+# You are on part 15 - You need to finish writing the Consume command
 # all the player commands use the item keys,\
 # but the text displayed to the player is the item names
 # you should do something to fix that
@@ -779,6 +779,44 @@ class Pet(Command):
         self.text_delay(sentences)
         wrap(target_dragon.mood_text(treasure, damage))
 
+class Consume(Command):
+    def consume(self, args, action):
+        """Performs the Consume action on the specified item"""
+
+        target = args[0].lower()
+        target_item = ITEMS.get(target)
+
+        if not PLAYER.has_item(item.name):
+            error(f"Sorry, you do not posses a {target_item.name}.")
+            return
+
+        if f"{action}_message" not in target_item.keys():
+                error(f"Sorry, your {target_item.name} is not consumable.")
+
+        PLAYER.remove(target_item.name)
+        PLAYER.change_health(target_item.health) # TODO need to add health in item class
+        wrap(target_item.{action}_message)  # TODO need to add action_messages in item class. Also this line (798) needs some work
+
+class Eat(Consume):
+    def do(self):
+        """Performs the Eat action by calling the Consume action"""
+        if not self.args:
+            error("You cannot eat nothing.")
+            return
+        
+        action = 'eat'
+        self.consume(self.args, action)
+
+class Drink(Consume):
+    def do(self):
+        """Performs the Eat action by calling the Consume action"""
+        if not self.args:
+            error("You cannot drink nothing.")
+            return
+        
+        action = 'drink'
+        self.consume(self.args, action)
+
 # TODO generate this dynamically with a dunder method called "subclasses" or somesuch: line 511
 action_dict = {
     "q": Quit,
@@ -804,6 +842,10 @@ action_dict = {
     "read": Read,
     "p": Pet,
     "pet": Pet,
+    "e": Eat,
+    "eat": Eat,
+    "drink": Drink,
+    # "consume": Consume, TODO maybe get this working
 }
 
 def main():
