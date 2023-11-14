@@ -1,6 +1,6 @@
 """."""
 
-# You are on part 15 - You need to finish writing the Consume command
+# You are on part 15.7
 # all the player commands use the item keys,\
 # but the text displayed to the player is the item names
 # you should do something to fix that
@@ -174,11 +174,14 @@ class Place(Collectable, Contents):
 
 
 class Item(Collectable):
-    def __init__(self, key, name, description, writing=None, can_take=False, price=None):
+    def __init__(self, key, name, description, writing=None, can_take=False, price=None, drink_message=None, eat_message=None, health_change=None):
         super().__init__(key, name, description)
         self.writing = writing
         self.can_take = can_take
         self.price = price
+        self.drink_message = drink_message
+        self.eat_message = eat_message
+        self.health_change = health_change
 
     @classmethod
     def get(self, key, default=None):
@@ -193,6 +196,15 @@ class Item(Collectable):
     def is_for_sale(self):
         """Returns True if item has a price"""
         return self.price != None
+    
+    def get_consume_message(self, action):
+        """Returns true if item instance has an eat/drink message"""
+        
+        if action == 'drink':
+            return self.drink_message
+        
+        if action == 'eat':
+            return self.eat_message
 
 class Player(Contents):
     def __init__(self, place=None, current_health=None, inventory={}):
@@ -310,6 +322,7 @@ PLACES = {
         inventory={'desk':1,
                    'book':1,
                    'bed':1,
+                   'water':1,
         },
     ),
     "town-square": Place(
@@ -337,6 +350,8 @@ PLACES = {
         description="Significantly more trees than the Town.",
         east="hill",
         west="town-square",
+        inventory={'mushroom':1,
+        }
     ),
     "hill": Place(
         key="hill",
@@ -362,6 +377,41 @@ ITEMS = {
         name="healing potion",
         description="A magical liquid that improves your life's outlook.",
         price=-10,
+        drink_message=(
+            "You uncork the bottle.",
+            "The swirling green liquid starts to bubble.",
+            "You hesitatingly bring the bottle to your lips...",
+            "then quickly down the whole thing!",
+            "Surprisingly, it tastes like blueberries.",
+            "You feel an odd tingling sensation starting at the top of your head... ",
+            "...moving down your body...",
+            "...down to the tips of your toes.",
+        ),
+        health_change=20
+    ),
+    "water": Item(
+        key="water",
+        name="bottle of water",
+        description="A bottle what has water in it.",
+        can_take = True,
+        drink_message=(
+            "You pull the cork from the waxed leather bottle.",
+            "You take a deep drink of the cool liquid.",
+            "You feel refreshed.",
+        ),
+        health_change=5
+    ),
+    "mushroom": Item(
+        key="mushroom",
+        name="a red mushroom",
+        description="A red mushroom with white spots.",
+        can_take = True,
+        eat_message=(
+            "You shove the whole mushroom in your mouth...",
+            "Things start to look swirllllly...",
+            "Your tummy doesn't feel so good.",
+        ),
+        health_change=-15
     ),
     "lockpicks": Item(
         key="lockpicks",
@@ -784,18 +834,23 @@ class Consume(Command):
         """Performs the Consume action on the specified item"""
 
         target = args[0].lower()
-        target_item = ITEMS.get(target)
+        target_item = Item.get(target)
+        consume_message = target_item.get_consume_message(action)
 
-        if not PLAYER.has_item(item.name):
+        if not PLAYER.has_item(target_item.key):
             error(f"Sorry, you do not posses a {target_item.name}.")
             return
 
-        if f"{action}_message" not in target_item.keys():
-                error(f"Sorry, your {target_item.name} is not consumable.")
+        if not consume_message:
+            error(f"Sorry, your {target_item.name} is not {action}able.")
+            return
 
-        PLAYER.remove(target_item.name)
-        PLAYER.change_health(target_item.health) # TODO need to add health in item class
-        wrap(target_item.{action}_message)  # TODO need to add action_messages in item class. Also this line (798) needs some work
+        PLAYER.remove(target_item.key)
+        PLAYER.change_health(target_item.health_change)
+        wrap(f"You feel your health change by {target_item.health_change}.")
+
+        # self.text_delay(consume_message)
+        wrap(consume_message)  # TODO need to add action_messages in item class. Also this line (798) needs some work
 
 class Eat(Consume):
     def do(self):

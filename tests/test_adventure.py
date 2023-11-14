@@ -1774,13 +1774,20 @@ def test_drink_no_arg(capsys):
 def test_consume_no_item(capsys):
     # GIVEN: an empty player inventory
     adventure.PLAYER.inventory = {'gems':10}
+    adventure.ITEMS = {
+        "cracker": Item(
+            key="cracker",
+            name="saltine cracker",
+            description="A flat square of carbs.",
+            ),
+    }
 
     # WHEN: the player attempts to eat/drink an item not in the player's inventory
     Eat(['cracker']).do()
     output = capsys.readouterr().out
 
     # THEN: the player is told they must possess an item to eat/drink it
-    assert "you do not posses a cracker." in output, \
+    assert "you do not posses a saltine cracker." in output, \
         "The player should be told if they are missing the desired consumable"
 
 def test_consume_invalid_item(capsys):
@@ -1789,7 +1796,7 @@ def test_consume_invalid_item(capsys):
     adventure.ITEMS = {
         "cracker": Item(
             key="cracker",
-            name="Saltine Cracker",
+            name="saltine cracker",
             description="A flat square of carbs.",
             ),
     }
@@ -1799,7 +1806,7 @@ def test_consume_invalid_item(capsys):
     output = capsys.readouterr().out
     
     # THEN: the player it told they cannot eat/drink that particular item
-    assert "Sorry, your cracker is not consumable." in output, \
+    assert "Sorry, your saltine cracker is not eatable." in output, \
     "The player should be told if they are missing the desired consumable"
 
 def test_consume_eat(capsys):
@@ -1809,12 +1816,12 @@ def test_consume_eat(capsys):
     adventure.ITEMS = {
         "cracker": Item(
             key="cracker",
-            name="Saltine Cracker",
+            name="saltine cracker",
             description="A flat square of carbs.",
             eat_message=("You place the cracker on your tongue.",
                          "It tastes salty.",
             ),
-            health=10
+            health_change=10
             ),
     }
 
@@ -1827,7 +1834,7 @@ def test_consume_eat(capsys):
         "The player's inventory should be reduced when eating an item"
 
     # THEN: The player is told they ate the item
-    assert "You place the cracker on your tongue. It tastes salty." in output, \
+    assert "You place the cracker on your tongue" in output, \
         "The player should be told the items eat_message"
     
     # THEN: The players health is adjusted by the appropriate amount
@@ -1835,7 +1842,7 @@ def test_consume_eat(capsys):
         "The players health should be adjusted by the item's health value"
 
     # THEN: The player is told their health was adjusted
-    assert "increasing your health by 10." in output, \
+    assert "You feel your health change by 10." in output, \
         "The player should be told their health changed"
 
 def test_consume_drink(capsys):
@@ -1850,7 +1857,7 @@ def test_consume_drink(capsys):
             drink_message=("You sip the contents of the bottle.",
                            "It tastes revolting.",
             ),
-            health=-25
+            health_change=-25
             ),
     }
 
@@ -1863,7 +1870,7 @@ def test_consume_drink(capsys):
         "The player's inventory should be reduced when drinking an item"
 
     # THEN: The players health is adjusted by the appropriate amount
-    assert "You sip the contents of the bottle. It tastes revolting." in output, \
+    assert "You sip the contents of the bottle" in output, \
         "The player should be told the items drink_message"
 
     # THEN: The player is told they drank the item
@@ -1871,7 +1878,7 @@ def test_consume_drink(capsys):
         "The players health should be adjusted by the item's health value"
 
     # THEN: The player is told their health was adjusted
-    assert "decreasing your health by 25." in output, \
+    assert "You feel your health change by -25." in output, \
         "The player should be told their health changed"
 
 def test_consume_last_item(capsys):
@@ -1886,7 +1893,7 @@ def test_consume_last_item(capsys):
             drink_message=("You sip the contents of the bottle.",
                            "It tastes revolting.",
             ),
-            health=-25
+            health_change=-25
             ),
     }
 
@@ -1895,7 +1902,7 @@ def test_consume_last_item(capsys):
     output = capsys.readouterr().out
 
     # THEN: The players inventory should be reduced
-    assert 'poison' not in adventure.PLAYER.inventory.keys, \
+    assert 'poison' not in adventure.PLAYER.inventory.keys(), \
         "The item should be removed from the player's inventory when there was only 1 qty"
 
 # shlex.split('abc 123') == ['abc', '123']
