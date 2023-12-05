@@ -1,6 +1,7 @@
 """."""
 
-# You are on part 15.7
+# You finished part 15.7, but your solution is the "easiest" one, and possibly a little jank. You might want to rethink?
+# #TODO currently when Item.get() is called on an item not in the ITEMS dictionary, an error is thrown and the program ends
 # all the player commands use the item keys,\
 # but the text displayed to the player is the item names
 # you should do something to fix that
@@ -205,6 +206,18 @@ class Item(Collectable):
         
         if action == 'eat':
             return self.eat_message
+        
+    def get_health_change_text(self):
+        """Returns text if consuming item will affect health"""
+
+        if self.health_change:
+            if self.health_change >= 0:
+                return f"Consuming will give you +{self.health_change} health."
+            
+            if self.health_change < 0:
+                return f"Consuming will take {self.health_change} health."
+        
+        return ""
 
 class Player(Contents):
     def __init__(self, place=None, current_health=None, inventory={}):
@@ -465,7 +478,7 @@ ITEMS = {
 
 PLAYER = Player(
     # place="home",
-    place="cave",
+    place="market",
     current_health = 100,
     inventory={'gems':50,},
 )
@@ -660,15 +673,15 @@ class Examine(Command):
             header(item.name.title())
             
             if current_place.place_can('shop') and item.is_for_sale():
-                wrap(f"{item.description} The shop has {current_place.inventory[item.key]}, you can buy one for {abs(item.price)} gems.")
+                wrap(f"{item.description} The shop has {current_place.inventory[item.key]}, you can buy one for {abs(item.price)} gems. {item.get_health_change_text()}")
                 return
             
-            wrap(item.description)
+            wrap(f"{item.description} {item.get_health_change_text()}")
             return
 
         if PLAYER.has_item(name):
             header(item.name.title())
-            wrap(item.description)
+            wrap(f"{item.description} {item.get_health_change_text()}")
             return
             
         error(f"There is no {name} in {current_place.name.lower()}.")

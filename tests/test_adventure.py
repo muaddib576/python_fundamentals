@@ -284,6 +284,7 @@ def test_examine_missing_from_player_inv(capsys):
             name="grass blades",
             description="It's grass.",
             price=-10,
+            health_change=-7
         )
     }
 
@@ -291,9 +292,12 @@ def test_examine_missing_from_player_inv(capsys):
     Examine(['grass']).do()
     output = capsys.readouterr().out
 
-    # THEN: The player should be told the description of the item.
+    # THEN: The player should be told the description of the item and the health impact (if any)
     assert "It's grass." in output, \
         "A valid Examine target should print the item description."
+    
+    assert "-7 health" in output, \
+        "The player should be told the health impact for an examined item."
 
 def test_examine_missing_item(capsys):
     adventure.PLAYER.place = 'shire'
@@ -330,6 +334,7 @@ def test_examine_in_shop(capsys):
             name="grass blades",
             description="It's grass.",
             price=-10,
+            health_change=7
         )
     }
 
@@ -340,6 +345,9 @@ def test_examine_in_shop(capsys):
     # THEN: The player should be told the description of the item and its price.
     assert "It's grass. The shop has 3, you can buy one for 10 gems." in output, \
         "An Examine target should print the item description. Also, if the location can shop, the quantity/price."
+    
+    assert "+7 health" in output, \
+        "The player should be told the health impact for an examined item."
 
 def test_get_place_start(capsys):
     assert Command([]).player_place == adventure.PLACES[adventure.PLAYER.place], \
