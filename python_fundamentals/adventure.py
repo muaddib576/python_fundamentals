@@ -1,11 +1,7 @@
 """."""
 
-# You finished part 15.7, but your solution is the "easiest" one, and possibly a little jank. You might want to rethink?
-# #TODO currently when Item.get() is called on an item not in the ITEMS dictionary, an error is thrown and the program ends
-# all the player commands use the item keys,\
-# but the text displayed to the player is the item names
-# you should do something to fix that
-# TODO generate this dynamically with a dunder method called "subclasses" or somesuch: line 511 (do eventually)
+# You finished part 15.7. Next up is all the #TODOs and then GRADUATION.
+#TODO All the player commands use the item keys, but the text displayed to the player is the item names. You should do something to fix that
 
 from multiprocessing.dummy import current_process
 from sys import stderr
@@ -36,7 +32,7 @@ class Command():
     def __init__(self, args):
         self.args = args
 
-    # TODO add validation to ensure the place is good
+    #TODO add validation to ensure the place is good
     
     @property
     def player_place(self):
@@ -607,18 +603,21 @@ class Buy(Command):
         debug(f"Trying to buy: {self.args}")
 
         target = self.args[0].lower()
-        target_item = Item.get(target)
-
+        
         qty = 1
         if isinstance(self.args[-1], int):
             qty = self.args[-1]
 
-        if not target_item.is_for_sale():
-            error("Sorry, that item is not for sale.")
+        if not current_place.has_item(target, qty):
+            if qty == 1:
+                qty = 'any'
+            error(f"Sorry, there are not {qty} {target} here.")
             return
 
-        if not current_place.has_item(target,qty):
-            error(f"Sorry, there are not {qty} {target_item.name} here.")
+        target_item = Item.get(target)
+
+        if not target_item.is_for_sale():
+            error("Sorry, that item is not for sale.")
             return
 
         item_cost = abs(target_item.price) * qty
@@ -657,34 +656,28 @@ class Go(Command):
 
 class Examine(Command):
     def do(self):
-        """Prints a description of the specified item"""
+        """Prints a description of the specified item, and qty/price if in the shop"""
         if not self.args:
             error("You cannot examine nothing.")
             return
         
         debug(f"Trying to examine: {self.args}")
 
-        name = self.args[0].lower()
+        target = self.args[0].lower()
         current_place = self.player_place
-        # TODO the following line assumes that the item exists in the ITEMS dictionary. You should create a "no item here" message.
-        item = Item.get(name)
 
-        if current_place.has_item(name):
-            header(item.name.title())
-            
-            if current_place.place_can('shop') and item.is_for_sale():
-                wrap(f"{item.description} The shop has {current_place.inventory[item.key]}, you can buy one for {abs(item.price)} gems. {item.get_health_change_text()}")
-                return
-            
-            wrap(f"{item.description} {item.get_health_change_text()}")
+        if not current_place.has_item(target) and not PLAYER.has_item(target):
+            error(f"There is no {target} in {current_place.name.lower()}.")
             return
 
-        if PLAYER.has_item(name):
-            header(item.name.title())
-            wrap(f"{item.description} {item.get_health_change_text()}")
+        item = Item.get(target)
+
+        header(item.name.title())
+        wrap(f"{item.description} {item.get_health_change_text()}")
+        if current_place.place_can('shop') and item.is_for_sale():
+            print()
+            wrap(f"The shop has {current_place.inventory[item.key]}, you can buy one for {abs(item.price)} gems.")
             return
-            
-        error(f"There is no {name} in {current_place.name.lower()}.")
 
 class Take(Command):
     def do(self):
@@ -732,6 +725,7 @@ class Inventory(Command):
 
         if not PLAYER.inventory:
             write("Inventory empty.")
+            return
 
         for name, qty in PLAYER.inventory.items():
             item = Item.get(name)
@@ -748,7 +742,7 @@ class Drop(Command):
 
         debug(f"Trying to drop: {self.args}")
 
-        name = self.args[0].lower()
+        target = self.args[0].lower()
         
         qty = 1
         if isinstance(self.args[-1], int):
@@ -756,13 +750,13 @@ class Drop(Command):
 
         current_place = self.player_place
 
-        if PLAYER.has_item(name,qty):
-            PLAYER.remove(name,qty)
-            current_place.add(name)
-            wrap(f"You dropped {qty} {name} on the ground.")
+        if PLAYER.has_item(target,qty):
+            PLAYER.remove(target,qty)
+            current_place.add(target)
+            wrap(f"You dropped {qty} {target} on the ground.")
             return
 
-        error(f"You dont have {qty} {name} to drop.")
+        error(f"You dont have {qty} {target} to drop.")
 
 class Read(Command):
     def do(self):
@@ -847,12 +841,13 @@ class Consume(Command):
         """Performs the Consume action on the specified item"""
 
         target = args[0].lower()
+
+        if not PLAYER.has_item(target):
+            error(f"Sorry, you do not posses a {target}.")
+            return
+
         target_item = Item.get(target)
         consume_message = target_item.get_consume_message(action)
-
-        if not PLAYER.has_item(target_item.key):
-            error(f"Sorry, you do not posses a {target_item.name}.")
-            return
 
         if not consume_message:
             error(f"Sorry, your {target_item.name} is not {action}able.")
@@ -860,10 +855,10 @@ class Consume(Command):
 
         PLAYER.remove(target_item.key)
         PLAYER.change_health(target_item.health_change)
-        wrap(f"You feel your health change by {target_item.health_change}.")
 
         # self.text_delay(consume_message)
-        wrap(consume_message)  # TODO need to add action_messages in item class. Also this line (798) needs some work
+        wrap(consume_message)  #TODO need to add action_messages in item class. Also this line (798) needs some work
+        wrap(f"You feel your health change by {target_item.health_change}.") #TODO what if there is no health change for the item? Or do all items affect health?
 
 class Eat(Consume):
     def do(self):
@@ -885,7 +880,7 @@ class Drink(Consume):
         action = 'drink'
         self.consume(self.args, action)
 
-# TODO generate this dynamically with a dunder method called "subclasses" or somesuch: line 511
+#TODO generate this dynamically with a dunder method called "subclasses" or somesuch
 action_dict = {
     "q": Quit,
     "quit": Quit,
@@ -943,7 +938,7 @@ def main():
 
             klass = action_dict[command]
             cmd = klass(args)
-            # TODO change things to make args positional
+            #TODO change things to make args positional
             # cmd = klass(*args)
             try:
                 cmd.do()

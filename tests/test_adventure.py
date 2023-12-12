@@ -343,8 +343,11 @@ def test_examine_in_shop(capsys):
     output = capsys.readouterr().out
 
     # THEN: The player should be told the description of the item and its price.
-    assert "It's grass. The shop has 3, you can buy one for 10 gems." in output, \
-        "An Examine target should print the item description. Also, if the location can shop, the quantity/price."
+    assert "It's grass." in output, \
+        "An Examine target should print the item description."
+    
+    assert "The shop has 3, you can buy one for 10 gems." in output, \
+        "If the location can shop, the quantity/price should be printed."
     
     assert "+7 health" in output, \
         "The player should be told the health impact for an examined item."
@@ -1249,7 +1252,7 @@ def test_buy_invalid_qty(capsys):
     assert 'gems' not in adventure.PLACES["shire"].inventory.keys(), "The invalid qty purchase should not change the place's gems"
 
     # AND: the player is informed
-    assert "Sorry, there are not 3 Rabbit Stew here." in output, "The player should be told the location does not have the requested qty"
+    assert "Sorry, there are not 3 stew here." in output, "The player should be told the location does not have the requested qty"
 
 def test_buy_qty(capsys):
     # GIVEN: A place that can "shop" and has a multiple items with a price, and a moneyed player
@@ -1795,7 +1798,7 @@ def test_consume_no_item(capsys):
     output = capsys.readouterr().out
 
     # THEN: the player is told they must possess an item to eat/drink it
-    assert "you do not posses a saltine cracker." in output, \
+    assert "you do not posses a cracker." in output, \
         "The player should be told if they are missing the desired consumable"
 
 def test_consume_invalid_item(capsys):
