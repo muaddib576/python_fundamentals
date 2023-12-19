@@ -86,6 +86,38 @@ def test_collectable_get_missing():
     exception = info.value
     assert "This is embarrasing" in str(exception)
 
+def test_collectable_find_name():
+    # GIVEN: an item
+    adventure.ITEMS = {
+        "grass": Item(
+            key="grass",
+            name="unrelated alias",
+            description="It's grass.",
+        )
+    }
+    # WHEN: the find method is called using either the name or the key
+    item = Item.find('unrelated alias')
+
+    # THEN: the item is returned
+    assert item.key == 'grass', \
+        "The find method should return the Item object when passed the item.name"
+
+def test_collectable_find_key():
+    # GIVEN: an item
+    adventure.ITEMS = {
+        "grass": Item(
+            key="grass",
+            name="unrelated alias",
+            description="It's grass.",
+        )
+    }
+    # WHEN: the find method is called using either the name or the key
+    item = Item.find('grass')
+
+    # THEN: the item is returned
+    assert item.name == 'unrelated alias', \
+        "The find method should return the Item object when passed the item.key"
+
 @pytest.mark.skip(reason="method to be deleted")
 def test_towards():
     # GIVEN: Two linked locations

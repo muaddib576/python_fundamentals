@@ -1,6 +1,8 @@
 """."""
 
-# You finished part 15.7. Next up is all the #TODOs and then GRADUATION.
+# You are in the process of reviewing all the #TODOs and then GRADUATION.
+# Most recently, you created a Item.find() method to augment the Item.get() method. The tests are failing...
+
 #TODO All the player commands use the item keys, but the text displayed to the player is the item names. You should do something to fix that
 
 from multiprocessing.dummy import current_process
@@ -31,8 +33,6 @@ class InvalidPlaceError(Exception):
 class Command():
     def __init__(self, args):
         self.args = args
-
-    #TODO add validation to ensure the place is good
     
     @property
     def player_place(self):
@@ -190,12 +190,26 @@ class Item(Collectable):
         else:
             raise InvalidItemError(f"This is embarrasing, but the information about {key} is missing.")
 
+    def find(self, key):
+        """Returns an item's instance if passed an alias or key for the item"""
+
+        target_key = ''
+
+        for instance in ITEMS.values():
+            if key in instance.key or instance.name:
+                target_key = instance.key
+                break
+        
+        target_item = Item.get(target_key)
+
+        return target_item
+
     def is_for_sale(self):
         """Returns True if item has a price"""
         return self.price != None
     
     def get_consume_message(self, action):
-        """Returns true if item instance has an eat/drink message"""
+        """Returns message if item instance has an eat/drink message"""
         
         if action == 'drink':
             return self.drink_message
@@ -396,7 +410,7 @@ ITEMS = {
             "...moving down your body...",
             "...down to the tips of your toes.",
         ),
-        health_change=20
+        # health_change=20
     ),
     "water": Item(
         key="water",
@@ -473,7 +487,6 @@ ITEMS = {
 }
 
 PLAYER = Player(
-    # place="home",
     place="market",
     current_health = 100,
     inventory={'gems':50,},
@@ -622,7 +635,7 @@ class Buy(Command):
 
         item_cost = abs(target_item.price) * qty
 
-        if PLAYER.inventory['gems'] - item_cost < 0:
+        if PLAYER.inventory['gems'] - item_cost < 0: #TODO this throws an error if the player is out of gems
             error(f"Sorry, you do not have enough gems.")
             return
 
@@ -799,7 +812,7 @@ class Pet(Command):
         
         target_set = False
         for word in ['head','dragon']:
-            if word in self.args: #TODO you need to lower the args
+            if word in self.args:
                 self.args.remove(word)
                 target_set = True
         
@@ -834,6 +847,7 @@ class Pet(Command):
         ]
 
         self.text_delay(sentences)
+        print()
         wrap(target_dragon.mood_text(treasure, damage))
 
 class Consume(Command):
@@ -854,11 +868,12 @@ class Consume(Command):
             return
 
         PLAYER.remove(target_item.key)
-        PLAYER.change_health(target_item.health_change)
 
-        # self.text_delay(consume_message)
-        wrap(consume_message)  #TODO need to add action_messages in item class. Also this line (798) needs some work
-        wrap(f"You feel your health change by {target_item.health_change}.") #TODO what if there is no health change for the item? Or do all items affect health?
+        self.text_delay(consume_message)
+        
+        if target_item.health_change:
+            PLAYER.change_health(target_item.health_change)
+            wrap(f"You feel your health change by {target_item.health_change}.")
 
 class Eat(Consume):
     def do(self):
@@ -908,7 +923,6 @@ action_dict = {
     "e": Eat,
     "eat": Eat,
     "drink": Drink,
-    # "consume": Consume, TODO maybe get this working
 }
 
 def main():
