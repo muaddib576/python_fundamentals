@@ -89,6 +89,11 @@ def test_collectable_get_missing():
 def test_collectable_find_name():
     # GIVEN: an item
     adventure.ITEMS = {
+        "fake": Item(
+            key="fake",
+            name="fake alias",
+            description="It's fake.",
+        ),
         "grass": Item(
             key="grass",
             name="unrelated alias",
@@ -105,6 +110,11 @@ def test_collectable_find_name():
 def test_collectable_find_key():
     # GIVEN: an item
     adventure.ITEMS = {
+        "fake": Item(
+            key="fake",
+            name="fake alias",
+            description="It's fake.",
+        ),
         "grass": Item(
             key="grass",
             name="unrelated alias",
@@ -117,6 +127,35 @@ def test_collectable_find_key():
     # THEN: the item is returned
     assert item.name == 'unrelated alias', \
         "The find method should return the Item object when passed the item.key"
+    
+def test_collectable_find_name_examine(capsys):
+    # GIVEN: an item
+    adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {'grass':1}
+    adventure.PLACES = {
+        "shire": Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            inventory={}
+        )
+    }
+    adventure.ITEMS = {
+        "grass": Item(
+            key="grass",
+            name="unrelated alias",
+            description="It's grass.",
+        )
+    }
+
+    # WHEN: the find method is called using either the name via the Examine class command
+    # item = Item.find('unrelated alias')
+    Examine(['unrelated alias']).do()
+    output = capsys.readouterr().out
+
+    # THEN: the item is returned
+    assert "It's grass." in output, \
+        "The find method should return the Item object when passed the item.name"
 
 @pytest.mark.skip(reason="method to be deleted")
 def test_towards():

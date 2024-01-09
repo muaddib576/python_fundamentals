@@ -1,7 +1,10 @@
 """."""
 
 # You are in the process of reviewing all the #TODOs and then GRADUATION.
-# Most recently, you created a Item.find() method to augment the Item.get() method. The tests are failing...
+# Most recently, you created a Item.find() method to augment the Item.get() method, and started using this new classmethod in your command.do()s
+# Your "if not current_place.has_item(target)" checks are all happening before the item alias refactor. You will need to address this
+# You also need to address the fact that the player's arguments are always split(). Either stitch them back together in main() OR add a method to Command class
+    # this also involves addressing the quantity check used by some of the Commands
 
 #TODO All the player commands use the item keys, but the text displayed to the player is the item names. You should do something to fix that
 
@@ -190,13 +193,14 @@ class Item(Collectable):
         else:
             raise InvalidItemError(f"This is embarrasing, but the information about {key} is missing.")
 
+    @classmethod
     def find(self, key):
         """Returns an item's instance if passed an alias or key for the item"""
 
         target_key = ''
 
         for instance in ITEMS.values():
-            if key in instance.key or instance.name:
+            if key == instance.key or key == instance.name:
                 target_key = instance.key
                 break
         
@@ -627,7 +631,7 @@ class Buy(Command):
             error(f"Sorry, there are not {qty} {target} here.")
             return
 
-        target_item = Item.get(target)
+        target_item = Item.find(target)
 
         if not target_item.is_for_sale():
             error("Sorry, that item is not for sale.")
@@ -683,7 +687,7 @@ class Examine(Command):
             error(f"There is no {target} in {current_place.name.lower()}.")
             return
 
-        item = Item.get(target)
+        item = Item.find(target)
 
         header(item.name.title())
         wrap(f"{item.description} {item.get_health_change_text()}")
@@ -715,7 +719,7 @@ class Take(Command):
             error(f"Sorry, there are not {qty} {target} here.")
             return
 
-        target_item = Item.get(target)
+        target_item = Item.find(target)
 
         if not target_item.can_take:
             wrap(f"You try to pick up {target_item.name}, but it doesn't budge.")
@@ -787,7 +791,7 @@ class Read(Command):
             error(f"There is no {target} here.")
             return
         
-        target_item = Item.get(target)
+        target_item = Item.find(target)
 
         if target_item.writing == None:
             error("There is nothing to read.")
@@ -860,7 +864,7 @@ class Consume(Command):
             error(f"Sorry, you do not posses a {target}.")
             return
 
-        target_item = Item.get(target)
+        target_item = Item.find(target)
         consume_message = target_item.get_consume_message(action)
 
         if not consume_message:
