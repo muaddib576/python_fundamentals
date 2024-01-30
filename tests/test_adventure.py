@@ -382,8 +382,11 @@ def test_examine_missing_item(capsys):
     }
     adventure.ITEMS = {}
 
-    with pytest.raises(InvalidItemError) as info:
-        Examine(['hills']).do()
+    Examine(['hills']).do()
+    output = capsys.readouterr().out
+
+    assert 'There is no hills in' in output, \
+        "If a key is not preset in ITEMS, the player should be told it is not at the location."
 
 def test_examine_in_shop(capsys):
     # GIVEN: That the item the player wants to examine is not in the player's inventorty
@@ -629,36 +632,10 @@ def test_take_missing_item(capsys):
     output = capsys.readouterr().out
 
     # THEN: The player is told the item is not present
-    assert "there are not 1 grass here" in output, "The player should be told the desired item is not present"
+    assert "There is no grass in" in output, "The player should be told the desired item is not present"
 
     # AND: gets nothing
     assert 'grass' not in adventure.PLAYER.inventory, "The desired item should not be in the player's inventory"
-
-def test_take_invalid_item():
-    # GIVEN: The player's current location and a invalid item
-    adventure.PLAYER.place = 'shire'
-    adventure.PLAYER.inventory = {}
-    adventure.PLACES["shire"] = Place(
-            key="shire",
-            name="The Shire",
-            description="Buncha hobbits.",
-            inventory={'grass':1}
-        )
-    adventure.ITEMS = {}
-
-    # WHEN: The player tries to take the item
-    with pytest.raises(Exception) as info:
-        Take(['grass']).do()
-
-    # THEN: The player is told the item info is missing
-    exception = info.value
-    assert "This is embarrasing" in str(exception)
-
-    # AND: gets nothing
-    assert 'grass' not in adventure.PLAYER.inventory, "The desired item should not be put in the player's inventory"
-
-    # AND: the item is not removed from the location
-    assert 'grass' in adventure.PLACES["shire"].inventory, "the desired item should remain at the place"
 
 def test_raises_example():
     """Example of using pytest.raises to check for an exception.
@@ -1390,7 +1367,7 @@ def test_read_no_item(capsys):
     output = capsys.readouterr().out
     
     # THEN: the plater is told the item is not present
-    assert "There is no magazine here." in output, \
+    assert "There is no magazine" in output, \
         "The player should be told the desired item is not present"
 
 def test_read_place_no_writing(capsys):

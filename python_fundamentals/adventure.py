@@ -2,9 +2,9 @@
 
 # You are in the process of reviewing all the #TODOs and then GRADUATION.
 # Most recently, you created a Item.find() method to augment the Item.get() method, and started using this new classmethod in your command.do()s
-# Your "if not current_place.has_item(target)" checks are all happening before the item alias refactor. You will need to address this
-# You also need to address the fact that the player's arguments are always split(). Either stitch them back together in main() OR add a method to Command class
+# You need to address the fact that the player's arguments are always split(). Either stitch them back together in main() OR add a method to Command class
     # this also involves addressing the quantity check used by some of the Commands
+
 
 #TODO All the player commands use the item keys, but the text displayed to the player is the item names. You should do something to fix that
 
@@ -203,6 +203,10 @@ class Item(Collectable):
             if key == instance.key or key == instance.name:
                 target_key = instance.key
                 break
+
+        if target_key == '':
+            # if not valid object is found, the get() method needs to be skipped
+            return
         
         target_item = Item.get(target_key)
 
@@ -371,7 +375,7 @@ PLACES = {
                    'dagger':1,
         },
     ),
-    "woods": Place(
+    "wooods": Place(
         key="woods",
         name="The Woods",
         description="Significantly more trees than the Town.",
@@ -625,13 +629,17 @@ class Buy(Command):
         if isinstance(self.args[-1], int):
             qty = self.args[-1]
 
-        if not current_place.has_item(target, qty):
+        target_item = Item.find(target)
+
+        if not target_item:
+            error(f"There is no {target} in {current_place.name.lower()}.")
+            return
+
+        if not current_place.has_item(target_item.key, qty):
             if qty == 1:
                 qty = 'any'
             error(f"Sorry, there are not {qty} {target} here.")
             return
-
-        target_item = Item.find(target)
 
         if not target_item.is_for_sale():
             error("Sorry, that item is not for sale.")
@@ -682,18 +690,22 @@ class Examine(Command):
 
         target = self.args[0].lower()
         current_place = self.player_place
+        
+        target_item = Item.find(target)
 
-        if not current_place.has_item(target) and not PLAYER.has_item(target):
+        if not target_item:
             error(f"There is no {target} in {current_place.name.lower()}.")
             return
 
-        item = Item.find(target)
+        if not current_place.has_item(target_item.key) and not PLAYER.has_item(target_item.key):
+            error(f"There is no {target} in {current_place.name.lower()}.")
+            return
 
-        header(item.name.title())
-        wrap(f"{item.description} {item.get_health_change_text()}")
-        if current_place.place_can('shop') and item.is_for_sale():
+        header(target_item.name.title())
+        wrap(f"{target_item.description} {target_item.get_health_change_text()}")
+        if current_place.place_can('shop') and target_item.is_for_sale():
             print()
-            wrap(f"The shop has {current_place.inventory[item.key]}, you can buy one for {abs(item.price)} gems.")
+            wrap(f"The shop has {current_place.inventory[target_item.key]}, you can buy one for {abs(target_item.price)} gems.")
             return
 
 class Take(Command):
@@ -715,11 +727,15 @@ class Take(Command):
 
         current_place = self.player_place
 
-        if not current_place.has_item(target,qty):
-            error(f"Sorry, there are not {qty} {target} here.")
+        target_item = Item.find(target)
+
+        if not target_item:
+            error(f"There is no {target} in {current_place.name.lower()}.")
             return
 
-        target_item = Item.find(target)
+        if not current_place.has_item(target_item.key,qty):
+            error(f"Sorry, there are not {qty} {target} here.")
+            return
 
         if not target_item.can_take:
             wrap(f"You try to pick up {target_item.name}, but it doesn't budge.")
@@ -786,12 +802,16 @@ class Read(Command):
 
         target = self.args[0].lower()
         current_place = self.player_place
-
-        if not (current_place.has_item(target) or PLAYER.has_item(target)):
-            error(f"There is no {target} here.")
-            return
         
         target_item = Item.find(target)
+
+        if not target_item:
+            error(f"There is no {target} in {current_place.name.lower()}.")
+            return
+
+        if not (current_place.has_item(target_item.key) or PLAYER.has_item(target_item.key)):
+            error(f"There is no {target} here.")
+            return
 
         if target_item.writing == None:
             error("There is nothing to read.")
@@ -859,12 +879,16 @@ class Consume(Command):
         """Performs the Consume action on the specified item"""
 
         target = args[0].lower()
+        target_item = Item.find(target)
 
-        if not PLAYER.has_item(target):
+        if not target_item:
             error(f"Sorry, you do not posses a {target}.")
             return
 
-        target_item = Item.find(target)
+        if not PLAYER.has_item(target_item.key):
+            error(f"Sorry, you do not posses a {target}.")
+            return
+
         consume_message = target_item.get_consume_message(action)
 
         if not consume_message:
