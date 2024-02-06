@@ -848,6 +848,29 @@ def test_order_args_qty(args, expected):
     assert cmd.args == expected
     # assert Command(args).order_args_qty() == expected
 
+@pytest.mark.parametrize(
+    ["args", "expected_string", 'expected_qty'], [
+    (['1','thing'], 'thing', [1]),
+    (['five','thing'], 'thing', [5]),
+    (['thing','1'], 'thing', [1]),
+    (['thing','two'], 'thing', [2]),
+    (['thing', '1', 'option'], 'thing option', [1]),
+    (['thing', 'one', 'option'], 'thing option', [1]),
+    (['2', 'thing', '1', 'option'], 'thing option', [2, 1]),
+    (['two', 'thing', 'one', 'option'], 'thing option', [2, 1]),
+])
+
+def test_process_args(args, expected_string, expected_qty):
+    ...
+
+    cmd = Command(args)
+    cmd.process_args()
+
+    assert cmd.arg_string == expected_string
+
+    assert cmd.arg_qty == expected_qty 
+
+
 def test_drop_no_arg(capsys):
     # WHEN: The player calls Drop with no argument
     Drop([]).do()

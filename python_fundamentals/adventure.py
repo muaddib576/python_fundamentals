@@ -1,10 +1,8 @@
 """."""
 
 # You are in the process of reviewing all the #TODOs and then GRADUATION.
-# Most recently, you created a Item.find() method to augment the Item.get() method, and started using this new classmethod in your command.do()s
-# You need to address the fact that the player's arguments are always split(). Either stitch them back together in main() OR add a method to Command class
-    # this also involves addressing the quantity check used by some of the Commands
-
+# Most recently, you changed the way the Command class processes the args passed by the player. You have implemented the method, next you need to update ALL the command classes to use it.
+    # You may also want to account for pluralizations (eg "buy 5 potion" currently works but "buy 5 potions" does not)
 
 #TODO All the player commands use the item keys, but the text displayed to the player is the item names. You should do something to fix that
 
@@ -34,8 +32,10 @@ class InvalidPlaceError(Exception):
     ...
 
 class Command():
-    def __init__(self, args):
+    def __init__(self, args, arg_string=None, arg_qty=None):
         self.args = args
+        self.arg_string = arg_string
+        self.arg_qty = arg_qty
     
     @property
     def player_place(self):
@@ -62,6 +62,8 @@ class Command():
         else:
             return ""
 
+    #TODO This method will be obsolete after process_args() is implemented in the command classes. Delete it!!
+        
     def order_args_qty(self):
         """Takes args list and puts the qty at end of list"""
         
@@ -73,6 +75,46 @@ class Command():
                 ordered_args = [x] + ordered_args
         
         self.args = ordered_args
+
+    def word_to_int(self, word):
+        """Converts a string that uses a word to represent a numeral into an numeral"""
+        number_words = ["zero", "one", "two", "three", "four", "five", "six",
+                        "seven", "eight", "nine", "ten", "eleven", "twelve",
+                        "thirteen", "fourteen", "fifteen", "sixteen", "seventeen",
+                        "eighteen", "nineteen"]
+        
+        if word.isnumeric():
+            return word
+
+        if word in number_words:
+            return number_words.index(word)
+
+        return None
+
+    def process_args(self):
+        """Takes the args list and returns 1 element for the object/direction string and 1 element for the qty"""
+        
+        qty_list = []
+        string_list = []
+
+        for x in self.args:
+            temp_x = self.word_to_int(x)
+            if temp_x:
+                qty_list.append(int(temp_x))
+            else:
+                string_list = string_list + [x]
+
+        final_string = " ".join(string_list)
+
+        self.arg_string = final_string        
+        self.arg_qty = qty_list
+
+
+        # TODO: in your do() methods:
+            # if self.arg_quantity >= 1: ...
+            # if self.string_arg: item = Item.find(self.string_arg)
+
+        # Also check for more than 1 qty and throw error to user ("Sorry im confused, how many did you say??")
 
     def health_bar(self):
         """Displays the current health bar"""
