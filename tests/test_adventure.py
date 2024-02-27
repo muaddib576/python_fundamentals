@@ -861,8 +861,6 @@ def test_order_args_qty(args, expected):
 ])
 
 def test_process_args(args, expected_string, expected_qty):
-    ...
-
     cmd = Command(args)
     cmd.process_args()
 

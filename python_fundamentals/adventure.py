@@ -2,6 +2,8 @@
 
 # You are in the process of reviewing all the #TODOs and then GRADUATION.
 # Most recently, you changed the way the Command class processes the args passed by the player. You have implemented the method, next you need to update ALL the command classes to use it.
+    # NOTE: you made a  change to the above to use the property decorator and a setter instead of a method to process the args
+    # NOTE: word_to_int
     # You may also want to account for pluralizations (eg "buy 5 potion" currently works but "buy 5 potions" does not)
 
 #TODO All the player commands use the item keys, but the text displayed to the player is the item names. You should do something to fix that
@@ -32,10 +34,8 @@ class InvalidPlaceError(Exception):
     ...
 
 class Command():
-    def __init__(self, args, arg_string=None, arg_qty=None):
+    def __init__(self, args):
         self.args = args
-        self.arg_string = arg_string
-        self.arg_qty = arg_qty
     
     @property
     def player_place(self):
@@ -46,6 +46,32 @@ class Command():
         
         return player_place
     
+    @property
+    def args(self):
+        if "_args" not in self.__dict__:
+            self._args = None
+        return self._args
+    
+    @args.setter
+    def args(self, value):
+
+        self._args = value
+        
+        qty_list = []
+        string_list = []
+
+        for x in self._args:
+            temp_x = self.word_to_int(x)
+            if temp_x:
+                qty_list.append(int(temp_x))
+            else:
+                string_list = string_list + [x]
+
+        final_string = " ".join(string_list)
+
+        self.arg_string = final_string        
+        self.arg_qty = qty_list
+
     def comma_list(self, item_list):
         """Takes a list and returns a oxford comma formatted string"""
 
@@ -62,9 +88,8 @@ class Command():
         else:
             return ""
 
-    #TODO This method will be obsolete after process_args() is implemented in the command classes. Delete it!!
-        
     def order_args_qty(self):
+    #TODO This method will be obsolete after process_args() is implemented in the command classes. Delete it!!
         """Takes args list and puts the qty at end of list"""
         
         ordered_args = []
@@ -77,13 +102,14 @@ class Command():
         self.args = ordered_args
 
     def word_to_int(self, word):
+        #TODO add more words to this list OR switch to more programmatic approach  
         """Converts a string that uses a word to represent a numeral into an numeral"""
         number_words = ["zero", "one", "two", "three", "four", "five", "six",
                         "seven", "eight", "nine", "ten", "eleven", "twelve",
                         "thirteen", "fourteen", "fifteen", "sixteen", "seventeen",
                         "eighteen", "nineteen"]
         
-        if word.isnumeric():
+        if isinstance(word, int) or word.isnumeric():
             return word
 
         if word in number_words:
@@ -92,6 +118,7 @@ class Command():
         return None
 
     def process_args(self):
+        # TODO DELETE ME WHEN property setter is implemented
         """Takes the args list and returns 1 element for the object/direction string and 1 element for the qty"""
         
         qty_list = []
@@ -710,8 +737,11 @@ class Go(Command):
 
         debug(f"Trying to go: {self.args}")
 
-        direction = self.args[0].lower()
-        
+        # self.process_args()
+
+        # direction = self.args[0].lower()
+        direction = self.arg_string.lower()
+
         current_place = self.player_place
 
         if current_place:
