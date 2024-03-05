@@ -827,27 +827,6 @@ def test_inventory_empty(capsys):
     # THEN: The player is told their inventory is empty
     assert 'empty' in output, "When the inventory is empty, the player should be told this"
 
-
-@pytest.mark.parametrize(
-    ["args", "expected"], [
-    (['1','thing'],['thing',1]),
-    (['thing','1'],['thing',1]),
-    # note: this is not ideal, but works for now
-    (['thing', '1', 'option'],['option', 'thing', 1]),
-    (['2', 'thing', '1', 'option'],['option', 'thing', 2, 1]),
-])
-
-def test_order_args_qty(args, expected):
-    # GIVEN: args consistenting of a string and qty in arbitrary order
-    # THEN: The args are parsed correctly
-    # Command(args).order_args_qty()
-
-    cmd = Command(args)
-    cmd.order_args_qty()
-
-    assert cmd.args == expected
-    # assert Command(args).order_args_qty() == expected
-
 @pytest.mark.parametrize(
     ["args", "expected_string", 'expected_qty'], [
     (['1','thing'], 'thing', [1]),
@@ -860,14 +839,13 @@ def test_order_args_qty(args, expected):
     (['two', 'thing', 'one', 'option'], 'thing option', [2, 1]),
 ])
 
-def test_process_args(args, expected_string, expected_qty):
+def test_args_setter(args, expected_string, expected_qty):
+    # GIVEN: args consisting of a string and qty
+    # THEN: The args are parsed and stored in the correct class attribute
     cmd = Command(args)
-    cmd.process_args()
 
     assert cmd.arg_string == expected_string
-
-    assert cmd.arg_qty == expected_qty 
-
+    assert cmd.arg_qty == expected_qty
 
 def test_drop_no_arg(capsys):
     # WHEN: The player calls Drop with no argument

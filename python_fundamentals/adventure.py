@@ -1,10 +1,10 @@
 """."""
 
 # You are in the process of reviewing all the #TODOs and then GRADUATION.
-# Most recently, you changed the way the Command class processes the args passed by the player. You have implemented the method, next you need to update ALL the command classes to use it.
-    # NOTE: you made a  change to the above to use the property decorator and a setter instead of a method to process the args
-    # NOTE: word_to_int
-    # You may also want to account for pluralizations (eg "buy 5 potion" currently works but "buy 5 potions" does not)
+# Most recently, you updated Command class to use property decorator and a setter to parse the player args, and updated all the command classes to be compliant.
+    # NOTE: maybe should there be a contingency if more than 1 qty is passed? ""Sorry im confused, how many did you say??""
+        # start with some GIVEN WHEN THENS to identify what is expected player behavior and then decide what to do
+    # NOTE: You may also want to account for pluralizations (eg "buy 5 potion" currently works but "buy 5 potions" does not)
 
 #TODO All the player commands use the item keys, but the text displayed to the player is the item names. You should do something to fix that
 
@@ -57,8 +57,8 @@ class Command():
 
         self._args = value
         
-        qty_list = []
         string_list = []
+        qty_list = []
 
         for x in self._args:
             temp_x = self.word_to_int(x)
@@ -69,7 +69,11 @@ class Command():
 
         final_string = " ".join(string_list)
 
-        self.arg_string = final_string        
+        # assume 1 if player does not specify qty
+        if not qty_list:
+            qty_list = [1]
+
+        self.arg_string = final_string.lower()        
         self.arg_qty = qty_list
 
     def comma_list(self, item_list):
@@ -88,19 +92,6 @@ class Command():
         else:
             return ""
 
-    def order_args_qty(self):
-    #TODO This method will be obsolete after process_args() is implemented in the command classes. Delete it!!
-        """Takes args list and puts the qty at end of list"""
-        
-        ordered_args = []
-        for x in self.args:
-            try:
-                ordered_args.append(int(x))
-            except ValueError:
-                ordered_args = [x] + ordered_args
-        
-        self.args = ordered_args
-
     def word_to_int(self, word):
         #TODO add more words to this list OR switch to more programmatic approach  
         """Converts a string that uses a word to represent a numeral into an numeral"""
@@ -116,32 +107,6 @@ class Command():
             return number_words.index(word)
 
         return None
-
-    def process_args(self):
-        # TODO DELETE ME WHEN property setter is implemented
-        """Takes the args list and returns 1 element for the object/direction string and 1 element for the qty"""
-        
-        qty_list = []
-        string_list = []
-
-        for x in self.args:
-            temp_x = self.word_to_int(x)
-            if temp_x:
-                qty_list.append(int(temp_x))
-            else:
-                string_list = string_list + [x]
-
-        final_string = " ".join(string_list)
-
-        self.arg_string = final_string        
-        self.arg_qty = qty_list
-
-
-        # TODO: in your do() methods:
-            # if self.arg_quantity >= 1: ...
-            # if self.string_arg: item = Item.find(self.string_arg)
-
-        # Also check for more than 1 qty and throw error to user ("Sorry im confused, how many did you say??")
 
     def health_bar(self):
         """Displays the current health bar"""
@@ -168,7 +133,7 @@ class Collectable():
 class Contents():
     """Class for objects with inventories/contents"""
     
-    # move this to Contents
+    # move this to Contents <- wat?
     def has_item(self, key, qty=1):
         """Return True if Object inventory has at least the specified quantity of key, else False"""
 
@@ -274,7 +239,7 @@ class Item(Collectable):
                 break
 
         if target_key == '':
-            # if not valid object is found, the get() method needs to be skipped
+            # if no valid object is found, the get() method needs to be skipped
             return
         
         target_item = Item.get(target_key)
@@ -397,9 +362,6 @@ DRAGON_HEADS = {
         key="red",
         name="Red Dragon Head",
         description="It's red.",
-        # mood="",
-        # damage=(),
-        # treasure=(),
     ),
     "black": Dragon_head(
         key="black",
@@ -487,7 +449,7 @@ ITEMS = {
             "...moving down your body...",
             "...down to the tips of your toes.",
         ),
-        # health_change=20
+        health_change=20
     ),
     "water": Item(
         key="water",
@@ -684,19 +646,15 @@ class Buy(Command):
             error(f"Sorry, you can't shop here.")
             return    
 
-        if not self.args:
+        if not self.arg_string:
             error("You cannot buy nothing.")
             return
 
-        self.order_args_qty()
+        debug(f"Trying to buy: {self.arg_qty} {self.arg_string}")
 
-        debug(f"Trying to buy: {self.args}")
-
-        target = self.args[0].lower()
+        target = self.arg_string
         
-        qty = 1
-        if isinstance(self.args[-1], int):
-            qty = self.args[-1]
+        qty = self.arg_qty[0]
 
         target_item = Item.find(target)
 
@@ -730,17 +688,15 @@ class Buy(Command):
 
 class Go(Command):
     def do(self):
-        """Moves to the specified location"""    
-        if not self.args:
+        """Moves to the specified location"""  
+
+        if not self.arg_string:
             error("You must specify a location.")
             return
 
-        debug(f"Trying to go: {self.args}")
+        debug(f"Trying to go: {self.arg_string}")
 
-        # self.process_args()
-
-        # direction = self.args[0].lower()
-        direction = self.arg_string.lower()
+        direction = self.arg_string
 
         current_place = self.player_place
 
@@ -754,13 +710,13 @@ class Go(Command):
 class Examine(Command):
     def do(self):
         """Prints a description of the specified item, and qty/price if in the shop"""
-        if not self.args:
+        if not self.arg_string:
             error("You cannot examine nothing.")
             return
         
-        debug(f"Trying to examine: {self.args}")
+        debug(f"Trying to examine: {self.arg_string}")
 
-        target = self.args[0].lower()
+        target = self.arg_string
         current_place = self.player_place
         
         target_item = Item.find(target)
@@ -783,19 +739,15 @@ class Examine(Command):
 class Take(Command):
     def do(self):
         """Removes the specified item from the location and adds to inventory"""
-        if not self.args:
+        if not self.arg_string:
             error("You cannot take nothing.")
             return
 
-        self.order_args_qty()
+        debug(f"Trying to take: {self.arg_qty} {self.arg_string}")
 
-        debug(f"Trying to take: {self.args}")
+        target = self.arg_string
 
-        target = self.args[0].lower()
-
-        qty = 1
-        if isinstance(self.args[-1], int):
-            qty = self.args[-1]
+        qty = self.arg_qty[0]
 
         current_place = self.player_place
 
@@ -839,19 +791,16 @@ class Inventory(Command):
 class Drop(Command):
     def do(self):
         """Removed the specified item from the player's inventory and adds it to the location"""
-        if not self.args:
+        
+        if not self.arg_string:
             error("You cannot drop nothing.")
             return
 
-        self.order_args_qty()
+        debug(f"Trying to drop: {self.arg_qty} {self.arg_string}")
 
-        debug(f"Trying to drop: {self.args}")
-
-        target = self.args[0].lower()
+        target = self.arg_string
         
-        qty = 1
-        if isinstance(self.args[-1], int):
-            qty = self.args[-1]
+        qty = self.arg_qty[0]
 
         current_place = self.player_place
 
@@ -866,13 +815,14 @@ class Drop(Command):
 class Read(Command):
     def do(self):
         """Prints any writing on the specified item"""
-        if not self.args:
+
+        if not self.arg_string:
             error("You cannot read nothing.")
             return
         
-        debug(f"Trying to read: {self.args}")
+        debug(f"Trying to read: {self.arg_string}")
 
-        target = self.args[0].lower()
+        target = self.arg_string
         current_place = self.player_place
         
         target_item = Item.find(target)
@@ -896,7 +846,8 @@ class Read(Command):
 class Pet(Command):
     def do(self):
         """Performs the Pet action on the specified dragon"""
-        if not self.args:
+
+        if not self.arg_string:
             error("You cannot pet nothing.")
             return
 
@@ -907,20 +858,22 @@ class Pet(Command):
             return
         
         target_set = False
+        temp_arg_list = self.arg_string.split()
         for word in ['head','dragon']:
-            if word in self.args:
-                self.args.remove(word)
+            if word in temp_arg_list:
+                temp_arg_list.remove(word)
                 target_set = True
         
         if not target_set:
             error("What are you trying to pet?")
             return
         
-        if not self.args:
+        if not temp_arg_list:
             error("Which dragon's head do you want to pet?")
             return
 
-        color = self.args[0].lower()
+        # TODO this whole arg_string parsing to determine color assignment strat is a bit messy
+        color = temp_arg_list[0]
 
         if color not in DRAGON_HEADS.keys():
             error("You do not see such a dragon.")
@@ -950,7 +903,7 @@ class Consume(Command):
     def consume(self, args, action):
         """Performs the Consume action on the specified item"""
 
-        target = args[0].lower()
+        target = self.arg_string
         target_item = Item.find(target)
 
         if not target_item:
@@ -978,22 +931,22 @@ class Consume(Command):
 class Eat(Consume):
     def do(self):
         """Performs the Eat action by calling the Consume action"""
-        if not self.args:
+        if not self.arg_string:
             error("You cannot eat nothing.")
             return
         
         action = 'eat'
-        self.consume(self.args, action)
+        self.consume(self.arg_string, action)
 
 class Drink(Consume):
     def do(self):
         """Performs the Eat action by calling the Consume action"""
-        if not self.args:
+        if not self.arg_string:
             error("You cannot drink nothing.")
             return
         
         action = 'drink'
-        self.consume(self.args, action)
+        self.consume(self.arg_string, action)
 
 #TODO generate this dynamically with a dunder method called "subclasses" or somesuch
 action_dict = {
