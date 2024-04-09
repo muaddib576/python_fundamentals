@@ -1,10 +1,11 @@
 """."""
 
 # You are in the process of reviewing all the #TODOs and then GRADUATION.
-# Most recently, you updated Command class to use property decorator and a setter to parse the player args, and updated all the command classes to be compliant.
+# Most recently, you added alias_plurals and a general "s" check for Item.find()
+# You updated Command class to use property decorator and a setter to parse the player args, and updated all the command classes to be compliant.
     # NOTE: maybe should there be a contingency if more than 1 qty is passed? ""Sorry im confused, how many did you say??""
         # start with some GIVEN WHEN THENS to identify what is expected player behavior and then decide what to do
-    # NOTE: You may also want to account for pluralizations (eg "buy 5 potion" currently works but "buy 5 potions" does not)
+    # TODO check the Drop class TODO
 
 #TODO All the player commands use the item keys, but the text displayed to the player is the item names. You should do something to fix that
 
@@ -54,6 +55,7 @@ class Command():
     
     @args.setter
     def args(self, value):
+        """Sets arg_string and arg_qty values upon instantiation"""
 
         self._args = value
         
@@ -199,7 +201,7 @@ class Place(Collectable, Contents):
         if place:
             return place
         else:
-            raise InvalidPlaceError(f"This is embarrasing, but the information about {key} is missing.")
+            raise InvalidPlaceError(f"This is embarrassing, but the information about {key} is missing.")
 
     def place_can(self, command):
         """Returns TRUE if the command is valid given the place"""
@@ -208,8 +210,9 @@ class Place(Collectable, Contents):
 
 
 class Item(Collectable):
-    def __init__(self, key, name, description, writing=None, can_take=False, price=None, drink_message=None, eat_message=None, health_change=None):
+    def __init__(self, key, name, description, alias_plurals=None, writing=None, can_take=False, price=None, drink_message=None, eat_message=None, health_change=None):
         super().__init__(key, name, description)
+        self.alias_plurals = alias_plurals
         self.writing = writing
         self.can_take = can_take
         self.price = price
@@ -225,7 +228,7 @@ class Item(Collectable):
         if item:
             return item
         else:
-            raise InvalidItemError(f"This is embarrasing, but the information about {key} is missing.")
+            raise InvalidItemError(f"This is embarrassing, but the information about {key} is missing.")
 
     @classmethod
     def find(self, key):
@@ -237,6 +240,20 @@ class Item(Collectable):
             if key == instance.key or key == instance.name:
                 target_key = instance.key
                 break
+
+            # If no exact match, check the alias_plurals
+            if instance.alias_plurals:
+                for alias in instance.alias_plurals:
+                    if key == alias:
+                        target_key = instance.key
+                        break
+            
+            # If still no exact match, check for matches without the key's trailing 's'
+            if key[-1] == 's':
+                s_less_key = key[:-1]
+                if s_less_key == instance.key or s_less_key == instance.name:
+                        target_key = instance.key
+                        break
 
         if target_key == '':
             # if no valid object is found, the get() method needs to be skipped
@@ -406,7 +423,7 @@ PLACES = {
                    'dagger':1,
         },
     ),
-    "wooods": Place(
+    "woods": Place(
         key="woods",
         name="The Woods",
         description="Significantly more trees than the Town.",
@@ -791,7 +808,7 @@ class Inventory(Command):
 class Drop(Command):
     def do(self):
         """Removed the specified item from the player's inventory and adds it to the location"""
-        
+        # TODO: this is not using Item.find() it probably should, right? Also, you are not dropping the qty into the current place, ya goof. Write a test that fails, then fix this...
         if not self.arg_string:
             error("You cannot drop nothing.")
             return

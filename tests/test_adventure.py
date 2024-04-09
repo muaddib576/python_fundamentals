@@ -84,7 +84,7 @@ def test_collectable_get_missing():
 
     # THEN: An exception is raised for the player
     exception = info.value
-    assert "This is embarrasing" in str(exception)
+    assert "This is embarrassing" in str(exception)
 
 def test_collectable_find_name():
     # GIVEN: an item
@@ -122,12 +122,79 @@ def test_collectable_find_key():
         )
     }
     # WHEN: the find method is called using either the name or the key
+    item = Item.find('fake')
+
+    # THEN: the item is returned
+    assert item.name == 'fake alias', \
+        "The find method should return the Item object when passed the item.key"
+
+def test_collectable_find_name_plural_s():
+    # GIVEN: an item
+    adventure.ITEMS = {
+        "potion": Item(
+            key="potion",
+            name="a healing potion",
+            description="It's fake.",
+        ),
+        "grass": Item(
+            key="grass",
+            name="unrelated alias",
+            description="It's grass.",
+        )
+    }
+    # WHEN: the find method is called using either the name or the key with a plural 's'
+    item = Item.find('potions')
+
+    # THEN: the item is returned
+    assert item.key == 'potion', \
+        "The find method should return the Item object when passed a key pluralized with a single 's'"
+
+def test_collectable_find_name_s_not_plural():
+    # GIVEN: an item
+    adventure.ITEMS = {
+        "potion": Item(
+            key="potion",
+            name="a healing potion",
+            description="It's fake.",
+        ),
+        "grass": Item(
+            key="grass",
+            name="unrelated alias",
+            description="It's grass.",
+        )
+    }
+    # WHEN: the find method is called using either the name or the key with a plural 's'
     item = Item.find('grass')
 
     # THEN: the item is returned
-    assert item.name == 'unrelated alias', \
-        "The find method should return the Item object when passed the item.key"
-    
+    assert item.key == 'grass', \
+        "The find method should return the Item object when passed a key with an s for non plural"
+
+def test_collectable_find_name_plural_dict():
+    # GIVEN: an item
+    adventure.ITEMS = {
+        "potion": Item(
+            key="potion",
+            name="a healing potion",
+            description="It's fake.",
+        ),
+        "octopus": Item(
+            key="octopus",
+            name="a live octopus",
+            description="It's grEIGHT.",
+            alias_plurals=['octopuses','octopi']
+        )
+    }
+    # WHEN: the find method is called using either the alias_plurals
+    item = Item.find('octopuses')
+    item2 = Item.find('octopi')
+
+    # THEN: the item is returned
+    assert item.key == 'octopus', \
+        "The find method should return the Item object when passed a key equal to any alias_plurals"
+    assert item2.key == 'octopus', \
+        "The find method should return the Item object when passed a key equal to any alias_plurals"
+
 def test_collectable_find_name_examine(capsys):
     # GIVEN: an item
     adventure.PLAYER.place = 'shire'
