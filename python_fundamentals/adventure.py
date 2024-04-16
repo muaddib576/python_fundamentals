@@ -5,9 +5,8 @@
 # You updated Command class to use property decorator and a setter to parse the player args, and updated all the command classes to be compliant.
     # NOTE: maybe should there be a contingency if more than 1 qty is passed? ""Sorry im confused, how many did you say??""
         # start with some GIVEN WHEN THENS to identify what is expected player behavior and then decide what to do
-    # TODO check the Drop class TODO
 
-#TODO All the player commands use the item keys, but the text displayed to the player is the item names. You should do something to fix that
+#TODO All the player commands use the item keys, but the text displayed to the player is the item names. You should do something to fix that. Maybe just normalize the names?
 
 from multiprocessing.dummy import current_process
 from sys import stderr
@@ -212,7 +211,7 @@ class Place(Collectable, Contents):
 class Item(Collectable):
     def __init__(self, key, name, description, alias_plurals=None, writing=None, can_take=False, price=None, drink_message=None, eat_message=None, health_change=None):
         super().__init__(key, name, description)
-        self.alias_plurals = alias_plurals
+        self.alias_plurals = alias_plurals or []
         self.writing = writing
         self.can_take = can_take
         self.price = price
@@ -237,16 +236,10 @@ class Item(Collectable):
         target_key = ''
 
         for instance in ITEMS.values():
-            if key == instance.key or key == instance.name:
+            # Check if player's key matched with item key, name, or unpacked alias list
+            if key in (instance.key, instance.name, *instance.alias_plurals):
                 target_key = instance.key
                 break
-
-            # If no exact match, check the alias_plurals
-            if instance.alias_plurals:
-                for alias in instance.alias_plurals:
-                    if key == alias:
-                        target_key = instance.key
-                        break
             
             # If still no exact match, check for matches without the key's trailing 's'
             if key[-1] == 's':
@@ -670,10 +663,11 @@ class Buy(Command):
         debug(f"Trying to buy: {self.arg_qty} {self.arg_string}")
 
         target = self.arg_string
-        
         qty = self.arg_qty[0]
-
+        
         target_item = Item.find(target)
+        
+        current_gems = PLAYER.inventory.get("gems", 0)
 
         if not target_item:
             error(f"There is no {target} in {current_place.name.lower()}.")
@@ -691,12 +685,16 @@ class Buy(Command):
 
         item_cost = abs(target_item.price) * qty
 
-        if PLAYER.inventory['gems'] - item_cost < 0: #TODO this throws an error if the player is out of gems
+        if current_gems - item_cost < 0:
             error(f"Sorry, you do not have enough gems.")
             return
 
         PLAYER.add(target_item.key, qty)
-        PLAYER.remove('gems',item_cost)
+        
+        # because the player might be able to buy an item for no cost, and might not have gems
+        # We check that the cost is >0 before removing gems from player's inventory
+        if item_cost > 0: 
+            PLAYER.remove('gems',item_cost)
 
         current_place.remove(target_item.key, qty)
         current_place.add('gems',item_cost)
@@ -808,7 +806,7 @@ class Inventory(Command):
 class Drop(Command):
     def do(self):
         """Removed the specified item from the player's inventory and adds it to the location"""
-        # TODO: this is not using Item.find() it probably should, right? Also, you are not dropping the qty into the current place, ya goof. Write a test that fails, then fix this...
+
         if not self.arg_string:
             error("You cannot drop nothing.")
             return
@@ -816,18 +814,22 @@ class Drop(Command):
         debug(f"Trying to drop: {self.arg_qty} {self.arg_string}")
 
         target = self.arg_string
-        
         qty = self.arg_qty[0]
 
+        target_item = Item.find(target)
         current_place = self.player_place
 
-        if PLAYER.has_item(target,qty):
-            PLAYER.remove(target,qty)
-            current_place.add(target)
-            wrap(f"You dropped {qty} {target} on the ground.")
+        if not target_item:
+            error(f"There is no {target} in {current_place.name.lower()}.")
             return
 
-        error(f"You dont have {qty} {target} to drop.")
+        if PLAYER.has_item(target_item.key, qty):
+            PLAYER.remove(target_item.key, qty)
+            current_place.add(target_item.key, qty)
+            wrap(f"You dropped {qty} {target_item.key} on the ground.")
+            return
+
+        error(f"You dont have {qty} {target_item.key} to drop.")
 
 class Read(Command):
     def do(self):

@@ -926,6 +926,14 @@ def test_drop_no_arg(capsys):
 def test_drop_no_item(capsys):
     # GIVEN: The items in the player's inventory
     adventure.PLAYER.inventory = {}
+    adventure.ITEMS = {
+        "ring": Item(
+            key="ring",
+            name="a ring",
+            description="A metal circle.",
+            can_take=True,
+        )
+    }
 
     # WHEN: The player tries to drop an item not in their inventory
     Drop(['ring']).do()
@@ -938,6 +946,14 @@ def test_drop_quantity_one(capsys):
     # GIVEN: The current location and the items in the player's inventory
     adventure.PLAYER.place = 'shire'
     adventure.PLAYER.inventory = {'ring':1}
+    adventure.ITEMS = {
+        "ring": Item(
+            key="ring",
+            name="a ring",
+            description="A metal circle.",
+            can_take=True,
+        )
+    }
     adventure.PLACES["shire"] = Place(
             key="shire",
             name="The Shire",
@@ -964,7 +980,15 @@ def test_drop_quantity_one(capsys):
 def test_drop_qty(capsys):
     # GIVEN: The current location and the items in the player's inventory
     adventure.PLAYER.place = 'shire'
-    adventure.PLAYER.inventory = {'ring':2}
+    adventure.PLAYER.inventory = {'ring':4}
+    adventure.ITEMS = {
+        "ring": Item(
+            key="ring",
+            name="a ring",
+            description="A metal circle.",
+            can_take=True,
+        )
+    }
     adventure.PLACES["shire"] = Place(
             key="shire",
             name="The Shire",
@@ -973,25 +997,33 @@ def test_drop_qty(capsys):
     )
     
     # WHEN: The player tries to drop an item in their inventory
-    Drop(['ring', 1]).do()
+    Drop(['ring', 2]).do()
     output = capsys.readouterr().out
 
     # THEN: The item is removed from the players inventory
-    assert adventure.PLAYER.inventory['ring'] == 1, \
+    assert adventure.PLAYER.inventory['ring'] == 2, \
         "The dropped item quantity should be reduced by 1 in player's inventory"
     
     # AND: The item is added to the current location's inventory
-    assert adventure.PLACES["shire"].inventory['ring'] == 2, \
-        "the dropped item quantity should be increased by 1 in the location inventory"
+    assert adventure.PLACES["shire"].inventory['ring'] == 3, \
+        "the dropped item quantity should be increased by the qty in the location inventory"
 
     # AND: The player is informed
-    assert "You dropped 1 ring on the ground." in output, \
+    assert "You dropped 2 ring on the ground." in output, \
         "The player should be told they dropped the item"
 
 def test_drop_invalid_qty(capsys):
     # GIVEN: The current location and the items in the player's inventory
     adventure.PLAYER.place = 'shire'
     adventure.PLAYER.inventory = {'ring':2}
+    adventure.ITEMS = {
+        "ring": Item(
+            key="ring",
+            name="a ring",
+            description="A metal circle.",
+            can_take=True,
+        )
+    }
     adventure.PLACES["shire"] = Place(
             key="shire",
             name="The Shire",
@@ -1259,7 +1291,7 @@ def test_buy_for_sale(capsys):
     assert "Sorry, Rabbit Stew is not for sale" not in output, \
         "The player should not be told the item with a price is not for sale."
 
-def test_buy_no_money(capsys):
+def test_buy_low_money(capsys):
     # GIVEN: A place that can "shop" and has an inventory with a price, and a poor player
     adventure.PLAYER.place = 'shire'
     adventure.PLAYER.inventory = {'gems':1}
@@ -1287,6 +1319,63 @@ def test_buy_no_money(capsys):
     # THEN: the player is not told they cannot afford the item
     assert "Sorry, you can't afford Rabbit Stew" not in output, \
         "The player should not be told they are unable to afford the item."
+
+def test_buy_no_money(capsys):
+    # GIVEN: A place that can "shop" and has an inventory with a price, and a poor player
+    adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {}
+    adventure.PLACES["shire"] = Place(
+        key="shire",
+        name="The Shire",
+        description="Buncha hobbits.",
+        can=['shop'],
+        inventory={'stew':1, 
+        } 
+    )
+    adventure.ITEMS = {
+        "stew": Item(
+            key="stew",
+            name="Rabbit Stew",
+            description="A bowl of rabbit stew.",
+            price=-10
+        ),
+    }
+    
+    # WHEN: The Buy command is called
+    Buy(['stew']).do()
+    output = capsys.readouterr().out
+
+    # THEN: the player is not told they cannot afford the item
+    assert "Sorry, you can't afford Rabbit Stew" not in output, \
+        "The player should not be told they are unable to afford the item."
+
+def test_buy_no_money_free(capsys):
+    # GIVEN: A place that can "shop" and has an inventory with a free price, and a player w/ no gems
+    adventure.PLAYER.place = 'shire'
+    adventure.PLAYER.inventory = {}
+    adventure.PLACES["shire"] = Place(
+        key="shire",
+        name="The Shire",
+        description="Buncha hobbits.",
+        can=['shop'],
+        inventory={'stew':1, 
+        } 
+    )
+    adventure.ITEMS = {
+        "stew": Item(
+            key="stew",
+            name="Rabbit Stew",
+            description="A bowl of rabbit stew.",
+            price=0
+        ),
+    }
+    
+    # WHEN: The Buy command is called
+    Buy(['stew']).do()
+    output = capsys.readouterr().out
+
+    # THEN: the player is not told they cannot afford the item
+    assert "You bought 1 Rabbit Stew" in output, "The player should be told they have bought the item"
 
 def test_buy_no_qty(capsys):
     # GIVEN: A place that can "shop" and has a single item with a price, and a moneyed player
