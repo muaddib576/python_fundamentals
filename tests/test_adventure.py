@@ -330,11 +330,87 @@ def test_add(start, amount, expected, message):
     assert adventure.PLAYER.inventory['gems'] == expected, message
 
 def test_go(capsys):
-    adventure.PLAYER.place = 'home'
+    adventure.PLAYER.place = 'shire'
+    adventure.PLACES = {
+        "shire": Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            inventory={},
+            east='moria'
+        ),
+        "moria": Place(
+            key="moria",
+            name="The Mines of Moria",
+            description="Buncha drawf skellies.",
+            inventory={},
+            west='shire'
+        )
+    }
+
     Go(['east']).do()
     output = capsys.readouterr().out
 
-    assert "The square part of town." in output
+    assert adventure.PLAYER.place == 'moria', \
+        "Player should be moved to the direction they specified"
+    assert "Buncha drawf skellies" in output, \
+        "Player should be told their new location's description"
+
+def test_go_no_place(capsys):
+    adventure.PLAYER.place = 'shire'
+    adventure.PLACES = {
+        "shire": Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            inventory={},
+            east='moria'
+        ),
+    }
+
+    Go(['west']).do()
+    output = capsys.readouterr().out
+
+    assert adventure.PLAYER.place == 'shire', \
+        "Player's location should not change when there is nothing in the specified direction"
+    assert "Sorry, there is no 'west'" in output, \
+        "Player should be told there is nothing in that direction"
+
+def test_go_misty_timeout(capsys):
+    adventure.PLAYER.place = 'misty shire'
+    adventure.PLACES = {
+        "shire": Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            inventory={},
+            south='misty shire'
+        ),
+        "misty shire": Place(
+            key="misty shire",
+            name="The Misty Shire",
+            description="Buncha misty hobbits.",
+            inventory={},
+            north='misty shire',
+            south='misty shire',
+            east='misty shire',
+            west='misty shire',
+            time_in_mist = 4,
+            egress_location = 'shire'
+            # clearing_path = ['s','s','w','s','e']
+        ),
+    }
+
+    Go(['west']).do()
+    output = capsys.readouterr().out
+
+    assert adventure.PLAYER.place == 'shire', \
+        "After 5 moves in the mist, the player should get kicked out to the egress location"
+    assert "After wondering for hours, you seem to be back where you started." in output, \
+        "The Player is told they went in a big circle."
+    
+def test_go_misty_clearing(capsys):
+    ...
 
 def test_examine_no_arg(capsys):
     Examine([]).do()

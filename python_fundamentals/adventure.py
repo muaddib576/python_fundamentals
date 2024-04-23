@@ -8,6 +8,17 @@
 
 #TODO All the player commands use the item keys, but the text displayed to the player is the item names. You should do something to fix that. Maybe just normalize the names?
 
+# Misty woods: player gets lost and kicked out if correct path not taken
+    # all cardinal directions point towards "misty woods"
+    # time_in woods variable increments up, after 5 moves player is warped back to town square
+    # if correct path is inputed, player comes upon the "clearing"
+    # TODO you need to finish updating the go class to get the test to pass. you might want to rethink the approach
+        # Currently it is failing because the class parameter time_in_mist is None
+# Map item which displays a visual of locations when read
+# letter in house asks player to bring forgotten item to father in misty woods?
+    # give command?
+
+
 from multiprocessing.dummy import current_process
 from sys import stderr
 from console import fg, bg, fx
@@ -155,7 +166,7 @@ class Contents():
             del self.inventory[item]
 
 class Place(Collectable, Contents):
-    def __init__(self, key, name, description, north=None, east=None, south=None, west=None, can=None, inventory=None):
+    def __init__(self, key, name, description, north=None, east=None, south=None, west=None, can=None, inventory=None, time_in_mist=None, egress_location=None):
         super().__init__(key, name, description)
         self.north = north
         self.east = east
@@ -170,6 +181,8 @@ class Place(Collectable, Contents):
 
         self.can = can
         self.inventory = inventory
+        self.time_in_mist = time_in_mist
+        self.egress_location = egress_location
 
     def go(self, direction):
         """Validates the requested direction and updates player location"""
@@ -404,6 +417,7 @@ PLACES = {
         north="market",
         east="woods",
         west="home",
+        south="misty woods"
     ),
     "market": Place(
         key="market",
@@ -424,6 +438,17 @@ PLACES = {
         west="town-square",
         inventory={'mushroom':1,
         }
+    ),
+    "misty-woods": Place(
+        key="misty-woods",
+        name="The Misty Woods",
+        description="A thick mist envelops the trees. You already feel lost just looking at it.",
+        north='misty shire',
+        south='misty shire',
+        east='misty shire',
+        west='misty shire',
+        time_in_mist = 0,
+        egress_location = 'town-square'
     ),
     "hill": Place(
         key="hill",
@@ -715,12 +740,17 @@ class Go(Command):
 
         current_place = self.player_place
 
-        if current_place:
-            new_place = current_place.go(direction)
+        new_place = current_place.go(direction)
+        # breakpoint()
+        if new_place.time_in_mist is not None:
+            new_place.time_in_mist += 1
+                
+            if new_place.time_in_mist == 6:
+                ...
 
-            if new_place:
-                header(new_place.name)    
-                wrap(new_place.description)
+        header(new_place.name)    
+        wrap(new_place.description)
+
 
 class Examine(Command):
     def do(self):
