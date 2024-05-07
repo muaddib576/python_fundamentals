@@ -10,14 +10,15 @@
 
 # Misty woods: player gets lost and kicked out if correct path not taken
     # all cardinal directions point towards "misty woods"
-    # time_in woods variable increments up, after 5 moves player is warped back to town square
-    # if correct path is inputed, player comes upon the "clearing"
+    # if correct path is inputed, player comes upon the "clearing" and wins game?
     # TODO you need to finish updating the go class to get the test to pass. you might want to rethink the approach
         # Currently it is failing because the class parameter time_in_mist is None
 # Map item which displays a visual of locations when read
 # letter in house asks player to bring forgotten item to father in misty woods?
     # give command?
 
+# NOTES FROM LAST TIME: we wanted to define the compass as a command class attribute, but there is one reference in the go method of the Place class. You did a quick fix to just pass the compass to the method
+# Next up think through how this compass can be altered to include the egress_location when relevant.
 
 from multiprocessing.dummy import current_process
 from sys import stderr
@@ -45,8 +46,9 @@ class InvalidPlaceError(Exception):
     ...
 
 class Command():
-    def __init__(self, args):
+    def __init__(self, args, compass = ['north','east','south','west']):
         self.args = args
+        self.compass = compass
     
     @property
     def player_place(self):
@@ -166,7 +168,7 @@ class Contents():
             del self.inventory[item]
 
 class Place(Collectable, Contents):
-    def __init__(self, key, name, description, north=None, east=None, south=None, west=None, can=None, inventory=None, time_in_mist=None, egress_location=None):
+    def __init__(self, key, name, description, north=None, east=None, south=None, west=None, can=None, inventory=None, egress_location=None, current_path=None):
         super().__init__(key, name, description)
         self.north = north
         self.east = east
@@ -181,12 +183,12 @@ class Place(Collectable, Contents):
 
         self.can = can
         self.inventory = inventory
-        self.time_in_mist = time_in_mist
         self.egress_location = egress_location
+        self.current_path = current_path
 
-    def go(self, direction):
+    def go(self, direction, compass):
         """Validates the requested direction and updates player location"""
-        if direction not in COMPASS:
+        if direction not in compass:
             error(f"Sorry, there is no '{direction}'")
             return
 
@@ -447,7 +449,6 @@ PLACES = {
         south='misty shire',
         east='misty shire',
         west='misty shire',
-        time_in_mist = 0,
         egress_location = 'town-square'
     ),
     "hill": Place(
@@ -566,8 +567,6 @@ PLAYER = Player(
     inventory={'gems':50,},
 )
 
-COMPASS = ['north','east','south','west']
-
 def debug(message):
     """De debug"""
     if DEBUG:
@@ -638,7 +637,7 @@ class Look(Command):
             item_names = [ITEMS[x].name for x in current_place.inventory]
             wrap(f"You see {self.comma_list(item_names)}.")
 
-        for direction in ('north','south','east','west'):
+        for direction in self.compass:
             nearby_name = getattr(current_place, direction)
 
             if nearby_name:
@@ -726,8 +725,8 @@ class Buy(Command):
 
         wrap(f"You bought {qty} {target_item.name} for {item_cost} gems and put it in your bag.")
 
-class Go(Command):
-    def do(self):
+class Goroot(Command):
+    def goroot(self, args, direction):
         """Moves to the specified location"""  
 
         if not self.arg_string:
@@ -740,17 +739,43 @@ class Go(Command):
 
         current_place = self.player_place
 
-        new_place = current_place.go(direction)
-        # breakpoint()
-        if new_place.time_in_mist is not None:
-            new_place.time_in_mist += 1
-                
-            if new_place.time_in_mist == 6:
+        new_place = current_place.go(direction, self.compass)
+
+        if current_place:
+            new_place = current_place.go(direction, self.compass)
+
+            if new_place:
+                header(new_place.name)    
+                wrap(new_place.description)
+
+class Go(Goroot): #rename this?
+    def do(self):
+        """Performs the misty version of Go command when player is in the relevant location"""
+        
+        if not self.arg_string:
+            error("You must specify a location.")
+            return
+
+        debug(f"Trying to go: {self.arg_string}")
+
+        direction = self.arg_string
+        current_place = self.player_place
+
+        if current_place == 'misty-woods': #this could be replaced with kwarg bool?
+            misty_path = ['s','s','w','s','e']
+            path_length = len(misty_path)
+            
+            if current_place.current_path == misty_path:
+                # TODO player wins game
+                return
+
+            if len(current_place.current_path) == path_length:
+                # TODO player is egressed. Add egress_location to compass here and pass to Goroot? Unsure if current inheritance will support this.
                 ...
-
-        header(new_place.name)    
-        wrap(new_place.description)
-
+            
+            current_place.current_path += direction[:1] #maybe this should be a method?
+        
+        self.goroot(self.arg_string, direction)
 
 class Examine(Command):
     def do(self):

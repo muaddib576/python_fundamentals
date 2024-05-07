@@ -395,9 +395,8 @@ def test_go_misty_timeout(capsys):
             south='misty shire',
             east='misty shire',
             west='misty shire',
-            time_in_mist = 4,
-            egress_location = 'shire'
-            # clearing_path = ['s','s','w','s','e']
+            egress_location = 'shire',
+            current_path = ['s','s','w','s']
         ),
     }
 
