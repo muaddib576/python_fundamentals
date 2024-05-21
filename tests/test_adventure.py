@@ -376,26 +376,60 @@ def test_go_no_place(capsys):
     assert "Sorry, there is no 'west'" in output, \
         "Player should be told there is nothing in that direction"
 
-def test_go_misty_timeout(capsys):
-    adventure.PLAYER.place = 'misty shire'
+def test_go_misty_mid_sequence(capsys):
+    adventure.PLAYER.place = 'misty-woods'
     adventure.PLACES = {
         "shire": Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
             inventory={},
-            south='misty shire'
+            south='misty-woods'
         ),
-        "misty shire": Place(
-            key="misty shire",
-            name="The Misty Shire",
+        "misty-woods": Place(
+            key="misty-woods",
+            name="The Misty Woods",
             description="Buncha misty hobbits.",
             inventory={},
-            north='misty shire',
-            south='misty shire',
-            east='misty shire',
-            west='misty shire',
-            egress_location = 'shire',
+            north='misty-woods',
+            south='misty-woods',
+            east='misty-woods',
+            west='misty-woods',
+            egress_location='shire',
+            current_path = ['s','s']
+        ),
+    }
+
+    Go(['west']).do()
+    output = capsys.readouterr().out
+
+    assert adventure.PLAYER.place == 'misty-woods', \
+        "After 3 moves in the mist, the player should still be in the mist."
+    assert adventure.PLACES["misty-woods"].current_path == ['s','s','w'], \
+        "Each move the player makes should be added to the current_path history"
+    assert "Buncha misty hobbits." in output, \
+        "Player should be told the same location's description"
+
+def test_go_misty_timeout(capsys):
+    adventure.PLAYER.place = 'misty-woods'
+    adventure.PLACES = {
+        "shire": Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            inventory={},
+            south='misty-woods'
+        ),
+        "misty-woods": Place(
+            key="misty-woods",
+            name="The Misty Woods",
+            description="Buncha misty hobbits.",
+            inventory={},
+            north='misty-woods',
+            south='misty-woods',
+            east='misty-woods',
+            west='misty-woods',
+            egress_location='shire',
             current_path = ['s','s','w','s']
         ),
     }
@@ -404,12 +438,36 @@ def test_go_misty_timeout(capsys):
     output = capsys.readouterr().out
 
     assert adventure.PLAYER.place == 'shire', \
-        "After 5 moves in the mist, the player should get kicked out to the egress location"
-    assert "After wondering for hours, you seem to be back where you started." in output, \
+        "After 5 moves in the mist, without the correct sequence, the player should get kicked out to the egress location"
+    assert adventure.PLACES["misty-woods"].current_path == [], \
+        "AAfter 5 moves in the mist, without the correct sequence, the current_path history should be reset"
+    assert "After wondering for hours," in output, \
         "The Player is told they went in a big circle."
+    assert "Buncha hobbits." in output, \
+        "Player should be told their new location's description"
     
 def test_go_misty_clearing(capsys):
-    ...
+    adventure.PLAYER.place = 'misty-woods'
+    adventure.PLACES = {
+        "misty-woods": Place(
+            key="misty-woods",
+            name="The Misty Woods",
+            description="Buncha misty hobbits.",
+            inventory={},
+            north='misty-woods',
+            south='misty-woods',
+            east='misty-woods',
+            west='misty-woods',
+            egress_location='shire',
+            current_path = ['s','s','w','s']
+        ),
+    }
+
+    Go(['east']).do()
+    output = capsys.readouterr().out
+
+    assert "Congratulations! You have completed your task!" in output, \
+        "The Player is told they won the game."
 
 def test_examine_no_arg(capsys):
     Examine([]).do()

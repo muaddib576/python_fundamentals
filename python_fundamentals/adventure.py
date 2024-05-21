@@ -1,24 +1,18 @@
 """."""
 
 # You are in the process of reviewing all the #TODOs and then GRADUATION.
-# Most recently, you added alias_plurals and a general "s" check for Item.find()
 # You updated Command class to use property decorator and a setter to parse the player args, and updated all the command classes to be compliant.
     # NOTE: maybe should there be a contingency if more than 1 qty is passed? ""Sorry im confused, how many did you say??""
         # start with some GIVEN WHEN THENS to identify what is expected player behavior and then decide what to do
 
 #TODO All the player commands use the item keys, but the text displayed to the player is the item names. You should do something to fix that. Maybe just normalize the names?
 
-# Misty woods: player gets lost and kicked out if correct path not taken
-    # all cardinal directions point towards "misty woods"
-    # if correct path is inputed, player comes upon the "clearing" and wins game?
-    # TODO you need to finish updating the go class to get the test to pass. you might want to rethink the approach
-        # Currently it is failing because the class parameter time_in_mist is None
-# Map item which displays a visual of locations when read
-# letter in house asks player to bring forgotten item to father in misty woods?
-    # give command?
-
-# NOTES FROM LAST TIME: we wanted to define the compass as a command class attribute, but there is one reference in the go method of the Place class. You did a quick fix to just pass the compass to the method
-# Next up think through how this compass can be altered to include the egress_location when relevant.
+# NOTE: You got the compass and egress situation fixed.
+    # TODO:
+    # Next up is the map, and the fluff/flavor text for the victory condition (game ends immediately upon making it through the woods?)
+    # Map item which displays a visual of locations when read
+    # letter in house asks player to bring forgotten item to father in misty woods? Meet for a picnic (that way there is no item check needed)?
+    # You should also rearrange the locations a bit, so misty-woods is south of the woods and not the town.
 
 from multiprocessing.dummy import current_process
 from sys import stderr
@@ -46,9 +40,10 @@ class InvalidPlaceError(Exception):
     ...
 
 class Command():
-    def __init__(self, args, compass = ['north','east','south','west']):
+    compass = ['north','east','south','west']
+    def __init__(self, args):
         self.args = args
-        self.compass = compass
+        # self.compass = compass
     
     @property
     def player_place(self):
@@ -419,7 +414,7 @@ PLACES = {
         north="market",
         east="woods",
         west="home",
-        south="misty woods"
+        south="misty-woods"
     ),
     "market": Place(
         key="market",
@@ -445,11 +440,12 @@ PLACES = {
         key="misty-woods",
         name="The Misty Woods",
         description="A thick mist envelops the trees. You already feel lost just looking at it.",
-        north='misty shire',
-        south='misty shire',
-        east='misty shire',
-        west='misty shire',
-        egress_location = 'town-square'
+        north='misty-woods',
+        south='misty-woods',
+        east='misty-woods',
+        west='misty-woods',
+        egress_location = 'town-square',
+        current_path=[],
     ),
     "hill": Place(
         key="hill",
@@ -617,7 +613,7 @@ def header(title):
 class Quit(Command):
     def do(self):
         """Ends the game"""
-        write("Goodbye.")
+        write("Goodbye. Thanks for playing!")
         quit()
 
 class Look(Command):
@@ -726,16 +722,12 @@ class Buy(Command):
         wrap(f"You bought {qty} {target_item.name} for {item_cost} gems and put it in your bag.")
 
 class Goroot(Command):
-    def goroot(self, args, direction):
+    def goroot(self, direction):
         """Moves to the specified location"""  
 
         if not self.arg_string:
             error("You must specify a location.")
             return
-
-        debug(f"Trying to go: {self.arg_string}")
-
-        direction = self.arg_string
 
         current_place = self.player_place
 
@@ -749,6 +741,7 @@ class Goroot(Command):
                 wrap(new_place.description)
 
 class Go(Goroot): #rename this?
+    compass = ['north','east','south','west','egress_location'] #overrides the default compass for misty-woods use
     def do(self):
         """Performs the misty version of Go command when player is in the relevant location"""
         
@@ -761,21 +754,27 @@ class Go(Goroot): #rename this?
         direction = self.arg_string
         current_place = self.player_place
 
-        if current_place == 'misty-woods': #this could be replaced with kwarg bool?
+        if current_place.key == 'misty-woods': #this could be replaced with kwarg bool?
             misty_path = ['s','s','w','s','e']
             path_length = len(misty_path)
             
+            current_place.current_path += direction[:1]
+
             if current_place.current_path == misty_path:
-                # TODO player wins game
-                return
+                wrap(f"After navigating the woods for hours, the once thick mist begins to retreat and ahead you notice the trees give way to a clearing")
+                wrap(f"Congratulations! You have completed your task!")
+                quit()
 
             if len(current_place.current_path) == path_length:
-                # TODO player is egressed. Add egress_location to compass here and pass to Goroot? Unsure if current inheritance will support this.
-                ...
+                new_place = current_place.go('egress_location', self.compass)
+                current_place.current_path = []
+
+                wrap(f"After wondering for hours,")
+                header(new_place.name)
+                wrap(new_place.description)
+                return
             
-            current_place.current_path += direction[:1] #maybe this should be a method?
-        
-        self.goroot(self.arg_string, direction)
+        self.goroot(direction)
 
 class Examine(Command):
     def do(self):
