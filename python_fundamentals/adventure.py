@@ -13,6 +13,7 @@
     # Map item which displays a visual of locations when read
     # letter in house asks player to bring forgotten item to father in misty woods? Meet for a picnic (that way there is no item check needed)?
     # You should also rearrange the locations a bit, so misty-woods is south of the woods and not the town.
+    # VICTORY MESSAGE and behavior (quit?)
 
 from multiprocessing.dummy import current_process
 from sys import stderr
@@ -538,6 +539,31 @@ ITEMS = {
         },
         can_take = True,
     ),
+    "woods-map": Item(
+        key="woods-map",
+        name="Map of the Misty Woods",
+        description="A tattered parchment depicting an area thick with trees and mist. You can just make out what appears to be a winding path through the madness.",
+        writing={'title':"The Misty Woods",
+                 'message': (
+                             "┌---------------------------------------------┐",
+                             "| ♣  ~  ♣  ♣  ♣  ♣  ~ |↓| ♣  ♣  ♣  ♣  ~  ♣  ♣ |",
+                             "| ♣  ~  ♣  ♣  ~  ♣  ~ | | ~  ♣  ~  ♣  ♣  ♣  ♣ |",
+                             "| ♣  ♣  ~  ♣  ~  ♣  ♣ |↓| ♣  ♣  ♣  ~  ♣  ♣  ~ |",
+                             "| ♣  ♣  ~  _ _♣ _♣ _♣_| | ♣  ♣  ♣  ~  ♣  ♣  ~ |",
+                             "| ♣  ♣  ♣ |↓  _ _←_ _ _←| ♣  ~  ♣  ~  ♣  ♣  ♣ |",
+                             "| ♣  ♣  ♣ | |_♣_ ~  ♣  ♣  ♣  ♣  ~  ♣  ♣  ♣  ♣ |",
+                             "| ♣  ♣  ♣ |→_ _  ↓| ~  ♣  ~  ♣  ♣  ♣  ~  ♣  ♣ |",
+                             "| ♣  ♣  ♣  ♣  ♣ | | ♣  ~  ♣  ~  ♣  ♣  ♣  ♣  ~ |",
+                             "| ♣  ♣  ♣  ~  ♣|   |♣  ♣  ~  ♣  ♣  ~  ♣  ♣  ♣ |",
+                             "| ♣  ♣  ♣  ♣  ♣|_x_|♣  ♣  ~  ♣  ♣  ♣  ~  ♣  ~ |",
+                             "| ♣  ♣  ♣  ♣  ~  ♣  ♣  ♣  ♣  ♣  ~  ♣  ♣  ♣  ♣ |",
+                             "| ♣  ♣  ~  ♣  ♣  ♣  ♣  ♣  ♣  ♣  ♣  ~  ♣  ♣  ♣ |",
+                             "| ♣  ♣  ♣  ♣  ♣  ~  ♣  ♣  ♣  ♣  ♣  ♣  ~  ♣  ~ |",
+                             "└---------------------------------------------┘",
+                 )
+        },
+        can_take = True,
+    ),
     "bed": Item(
         key="bed",
         name="your bed",
@@ -560,7 +586,9 @@ ITEMS = {
 PLAYER = Player(
     place="market",
     current_health = 100,
-    inventory={'gems':50,},
+    inventory={'gems':50,
+               'woods-map':1,
+               },
 )
 
 def debug(message):
@@ -763,7 +791,7 @@ class Go(Goroot): #rename this?
             if current_place.current_path == misty_path:
                 wrap(f"After navigating the woods for hours, the once thick mist begins to retreat and ahead you notice the trees give way to a clearing")
                 wrap(f"Congratulations! You have completed your task!")
-                quit()
+                quit() #TODO this breaks your test.
 
             if len(current_place.current_path) == path_length:
                 new_place = current_place.go('egress_location', self.compass)
