@@ -9,11 +9,12 @@
 
 # NOTE: You got the compass and egress situation fixed.
     # TODO:
-    # Next up is the map, and the fluff/flavor text for the victory condition (game ends immediately upon making it through the woods?)
-    # Map item which displays a visual of locations when read
-    # letter in house asks player to bring forgotten item to father in misty woods? Meet for a picnic (that way there is no item check needed)?
-    # You should also rearrange the locations a bit, so misty-woods is south of the woods and not the town.
+    # letter in house to give primary quest? Asks player to bring forgotten item to father in misty woods? Or maybe meet for a picnic? (that way there is no item check needed)?
     # VICTORY MESSAGE and behavior (quit?)
+    # Add some delay to the various messages?
+    # there is an issue where can_take cannot be True for items in market... meaning that purchased items cannot be dropped
+        # Maybe have shopkeeper prevent the taking and raise all prices if player tries?
+
 
 from multiprocessing.dummy import current_process
 from sys import stderr
@@ -182,11 +183,8 @@ class Place(Collectable, Contents):
         self.egress_location = egress_location
         self.current_path = current_path
 
-    def go(self, direction, compass):
-        """Validates the requested direction and updates player location"""
-        if direction not in compass:
-            error(f"Sorry, there is no '{direction}'")
-            return
+    def go(self, direction):
+        """Validates the direction exists from current location and updates player location"""
 
         destination = self.__dict__.get(direction)
 
@@ -415,7 +413,6 @@ PLACES = {
         north="market",
         east="woods",
         west="home",
-        south="misty-woods"
     ),
     "market": Place(
         key="market",
@@ -426,6 +423,7 @@ PLACES = {
         can=['shop'],
         inventory={'potion':5,
                    'dagger':1,
+                   'map':1,
         },
     ),
     "woods": Place(
@@ -433,6 +431,7 @@ PLACES = {
         name="The Woods",
         description="Significantly more trees than the Town.",
         east="hill",
+        south="misty-woods",
         west="town-square",
         inventory={'mushroom':1,
         }
@@ -445,7 +444,7 @@ PLACES = {
         south='misty-woods',
         east='misty-woods',
         west='misty-woods',
-        egress_location = 'town-square',
+        egress_location = 'woods',
         current_path=[],
     ),
     "hill": Place(
@@ -539,8 +538,8 @@ ITEMS = {
         },
         can_take = True,
     ),
-    "woods-map": Item(
-        key="woods-map",
+    "map": Item(
+        key="map",
         name="Map of the Misty Woods",
         description="A tattered parchment depicting an area thick with trees and mist. You can just make out what appears to be a winding path through the madness.",
         writing={'title':"The Misty Woods",
@@ -562,6 +561,7 @@ ITEMS = {
                              "└---------------------------------------------┘",
                  )
         },
+        price=-50,
         can_take = True,
     ),
     "bed": Item(
@@ -584,10 +584,9 @@ ITEMS = {
 }
 
 PLAYER = Player(
-    place="market",
+    place="home",
     current_health = 100,
     inventory={'gems':50,
-               'woods-map':1,
                },
 )
 
@@ -759,12 +758,13 @@ class Goroot(Command):
 
         current_place = self.player_place
 
-        new_place = current_place.go(direction, self.compass)
+        new_place = current_place.go(direction)
 
         if current_place:
-            new_place = current_place.go(direction, self.compass)
+            new_place = current_place.go(direction)
 
             if new_place:
+                wrap(f"You spend some time walking {direction} and come upon:")
                 header(new_place.name)    
                 wrap(new_place.description)
 
@@ -774,7 +774,7 @@ class Go(Goroot): #rename this?
         """Performs the misty version of Go command when player is in the relevant location"""
         
         if not self.arg_string:
-            error("You must specify a location.")
+            error("You must specify a direction.")
             return
 
         debug(f"Trying to go: {self.arg_string}")
@@ -782,8 +782,12 @@ class Go(Goroot): #rename this?
         direction = self.arg_string
         current_place = self.player_place
 
+        if direction not in self.compass:
+            error(f"Sorry, there is no '{direction}'")
+            return
+
         if current_place.key == 'misty-woods': #this could be replaced with kwarg bool?
-            misty_path = ['s','s','w','s','e']
+            misty_path = ['s','s','w','w','s','e','s']
             path_length = len(misty_path)
             
             current_place.current_path += direction[:1]
@@ -794,10 +798,10 @@ class Go(Goroot): #rename this?
                 quit() #TODO this breaks your test.
 
             if len(current_place.current_path) == path_length:
-                new_place = current_place.go('egress_location', self.compass)
+                new_place = current_place.go('egress_location')
                 current_place.current_path = []
 
-                wrap(f"After wondering for hours,")
+                wrap(f"After wondering in circles for hours, you find yourself back:")
                 header(new_place.name)
                 wrap(new_place.description)
                 return

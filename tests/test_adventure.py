@@ -430,7 +430,7 @@ def test_go_misty_timeout(capsys):
             east='misty-woods',
             west='misty-woods',
             egress_location='shire',
-            current_path = ['s','s','w','s']
+            current_path = ['s','s','w','w','s','e']
         ),
     }
 
@@ -441,7 +441,7 @@ def test_go_misty_timeout(capsys):
         "After 5 moves in the mist, without the correct sequence, the player should get kicked out to the egress location"
     assert adventure.PLACES["misty-woods"].current_path == [], \
         "AAfter 5 moves in the mist, without the correct sequence, the current_path history should be reset"
-    assert "After wondering for hours," in output, \
+    assert "After wondering in circles for hours," in output, \
         "The Player is told they went in a big circle."
     assert "Buncha hobbits." in output, \
         "Player should be told their new location's description"
@@ -459,11 +459,11 @@ def test_go_misty_clearing(capsys):
             east='misty-woods',
             west='misty-woods',
             egress_location='shire',
-            current_path = ['s','s','w','s']
+            current_path = ['s','s','w','w','s','e']
         ),
     }
 
-    Go(['east']).do()
+    Go(['south']).do()
     output = capsys.readouterr().out
 
     assert "Congratulations! You have completed your task!" in output, \
