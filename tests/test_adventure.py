@@ -598,7 +598,7 @@ def test_examine_in_shop(capsys):
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
-            inventory={'grass':3,'hills':1},
+            shop_inventory={'grass':3,'hills':1},
             can=['shop']
         )
     }
@@ -712,6 +712,41 @@ def test_look_items(capsys):
 
     # THEN: The player is told the list of items present in the location
     assert "grass blades" in output, "The names of the items in the current locations should print"
+
+def test_look_items_w_shop(capsys):
+    
+    # GIVEN: The player's current location
+    adventure.PLAYER.place = 'shire'
+    adventure.PLACES["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            inventory={'grass':1},
+            shop_inventory={'horse':1},
+        )
+
+    adventure.ITEMS = {
+        "grass": Item(
+            key="grass",
+            name="grass blades",
+            description="It's grass.",
+            price=-10,
+        ),
+        "horse": Item(
+            key="horse",
+            name="Poo Brained Horse",
+            description="It looks like a normal horse.",
+            price=-20,
+        ),
+    }
+
+    # WHEN: The player activates Look
+    Look([]).do()
+    output = capsys.readouterr().out
+
+    # THEN: The player is told the list of items present in the location
+    assert "grass blades" in output, "The names of the items in the location's inventory should print"
+    assert "Poo Brained Horse" in output, "The names of the items in the location's shop_inventory should print"
 
 def test_look_no_items(capsys):
     
@@ -1244,6 +1279,45 @@ def test_place_has_false_quantity():
     assert adventure.PLACES["shire"].has_item('ring', 2) == False, \
         "Should return False if the place does not have the specified qty"
 
+def test_place_has_shop_true():
+    # GIVEN: A place with an inventory
+    adventure.PLACES["shire"] = Place(
+        key="shire",
+        name="The Shire",
+        description="Buncha hobbits.",
+        shop_inventory={'ring':2} 
+    )
+
+    # WHEN: has_item() is called for an item/quantity the place possesses
+    assert adventure.PLACES["shire"].has_shop_item('ring', 1) == True, \
+        "Should return True if the place has at least the specified qty"
+
+def test_place_has_shop_false():
+    # GIVEN: A place with an inventory
+    adventure.PLACES["shire"] = Place(
+        key="shire",
+        name="The Shire",
+        description="Buncha hobbits.",
+        shop_inventory={} 
+    )
+
+    # WHEN: has_item() is called for an item/quantity the place possesses
+    assert adventure.PLACES["shire"].has_shop_item('ring', 1) == False, \
+        "Should return False if the place does not have the item"
+
+def test_place_has_shop_false_quantity():
+    # GIVEN: A place with an inventory
+    adventure.PLACES["shire"] = Place(
+        key="shire",
+        name="The Shire",
+        description="Buncha hobbits.",
+        shop_inventory={'ring':1} 
+    )
+
+    # WHEN: has_item() is called for an item/quantity the place possesses
+    assert adventure.PLACES["shire"].has_shop_item('ring', 2) == False, \
+        "Should return False if the place does not have the specified qty"
+
 def test_is_for_sale():
     # GIVEN: An item with a price
     adventure.ITEMS = {
@@ -1277,7 +1351,7 @@ def test_shop_can(capsys):
         name="The Shire",
         description="Buncha hobbits.",
         can=['shop'],
-        inventory={'ring':1,
+        shop_inventory={'ring':1,
                    'stew':1, 
         } 
     )
@@ -1314,7 +1388,7 @@ def test_shop_no_can(capsys):
         key="shire",
         name="The Shire",
         description="Buncha hobbits.",
-        inventory={'ring':1,
+        shop_inventory={'ring':1,
                    'stew':1, 
         } 
     )
@@ -1377,7 +1451,7 @@ def test_buy_not_for_sale(capsys):
         name="The Shire",
         description="Buncha hobbits.",
         can=['shop'],
-        inventory={'ring':1,
+        shop_inventory={'ring':1,
         } 
     )
     adventure.ITEMS = {
@@ -1404,7 +1478,7 @@ def test_buy_for_sale(capsys):
         name="The Shire",
         description="Buncha hobbits.",
         can=['shop'],
-        inventory={'stew':1, 
+        shop_inventory={'stew':1, 
         } 
     )
     adventure.ITEMS = {
@@ -1433,7 +1507,7 @@ def test_buy_low_money(capsys):
         name="The Shire",
         description="Buncha hobbits.",
         can=['shop'],
-        inventory={'stew':1, 
+        shop_inventory={'stew':1, 
         } 
     )
     adventure.ITEMS = {
@@ -1462,7 +1536,7 @@ def test_buy_no_money(capsys):
         name="The Shire",
         description="Buncha hobbits.",
         can=['shop'],
-        inventory={'stew':1, 
+        shop_inventory={'stew':1, 
         } 
     )
     adventure.ITEMS = {
@@ -1491,7 +1565,7 @@ def test_buy_no_money_free(capsys):
         name="The Shire",
         description="Buncha hobbits.",
         can=['shop'],
-        inventory={'stew':1, 
+        shop_inventory={'stew':1, 
         } 
     )
     adventure.ITEMS = {
@@ -1519,7 +1593,7 @@ def test_buy_no_qty(capsys):
         name="The Shire",
         description="Buncha hobbits.",
         can=['shop'],
-        inventory={'stew':1, 
+        shop_inventory={'stew':1, 
         } 
     )
     adventure.ITEMS = {
@@ -1559,7 +1633,7 @@ def test_buy_invalid_qty(capsys):
         name="The Shire",
         description="Buncha hobbits.",
         can=['shop'],
-        inventory={'stew':2, 
+        shop_inventory={'stew':2, 
         } 
     )
     adventure.ITEMS = {
@@ -1599,7 +1673,7 @@ def test_buy_qty(capsys):
         name="The Shire",
         description="Buncha hobbits.",
         can=['shop'],
-        inventory={'stew':5, 
+        shop_inventory={'stew':5, 
         } 
     )
     adventure.ITEMS = {

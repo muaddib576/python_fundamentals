@@ -13,7 +13,18 @@
     # VICTORY MESSAGE and behavior (quit?)
     # Add some delay to the various messages?
     # there is an issue where can_take cannot be True for items in market... meaning that purchased items cannot be dropped
-        # Maybe have shopkeeper prevent the taking and raise all prices if player tries?
+        # You are creating a new shop_inventory attribute
+        # The following commands need to be updated
+        #   Examine - DONE
+        #   Shop - DONE
+        #   Buy -
+        #   Take? -
+        #   Look? - DONE? But it might display duplicates if both inventories have item
+        #       Somewhat related, Alissa suggested maybe replacing the "shop" command with a menu in the shop that the player can "read"
+        #           would need to have the writing dynamically generated. Think about it and discuss with Alissa
+        #   has_item will need a new version for shop inventory - DONE
+        #   remove -
+        #   add? -
 
 
 from multiprocessing.dummy import current_process
@@ -150,6 +161,11 @@ class Contents():
 
         return key in self.inventory and self.inventory[key] >= qty
     
+    def has_shop_item(self, key, qty=1):
+        """Return True if Object shop_inventory has at least the specified quantity of key, else False"""
+
+        return key in self.shop_inventory and self.shop_inventory[key] >= qty
+    
     def add(self, item, qty=1): 
         """Adds X item"""
         self.inventory.setdefault(item, 0)
@@ -165,7 +181,7 @@ class Contents():
             del self.inventory[item]
 
 class Place(Collectable, Contents):
-    def __init__(self, key, name, description, north=None, east=None, south=None, west=None, can=None, inventory=None, egress_location=None, current_path=None):
+    def __init__(self, key, name, description, north=None, east=None, south=None, west=None, can=None, inventory=None, shop_inventory=None, egress_location=None, current_path=None):
         super().__init__(key, name, description)
         self.north = north
         self.east = east
@@ -180,6 +196,7 @@ class Place(Collectable, Contents):
 
         self.can = can
         self.inventory = inventory
+        self.shop_inventory = shop_inventory
         self.egress_location = egress_location
         self.current_path = current_path
 
@@ -421,7 +438,7 @@ PLACES = {
             "A large wooden sign hangs above the clerk.",
         south="town-square",
         can=['shop'],
-        inventory={'potion':5,
+        shop_inventory={'potion':5,
                    'dagger':1,
                    'map':1,
         },
@@ -587,6 +604,7 @@ PLAYER = Player(
     place="home",
     current_health = 100,
     inventory={'gems':50,
+               'lockpicks':1, #TODO remove this item from inventory
                },
 )
 
@@ -658,6 +676,10 @@ class Look(Command):
         # Display list of the items in the current location
         if current_place.inventory:
             item_names = [ITEMS[x].name for x in current_place.inventory]
+            
+            if current_place.shop_inventory:
+                item_names += [ITEMS[x].name for x in current_place.shop_inventory]
+            
             wrap(f"You see {self.comma_list(item_names)}.")
 
         for direction in self.compass:
@@ -678,7 +700,7 @@ class Shop(Command):
 
         header("Whater you buyin'?\n")
 
-        for key, qty in current_place.inventory.items():
+        for key, qty in current_place.shop_inventory.items():
             item = ITEMS.get(key)
             if item.is_for_sale():
 
@@ -826,15 +848,15 @@ class Examine(Command):
             error(f"There is no {target} in {current_place.name.lower()}.")
             return
 
-        if not current_place.has_item(target_item.key) and not PLAYER.has_item(target_item.key):
+        if not current_place.has_item(target_item.key) and not current_place.has_shop_item(target_item.key) and not PLAYER.has_item(target_item.key):
             error(f"There is no {target} in {current_place.name.lower()}.")
             return
 
         header(target_item.name.title())
         wrap(f"{target_item.description} {target_item.get_health_change_text()}")
-        if current_place.place_can('shop') and target_item.is_for_sale():
+        if current_place.place_can('shop') and current_place.has_shop_item(target_item.key) and target_item.is_for_sale():
             print()
-            wrap(f"The shop has {current_place.inventory[target_item.key]}, you can buy one for {abs(target_item.price)} gems.")
+            wrap(f"The shop has {current_place.shop_inventory[target_item.key]}, you can buy one for {abs(target_item.price)} gems.")
             return
 
 class Take(Command):
