@@ -17,7 +17,7 @@
         # The following commands need to be updated
         #   Examine - DONE
         #   Shop - DONE
-        #   Buy -
+        #   Buy - IN PROGRESS
         #   Take? -
         #   Look? - DONE? But it might display duplicates if both inventories have item
         #       Somewhat related, Alissa suggested maybe replacing the "shop" command with a menu in the shop that the player can "read"
@@ -25,6 +25,7 @@
         #   has_item will need a new version for shop inventory - DONE
         #   remove -
         #   add? -
+        #   should I add a sell command? Is there a gameplay reason for this?
 
 
 from multiprocessing.dummy import current_process
@@ -166,19 +167,32 @@ class Contents():
 
         return key in self.shop_inventory and self.shop_inventory[key] >= qty
     
-    def add(self, item, qty=1): 
-        """Adds X item"""
-        self.inventory.setdefault(item, 0)
-        self.inventory[item] += qty
+    def add(self, item, qty=1, inventory_type="inventory"): 
+        """Adds X item from specified inventory"""
 
-    def remove(self, item, qty=1):
-        """Remove X item"""
-        if self.has_item(item, qty):
-            self.inventory[item] -= qty
+        inventory = getattr(self, inventory_type)
+
+        inventory.setdefault(item, 0)
+        inventory[item] += qty
+
+    def remove(self, item, qty=1, inventory_type="inventory"):
+        """Remove X item from specified inventory"""
         
+        # if self.has_item(item, qty):
+        #     self.inventory[item] -= qty
+        
+        # # remove item from inventory if quantity is 0 or less
+        # if self.inventory[item] <= 0:
+        #     del self.inventory[item]
+
+        inventory = getattr(self, inventory_type)
+
+        if self.has_item(item, qty): #TODO I think this is causing an issue. Does self not mean what you think after the refactor??
+            inventory[item] -= qty
+
         # remove item from inventory if quantity is 0 or less
-        if self.inventory[item] <= 0:
-            del self.inventory[item]
+        if inventory[item] <= 0:
+            del inventory[item]
 
 class Place(Collectable, Contents):
     def __init__(self, key, name, description, north=None, east=None, south=None, west=None, can=None, inventory=None, shop_inventory=None, egress_location=None, current_path=None):
@@ -193,6 +207,9 @@ class Place(Collectable, Contents):
             
         if not inventory:
             inventory = {}
+
+        if not shop_inventory:
+            shop_inventory = {}
 
         self.can = can
         self.inventory = inventory
@@ -232,7 +249,19 @@ class Place(Collectable, Contents):
         """Returns TRUE if the command is valid given the place"""
 
         return command in self.can
+    
+    def buy(self, item, item_cost, qty=1):
+        """Takes the item key and cost and calls add/remove w/ appropriate params"""
 
+        PLAYER.add(item, qty)
+        
+        # because the player might be able to buy an item for no cost, and might not have gems
+        # We check that the cost is >0 before removing gems from player's inventory
+        if item_cost > 0: 
+            PLAYER.remove('gems',item_cost)
+
+        self.remove(item, qty, "shop_inventory")
+        self.add('gems', item_cost, "shop_inventory")
 
 class Item(Collectable):
     def __init__(self, key, name, description, alias_plurals=None, writing=None, can_take=False, price=None, drink_message=None, eat_message=None, health_change=None):
@@ -742,7 +771,7 @@ class Buy(Command):
             error(f"There is no {target} in {current_place.name.lower()}.")
             return
 
-        if not current_place.has_item(target_item.key, qty):
+        if not current_place.has_shop_item(target_item.key, qty):
             if qty == 1:
                 qty = 'any'
             error(f"Sorry, there are not {qty} {target} here.")
@@ -758,15 +787,17 @@ class Buy(Command):
             error(f"Sorry, you do not have enough gems.")
             return
 
-        PLAYER.add(target_item.key, qty)
+        # PLAYER.add(target_item.key, qty)
         
-        # because the player might be able to buy an item for no cost, and might not have gems
-        # We check that the cost is >0 before removing gems from player's inventory
-        if item_cost > 0: 
-            PLAYER.remove('gems',item_cost)
+        # # because the player might be able to buy an item for no cost, and might not have gems
+        # # We check that the cost is >0 before removing gems from player's inventory
+        # if item_cost > 0: 
+        #     PLAYER.remove('gems',item_cost)
 
-        current_place.remove(target_item.key, qty)
-        current_place.add('gems',item_cost)
+        # current_place.remove(target_item.key, qty)
+        # current_place.add('gems',item_cost)
+
+        current_place.buy(target_item.key, item_cost, qty)
 
         wrap(f"You bought {qty} {target_item.name} for {item_cost} gems and put it in your bag.")
 

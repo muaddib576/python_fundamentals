@@ -1613,13 +1613,13 @@ def test_buy_no_qty(capsys):
     assert 'stew' in adventure.PLAYER.inventory, "The bought item should be in the player's inventory"
 
     # AND: the item is removed from the place
-    assert 'stew' not in adventure.PLACES["shire"].inventory, "the bought item should no longer be at the place"
+    assert 'stew' not in adventure.PLACES["shire"].shop_inventory, "the bought item should no longer be at the place"
 
     # AND: The player's gems are reduced by the cost of the item
     assert adventure.PLAYER.inventory['gems'] == 40, "The place's gems should be increased by the cost of the item"
 
     # AND: The place's gems are increased by the cost of the item
-    assert adventure.PLACES["shire"].inventory['gems'] == 10, "The players gems should be reduced by the cost of the item"
+    assert adventure.PLACES["shire"].shop_inventory['gems'] == 10, "The players gems should be reduced by the cost of the item"
 
     # AND: the player is informed
     assert "You bought 1 Rabbit Stew for 10 gems" in output, "The player should be told they have bought the item"
@@ -1653,13 +1653,13 @@ def test_buy_invalid_qty(capsys):
     assert 'stew' not in adventure.PLAYER.inventory.keys(), "The invalid qty purchase should not be in the player's inventory"
 
     # AND: the location's item qty should not change
-    assert adventure.PLACES["shire"].inventory['stew'] == 2, "The invalid qty purchase attempt should not change the location inv"
+    assert adventure.PLACES["shire"].shop_inventory['stew'] == 2, "The invalid qty purchase attempt should not change the location inv"
 
     # AND: The player's gems should not change
     assert adventure.PLAYER.inventory['gems'] == 50, "The invalid qty purchase should not change the player's gems"
 
     # AND: The place's gems are increased by the cost of the item
-    assert 'gems' not in adventure.PLACES["shire"].inventory.keys(), "The invalid qty purchase should not change the place's gems"
+    assert 'gems' not in adventure.PLACES["shire"].shop_inventory.keys(), "The invalid qty purchase should not change the place's gems"
 
     # AND: the player is informed
     assert "Sorry, there are not 3 stew here." in output, "The player should be told the location does not have the requested qty"
@@ -1693,13 +1693,13 @@ def test_buy_qty(capsys):
     assert adventure.PLAYER.inventory['stew'] == 3, "The bought item qty should be in the player's inventory"
 
     # AND: the item is removed from the place
-    assert adventure.PLACES["shire"].inventory['stew'] == 2, "the bought item qty should be removed from the place"
+    assert adventure.PLACES["shire"].shop_inventory['stew'] == 2, "the bought item qty should be removed from the place"
 
     # AND: The player's gems are reduced by the cost of the item
     assert adventure.PLAYER.inventory['gems'] == 20, "The players gems should be reduced by the cost of the items"
 
     # AND: The place's gems are increased by the cost of the item
-    assert adventure.PLACES["shire"].inventory['gems'] == 30, "The place's gems should be increased by the cost of the items"
+    assert adventure.PLACES["shire"].shop_inventory['gems'] == 30, "The place's gems should be increased by the cost of the items"
 
     # AND: the player is informed
     assert "You bought 3 Rabbit Stew" in output, "The player should be told they have bought the item"
