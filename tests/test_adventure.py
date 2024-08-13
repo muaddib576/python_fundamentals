@@ -1593,7 +1593,7 @@ def test_buy_no_qty(capsys):
         name="The Shire",
         description="Buncha hobbits.",
         can=['shop'],
-        shop_inventory={'stew':1, 
+        shop_inventory={'stew':1,
         } 
     )
     adventure.ITEMS = {
@@ -1616,10 +1616,10 @@ def test_buy_no_qty(capsys):
     assert 'stew' not in adventure.PLACES["shire"].shop_inventory, "the bought item should no longer be at the place"
 
     # AND: The player's gems are reduced by the cost of the item
-    assert adventure.PLAYER.inventory['gems'] == 40, "The place's gems should be increased by the cost of the item"
+    assert adventure.PLAYER.inventory['gems'] == 40, "The players gems should be reduced by the cost of the item"
 
     # AND: The place's gems are increased by the cost of the item
-    assert adventure.PLACES["shire"].shop_inventory['gems'] == 10, "The players gems should be reduced by the cost of the item"
+    assert adventure.PLACES["shire"].shop_inventory['gems'] == 10, "The place's gems should be increased by the cost of the item"
 
     # AND: the player is informed
     assert "You bought 1 Rabbit Stew for 10 gems" in output, "The player should be told they have bought the item"
