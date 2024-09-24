@@ -1,31 +1,15 @@
 """."""
 
 # You are in the process of reviewing all the #TODOs and then GRADUATION.
-# You updated Command class to use property decorator and a setter to parse the player args, and updated all the command classes to be compliant.
-    # NOTE: maybe should there be a contingency if more than 1 qty is passed? ""Sorry im confused, how many did you say??""
-        # start with some GIVEN WHEN THENS to identify what is expected player behavior and then decide what to do
+# NOTE: maybe should there be a contingency if more than 1 qty is passed by the player? ""Sorry im confused, how many did you say??""
+    # Alissa: start with some GIVEN WHEN THENS to identify what is expected player behavior and then decide what to do
 
-#TODO All the player commands use the item keys, but the text displayed to the player is the item names. You should do something to fix that. Maybe just normalize the names?
-
-# NOTE: You got the compass and egress situation fixed.
-    # TODO:
-    # letter in house to give primary quest? Asks player to bring forgotten item to father in misty woods? Or maybe meet for a picnic? (that way there is no item check needed)?
-    # VICTORY MESSAGE and behavior (quit?)
-    # Add some delay to the various messages?
-    # there is an issue where can_take cannot be True for items in market... meaning that purchased items cannot be dropped
-        # You are creating a new shop_inventory attribute
-        # The following commands need to be updated
-        #   Examine - DONE
-        #   Shop - DONE
-        #   Buy - DONE
-        #   Take? -
-        #   Look? - DONE? But it might display duplicates if both inventories have item
-        #       Somewhat related, Alissa suggested maybe replacing the "shop" command with a menu in the shop that the player can "read"
-        #           would need to have the writing dynamically generated. Think about it and discuss with Alissa
-        #   has_item will need a new version for shop inventory - DONE
-        #   remove -
-        #   add? -
-        #   should I add a sell command? Is there a gameplay reason for this?
+# letter in house to give primary quest? Asks player to bring forgotten item to father in misty woods? Or maybe meet for a picnic? (that way there is no item check needed)?
+# VICTORY MESSAGE and behavior (quit?)
+# Add some delay to the various messages?
+# Alissa suggested maybe replacing the "shop" command with a menu in the shop that the player can "read"
+    # would need to have the writing dynamically generated. Think about it and discuss with Alissa
+# should I add a sell command? Is there a gameplay reason for this? ...immersion?
 
 
 from multiprocessing.dummy import current_process
@@ -257,9 +241,6 @@ class Place(Collectable, Contents):
         self.remove(item, qty, self.shop_inventory)
 
         self.add('gems', item_cost, self.shop_inventory)
-        
-        ...
-        
 
 class Item(Collectable):
     def __init__(self, key, name, description, alias_plurals=None, writing=None, can_take=False, price=None, drink_message=None, eat_message=None, health_change=None):
@@ -514,6 +495,7 @@ ITEMS = {
         key="potion",
         name="healing potion",
         description="A magical liquid that improves your life's outlook.",
+        can_take = True,
         price=-10,
         drink_message=(
             "You uncork the bottle.",
@@ -555,12 +537,14 @@ ITEMS = {
         key="lockpicks",
         name="lockpicking tools",
         description="A standard thieving kit.",
+        can_take = True,
         price=-8,
     ),
     "dagger": Item(
         key="dagger",
         name="stabbing dagger",
         description="A length of metal honed to a fine point.",
+        can_take = True,
         price=-20,
     ),
     "desk": Item(
@@ -617,6 +601,7 @@ ITEMS = {
         key="gems",
         name="gems",
         description="The realm's primary currency. They also look pretty.",
+        can_take = True,
     ),
     "dragon": Item(
         key="dragon",
@@ -628,7 +613,7 @@ ITEMS = {
 }
 
 PLAYER = Player(
-    place="home",
+    place="market",
     current_health = 100,
     inventory={'gems':50,
                'lockpicks':1, #TODO remove this item from inventory
@@ -704,10 +689,12 @@ class Look(Command):
         if current_place.inventory:
             item_names = [ITEMS[x].name for x in current_place.inventory]
             
-            if current_place.shop_inventory:
-                item_names += [ITEMS[x].name for x in current_place.shop_inventory]
+            wrap(f"You see {self.comma_list(item_names)} nearby.")
+
+        if current_place.shop_inventory:
+            shop_item_names = [ITEMS[x].name for x in current_place.shop_inventory]
             
-            wrap(f"You see {self.comma_list(item_names)}.")
+            wrap(f"Behind the counter, the shopkeeper has {self.comma_list(shop_item_names)} prominently displayed.")
 
         for direction in self.compass:
             nearby_name = getattr(current_place, direction)
@@ -900,12 +887,15 @@ class Take(Command):
             return
 
         if not current_place.has_item(target_item.key,qty):
-            error(f"Sorry, there are not {qty} {target} here.")
+            wrap(f"Sorry, there are not {qty} {target} available to take here.")
+
+            if current_place.has_shop_item(target_item.key,qty):
+                wrap(f"The shop has {qty} {target} but you are no thief.")
             return
 
         if not target_item.can_take:
             wrap(f"You try to pick up {target_item.name}, but it doesn't budge.")
-            return
+            return  
 
         PLAYER.add(target_item.key, qty)
         current_place.remove(target_item.key, qty)
@@ -1109,6 +1099,7 @@ action_dict = {
     "t": Take,
     "take": Take,
     "grab": Take,
+    "pickup": Take,
     "i": Inventory,    
     "inventory": Inventory,
     "d": Drop,    

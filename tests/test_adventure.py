@@ -1022,7 +1022,7 @@ def test_take_invalid_qty(capsys):
         "The invalid qty item should not be added to the player's inventory"
 
     # AND: The player is informed
-    assert "Sorry, there are not 4 ring here" in output, \
+    assert "Sorry, there are not 4 ring available to take here" in output, \
         "The player should be told there are not enough"
 
 def test_inventory(capsys):
