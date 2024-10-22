@@ -1,15 +1,27 @@
 """."""
 
 # You are in the process of reviewing all the #TODOs and then GRADUATION.
-# NOTE: maybe should there be a contingency if more than 1 qty is passed by the player? ""Sorry im confused, how many did you say??""
-    # Alissa: start with some GIVEN WHEN THENS to identify what is expected player behavior and then decide what to do
 
+# Needs:
 # letter in house to give primary quest? Asks player to bring forgotten item to father in misty woods? Or maybe meet for a picnic? (that way there is no item check needed)?
 # VICTORY MESSAGE and behavior (quit?)
-# Add some delay to the various messages?
+
+# Polish:
+# Having wrap() always end with a new line might be stylistically nicer
 # Alissa suggested maybe replacing the "shop" command with a menu in the shop that the player can "read"
     # would need to have the writing dynamically generated. Think about it and discuss with Alissa
 # should I add a sell command? Is there a gameplay reason for this? ...immersion?
+# Add some delay to the various messages?
+# Cleanup/add command aliases
+# NOTE: maybe should there be a contingency if more than 1 qty is passed by the player? ""Sorry im confused, how many did you say??""
+    # Alissa: start with some GIVEN WHEN THENS to identify what is expected player behavior and then decide what to do
+
+# Bugs:
+# Either prevent drinking health potion or water when at full health, OR alter message to say "you are already at full health"
+# "examine dragon" works, but "e dragon" does not, despite both being aliases for examine class?? - DONE (you had overlapping aliases)
+# dropping to 0 health does nothing
+# "Error: Sorry there is no x from here" is printing twice - DONE
+# "<Item object=healing potion>" displays upon game load - DONE
 
 
 from multiprocessing.dummy import current_process
@@ -23,7 +35,7 @@ from time import sleep
 WIDTH = 60
 MARGIN = ' '*3
 DELAY = 1
-DEBUG = True
+DEBUG = False
 MAX_HEALTH = 100
 BAR = ProgressBar(
     total=(MAX_HEALTH + .1),
@@ -613,10 +625,10 @@ ITEMS = {
 }
 
 PLAYER = Player(
-    place="market",
+    place="home",
     current_health = 100,
-    inventory={'gems':50,
-               'lockpicks':1, #TODO remove this item from inventory
+    inventory={
+                # 'gems':2,
                },
 )
 
@@ -788,13 +800,10 @@ class Goroot(Command):
 
         new_place = current_place.go(direction)
 
-        if current_place:
-            new_place = current_place.go(direction)
-
-            if new_place:
-                wrap(f"You spend some time walking {direction} and come upon:")
-                header(new_place.name)    
-                wrap(new_place.description)
+        if new_place:
+            wrap(f"You spend some time walking {direction} and come upon:")
+            header(new_place.name)    
+            wrap(new_place.description)
 
 class Go(Goroot): #rename this?
     compass = ['north','east','south','west','egress_location'] #overrides the default compass for misty-woods use
@@ -1110,7 +1119,6 @@ action_dict = {
     "read": Read,
     "p": Pet,
     "pet": Pet,
-    "e": Eat,
     "eat": Eat,
     "drink": Drink,
 }
@@ -1119,7 +1127,7 @@ def main():
 
     print("Welcome!")
 
-    print(repr(ITEMS['potion']))
+    # print(repr(ITEMS['potion'])) #why was this here???????
 
     while True:
         print()
