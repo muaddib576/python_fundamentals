@@ -2,26 +2,29 @@
 
 # You are in the process of reviewing all the #TODOs and then GRADUATION.
 
-# Needs:
+# Needed:
 # letter in house to give primary quest? Asks player to bring forgotten item to father in misty woods? Or maybe meet for a picnic? (that way there is no item check needed)?
 # VICTORY MESSAGE and behavior (quit?)
 
 # Polish:
-# Having wrap() always end with a new line might be stylistically nicer
-# Alissa suggested maybe replacing the "shop" command with a menu in the shop that the player can "read"
-    # would need to have the writing dynamically generated. Think about it and discuss with Alissa
-# should I add a sell command? Is there a gameplay reason for this? ...immersion?
-# Add some delay to the various messages?
-# Cleanup/add command aliases
-# NOTE: maybe should there be a contingency if more than 1 qty is passed by the player? ""Sorry im confused, how many did you say??""
-    # Alissa: start with some GIVEN WHEN THENS to identify what is expected player behavior and then decide what to do
+    # Having wrap() always end with a new line might be stylistically nicer - DONE (also changed header() a bit)
+    # Add some delay to the various messages?
+    # add flavor text to all descriptions
+        # how will player know to pet?    
+    # Cleanup/add command aliases
+    # make the misty woods lost progress more clear? - IN PROGRESS - you just need to have the go class use the alternate descriptions based on the current_path
+    # make n/e/s/w aliases for north/east/etc
+
+# Features:
+    # Alissa suggested maybe replacing the "shop" command with a menu in the shop that the player can "read"
+        # would need to have the writing dynamically generated. Think about it and discuss with Alissa
+    # should I add a sell command? Is there a gameplay reason for this? ...immersion?
+    # NOTE: maybe should there be a contingency if more than 1 qty is passed by the player? ""Sorry im confused, how many did you say??""
+        # Alissa: start with some GIVEN WHEN THENS to identify what is expected player behavior and then decide what to do
 
 # Bugs:
-# Either prevent drinking health potion or water when at full health, OR alter message to say "you are already at full health"
-# "examine dragon" works, but "e dragon" does not, despite both being aliases for examine class?? - DONE (you had overlapping aliases)
-# dropping to 0 health does nothing
-# "Error: Sorry there is no x from here" is printing twice - DONE
-# "<Item object=healing potion>" displays upon game load - DONE
+    # Either prevent drinking health potion or water when at full health, OR alter message to say "you are already at full health"
+    # dropping to 0 health does nothing
 
 
 from multiprocessing.dummy import current_process
@@ -187,7 +190,7 @@ class Contents():
             del inventory[item]
 
 class Place(Collectable, Contents):
-    def __init__(self, key, name, description, north=None, east=None, south=None, west=None, can=None, inventory=None, shop_inventory=None, egress_location=None, current_path=None):
+    def __init__(self, key, name, description, north=None, east=None, south=None, west=None, can=None, inventory=None, shop_inventory=None, egress_location=None, misty_path=None, current_path=None, misty_descriptions=None):
         super().__init__(key, name, description)
         self.north = north
         self.east = east
@@ -207,7 +210,9 @@ class Place(Collectable, Contents):
         self.inventory = inventory
         self.shop_inventory = shop_inventory
         self.egress_location = egress_location
+        self.misty_path = misty_path
         self.current_path = current_path
+        self.misty_descriptions = misty_descriptions
 
     def go(self, direction):
         """Validates the direction exists from current location and updates player location"""
@@ -481,8 +486,14 @@ PLACES = {
         south='misty-woods',
         east='misty-woods',
         west='misty-woods',
-        egress_location = 'woods',
+        egress_location='woods',
+        misty_path = ['s','w','s','e','s'],
         current_path=[],
+        misty_descriptions=["The trees stretch as far as you can see... is the mist getting thicker?",
+                           "The mist is definitely thicker. And was it always this quite?",
+                           "This eerie silence is almost more oppressive than the ever thickening mists.",
+                           "Almost. You can barely make out your hand through the swirling grey patterns.",
+        ],
     ),
     "hill": Place(
         key="hill",
@@ -535,7 +546,7 @@ ITEMS = {
     ),
     "mushroom": Item(
         key="mushroom",
-        name="a red mushroom",
+        name="a red mushroom", #TODO change to "red mushroom"
         description="A red mushroom with white spots.",
         can_take = True,
         eat_message=(
@@ -587,17 +598,17 @@ ITEMS = {
                              "┌---------------------------------------------┐",
                              "| ♣  ~  ♣  ♣  ♣  ♣  ~ |↓| ♣  ♣  ♣  ♣  ~  ♣  ♣ |",
                              "| ♣  ~  ♣  ♣  ~  ♣  ~ | | ~  ♣  ~  ♣  ♣  ♣  ♣ |",
-                             "| ♣  ♣  ~  ♣  ~  ♣  ♣ |↓| ♣  ♣  ♣  ~  ♣  ♣  ~ |",
+                             "| ♣  ♣  ~  ♣  ~  ♣  ♣ | | ♣  ♣  ♣  ~  ♣  ♣  ~ |",
                              "| ♣  ♣  ~  _ _♣ _♣ _♣_| | ♣  ♣  ♣  ~  ♣  ♣  ~ |",
-                             "| ♣  ♣  ♣ |↓  _ _←_ _ _←| ♣  ~  ♣  ~  ♣  ♣  ♣ |",
+                             "| ♣  ♣  ♣ |↓  _ _ _ _ _←| ♣  ~  ♣  ~  ♣  ♣  ♣ |",
                              "| ♣  ♣  ♣ | |_♣_ ~  ♣  ♣  ♣  ♣  ~  ♣  ♣  ♣  ♣ |",
                              "| ♣  ♣  ♣ |→_ _  ↓| ~  ♣  ~  ♣  ♣  ♣  ~  ♣  ♣ |",
                              "| ♣  ♣  ♣  ♣  ♣ | | ♣  ~  ♣  ~  ♣  ♣  ♣  ♣  ~ |",
                              "| ♣  ♣  ♣  ~  ♣|   |♣  ♣  ~  ♣  ♣  ~  ♣  ♣  ♣ |",
                              "| ♣  ♣  ♣  ♣  ♣|_x_|♣  ♣  ~  ♣  ♣  ♣  ~  ♣  ~ |",
-                             "| ♣  ♣  ♣  ♣  ~  ♣  ♣  ♣  ♣  ♣  ~  ♣  ♣  ♣  ♣ |",
-                             "| ♣  ♣  ~  ♣  ♣  ♣  ♣  ♣  ♣  ♣  ♣  ~  ♣  ♣  ♣ |",
-                             "| ♣  ♣  ♣  ♣  ♣  ~  ♣  ♣  ♣  ♣  ♣  ♣  ~  ♣  ~ |",
+                             "| ♣  ♣  ♣  ♣  ~  ♣  ♣  ♣  ♣  ♣  ~  ♣  ♣  N  ♣ |",
+                             "| ♣  ♣  ~  ♣  ♣  ♣  ♣  ♣  ♣  ♣  ♣  ~  W  ♣  E |",
+                             "| ♣  ♣  ♣  ♣  ♣  ~  ♣  ♣  ♣  ♣  ♣  ♣  ~  S  ~ |",
                              "└---------------------------------------------┘",
                  )
         },
@@ -667,12 +678,12 @@ def wrap(text, width=None, initial_indent=None, subsequent_indent=None):
         blocks.append(paragraph)
     
     print(*blocks, sep="\n\n")
+    print()
 
 def write(text):
     print(MARGIN, text, sep="")
 
 def header(title):
-    print()
     title = fx.bold(title)
     title = fx.underline(title)
     title = fg.cyan(title)
@@ -824,7 +835,8 @@ class Go(Goroot): #rename this?
             return
 
         if current_place.key == 'misty-woods': #this could be replaced with kwarg bool?
-            misty_path = ['s','s','w','w','s','e','s']
+            # misty_path = ['s','w','s','e','s']
+            misty_path = current_place.misty_path
             path_length = len(misty_path)
             
             current_place.current_path += direction[:1]
@@ -843,6 +855,8 @@ class Go(Goroot): #rename this?
                 wrap(new_place.description)
                 return
             
+            #TODO: use the new misty descriptions here
+
         self.goroot(direction)
 
 class Examine(Command):
@@ -985,7 +999,6 @@ class Read(Command):
             return
 
         wrap(target_item.writing["title"])
-        print()
         wrap(target_item.writing["message"], initial_indent=MARGIN*2, subsequent_indent=MARGIN*2)       
 
 class Pet(Command):

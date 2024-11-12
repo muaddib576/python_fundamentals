@@ -278,7 +278,7 @@ def test_header(capsys):
     header("header test")
     output = capsys.readouterr().out
 
-    assert output == f"\n{adventure.MARGIN}header test\n\n"
+    assert output == f"{adventure.MARGIN}header test\n\n"
 
 def test_write(capsys):
     write("write test")
@@ -297,7 +297,7 @@ def test_wrap(capsys):
     output = capsys.readouterr().out
 
     # THEN: the default WIDTH and MARGIN are used
-    assert output == f"{adventure.MARGIN}*******\n{adventure.MARGIN}*******\n"
+    assert output == f"{adventure.MARGIN}*******\n{adventure.MARGIN}*******\n\n"
 
 def test_wrap_custom(capsys):
     # WHEN: the wrap function is passed custom width and margin values
@@ -310,7 +310,7 @@ def test_wrap_custom(capsys):
     output = capsys.readouterr().out
 
     # THEN: the specified indent values are used
-    assert output == f"{initial_indent}******\n{subsequent_indent}*****\n"
+    assert output == f"{initial_indent}******\n{subsequent_indent}*****\n\n"
 
 @pytest.mark.parametrize(
         ['start','amount','expected','message'], [
@@ -396,6 +396,7 @@ def test_go_misty_mid_sequence(capsys):
             east='misty-woods',
             west='misty-woods',
             egress_location='shire',
+            misty_path = ['s','w','s','e','s'],
             current_path = ['s','s']
         ),
     }
@@ -430,7 +431,8 @@ def test_go_misty_timeout(capsys):
             east='misty-woods',
             west='misty-woods',
             egress_location='shire',
-            current_path = ['s','s','w','w','s','e']
+            misty_path = ['s','w','s','e','s'],
+            current_path = ['s','w','s','e'],
         ),
     }
 
@@ -459,7 +461,8 @@ def test_go_misty_clearing(capsys):
             east='misty-woods',
             west='misty-woods',
             egress_location='shire',
-            current_path = ['s','s','w','w','s','e']
+            misty_path = ['s','w','s','e','s'],
+            current_path = ['s','w','s','e'],
         ),
     }
 
