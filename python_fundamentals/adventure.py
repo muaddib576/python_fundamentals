@@ -3,16 +3,15 @@
 # You are in the process of reviewing all the #TODOs and then GRADUATION.
 
 # Needed:
-# letter in house to give primary quest? Asks player to bring forgotten item to father in misty woods? Or maybe meet for a picnic? (that way there is no item check needed)?
+# letter in house to give primary quest? Asks player to meet for a picnic? - IN PROGRESS - note added but need to review the game flow (how does the player know to get gold from the dragon??)
 # VICTORY MESSAGE and behavior (quit?)
 
 # Polish:
-    # Having wrap() always end with a new line might be stylistically nicer - DONE (also changed header() a bit)
     # Add some delay to the various messages?
     # add flavor text to all descriptions
         # how will player know to pet?    
     # Cleanup/add command aliases
-    # make the misty woods lost progress more clear? - IN PROGRESS - you just need to have the go class use the alternate descriptions based on the current_path
+    # make the misty woods lost progress more clear? - DONE
     # make n/e/s/w aliases for north/east/etc
 
 # Features:
@@ -21,6 +20,8 @@
     # should I add a sell command? Is there a gameplay reason for this? ...immersion?
     # NOTE: maybe should there be a contingency if more than 1 qty is passed by the player? ""Sorry im confused, how many did you say??""
         # Alissa: start with some GIVEN WHEN THENS to identify what is expected player behavior and then decide what to do
+    # victory condition
+    # help command?
 
 # Bugs:
     # Either prevent drinking health potion or water when at full health, OR alter message to say "you are already at full health"
@@ -446,6 +447,7 @@ PLACES = {
                    'book':1,
                    'bed':1,
                    'water':1,
+                   'note':1,
         },
     ),
     "town-square": Place(
@@ -460,7 +462,7 @@ PLACES = {
         key="market",
         name="Yee ol' Market",
         description="A dusty store with rows of shelves overflowing with what appears to be junk. "\
-            "A large wooden sign hangs above the clerk.",
+            "A large wooden sign hangs above the old shopkeeper.",
         south="town-square",
         can=['shop'],
         shop_inventory={'potion':5,
@@ -490,9 +492,9 @@ PLACES = {
         misty_path = ['s','w','s','e','s'],
         current_path=[],
         misty_descriptions=["The trees stretch as far as you can see... is the mist getting thicker?",
-                           "The mist is definitely thicker. And was it always this quite?",
-                           "This eerie silence is almost more oppressive than the ever thickening mists.",
-                           "Almost. You can barely make out your hand through the swirling grey patterns.",
+                           "The mist is definitely thicker. And was it always this quiet?",
+                           "This eerie silence is almost more oppressive than the ever thickening mists...",
+                           "...almost. You can barely make out your hand through the swirling grey patterns.",
         ],
     ),
     "hill": Place(
@@ -546,7 +548,7 @@ ITEMS = {
     ),
     "mushroom": Item(
         key="mushroom",
-        name="a red mushroom", #TODO change to "red mushroom"
+        name="a red mushroom",
         description="A red mushroom with white spots.",
         can_take = True,
         eat_message=(
@@ -574,6 +576,25 @@ ITEMS = {
         key="desk",
         name="a writing desk",
         description="A wooden desk with a large leather-bound book open on its surface.",
+    ),
+    "note": Item(
+        key="note",
+        name="note from father",
+        description="A folded note from your father. It's addressed to you.",
+        writing={'title':"The tri-folded paper reads:",
+                 'message': ("My child,",
+                             
+                             "I know I promised to take you to the secret spot today. But that was a lie. "
+                             "Sometimes, the best adventures are the ones we make for ourselves. I want you to find your own way there.",
+
+                             "The mists are not malicious but they are mischievous, and if you don't already know your way they will surely spin you in circles. "
+                             
+                             "Even I did not find my way here on my own. The town's old shopkeeper might be willing to help you out... for a price.",
+
+                             "I will be waiting for you with our lunch."
+                 )
+        },
+        can_take = True,
     ),
     "book": Item(
         key="book",
@@ -840,6 +861,7 @@ class Go(Goroot): #rename this?
             path_length = len(misty_path)
             
             current_place.current_path += direction[:1]
+            current_length = len(current_place.current_path)
 
             if current_place.current_path == misty_path:
                 wrap(f"After navigating the woods for hours, the once thick mist begins to retreat and ahead you notice the trees give way to a clearing")
@@ -854,8 +876,15 @@ class Go(Goroot): #rename this?
                 header(new_place.name)
                 wrap(new_place.description)
                 return
-            
-            #TODO: use the new misty descriptions here
+
+            # Now we move through the misty path and descriptions
+            new_place = current_place.go(direction)
+
+            if new_place:
+                wrap(f"You spend some time walking {direction} and come upon:")
+                header(new_place.name)    
+                wrap(new_place.misty_descriptions[current_length-1])
+                return
 
         self.goroot(direction)
 
@@ -1138,7 +1167,17 @@ action_dict = {
 
 def main():
 
-    print("Welcome!")
+    print()
+    print("Welcome to Picnic Quest!")
+    print()
+
+    wrap((
+        "You wake to the soft glow of morning light filtering through the cottage's wooden shutters. Today is the day. "\
+        "A promise made weeks ago lingers in your mind; your father's secret picnic spot, hidden somewhere in the misty woods.",
+        "Your heart races with excitement as you swing your legs out of bed, already imagining the sights and sounds of the adventure ahead. "\
+        "The floorboards creak beneath your bare feet as you step toward the kitchen, eager to find him. But the cabin is unnervingly still.",
+        "His coat and boots are gone. On the rough-hewn writing desk lies an unexpected object: a folded note, weighed down by a stone, with your name scrawled on the front."
+    ))
 
     # print(repr(ITEMS['potion'])) #why was this here???????
 

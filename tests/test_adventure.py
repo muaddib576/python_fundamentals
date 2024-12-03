@@ -390,6 +390,11 @@ def test_go_misty_mid_sequence(capsys):
             key="misty-woods",
             name="The Misty Woods",
             description="Buncha misty hobbits.",
+            misty_descriptions=["Buncha misty hobbits 1",
+                                "Buncha misty hobbits 2",
+                                "Buncha misty hobbits 3",
+                                "Buncha misty hobbits 4",
+            ],
             inventory={},
             north='misty-woods',
             south='misty-woods',
@@ -408,8 +413,8 @@ def test_go_misty_mid_sequence(capsys):
         "After 3 moves in the mist, the player should still be in the mist."
     assert adventure.PLACES["misty-woods"].current_path == ['s','s','w'], \
         "Each move the player makes should be added to the current_path history"
-    assert "Buncha misty hobbits." in output, \
-        "Player should be told the same location's description"
+    assert "Buncha misty hobbits 3" in output, \
+        "Player should be told the same location's 3rd misty description"
 
 def test_go_misty_timeout(capsys):
     adventure.PLAYER.place = 'misty-woods'
