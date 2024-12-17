@@ -3,8 +3,7 @@
 # You are in the process of reviewing all the #TODOs and then GRADUATION.
 
 # Needed:
-# letter in house to give primary quest? Asks player to meet for a picnic? - IN PROGRESS - note added but need to review the game flow (how does the player know to get gold from the dragon??)
-# VICTORY MESSAGE and behavior (quit?)
+# VICTORY MESSAGE and behavior (quit? Or let player keep playing?)
 
 # Polish:
     # Add some delay to the various messages?
@@ -26,6 +25,17 @@
 # Bugs:
     # Either prevent drinking health potion or water when at full health, OR alter message to say "you are already at full health"
     # dropping to 0 health does nothing
+    # I think a failed directional command (eg go wheast) gets saved to the current_path
+
+# Alissa feedback after playing:
+    # the "read shop menu" suggestion was about making a clear distinction between the shop inventory and the shop location inventory
+    # dragons are easy to deal with once you know which is which (Brian's thought: maybe make the health penalty more severe?)
+    # Needs a victory text, but maybe don't need to quit the game - IN PROGRESS (started writing the function to give the victory message and have the player wakeup back at cottage the next day)
+
+    # not sure if the regular "woods" has a purpose - DONE (decided to keep as this is where the player can find mushrooms. I updated the description a bit)
+    # add waterbottle aliases - DONE
+    # no clue about petting the dragons - DONE (changed the book text)
+    # First arrow on map is confusing - DONE (just removed the top border entrance)
 
 
 from multiprocessing.dummy import current_process
@@ -261,9 +271,9 @@ class Place(Collectable, Contents):
         self.add('gems', item_cost, self.shop_inventory)
 
 class Item(Collectable):
-    def __init__(self, key, name, description, alias_plurals=None, writing=None, can_take=False, price=None, drink_message=None, eat_message=None, health_change=None):
+    def __init__(self, key, name, description, aliases=None, writing=None, can_take=False, price=None, drink_message=None, eat_message=None, health_change=None):
         super().__init__(key, name, description)
-        self.alias_plurals = alias_plurals or []
+        self.aliases = aliases or []
         self.writing = writing
         self.can_take = can_take
         self.price = price
@@ -289,7 +299,7 @@ class Item(Collectable):
 
         for instance in ITEMS.values():
             # Check if player's key matched with item key, name, or unpacked alias list
-            if key in (instance.key, instance.name, *instance.alias_plurals):
+            if key in (instance.key, instance.name, *instance.aliases):
                 target_key = instance.key
                 break
             
@@ -473,11 +483,11 @@ PLACES = {
     "woods": Place(
         key="woods",
         name="The Woods",
-        description="Significantly more trees than the Town.",
+        description="Significantly more trees than the Town. You hear bird's chirping above and the crunch of foliage under your feet",
         east="hill",
         south="misty-woods",
         west="town-square",
-        inventory={'mushroom':1,
+        inventory={'mushroom':3,
         }
     ),
     "misty-woods": Place(
@@ -500,7 +510,7 @@ PLACES = {
     "hill": Place(
         key="hill",
         name="Grassy hill",
-        description="The trees have given way to an expansive hill covered in rustling grass.",
+        description="The trees have given way to an expansive hill covered in rustling grass which seems to all be burnt on the southern facing side.",
         west="woods",
         south="cave",
     ),
@@ -519,6 +529,10 @@ ITEMS = {
     "potion": Item(
         key="potion",
         name="healing potion",
+        aliases=["health potion",
+                 "red potion",
+                 "health bottle",
+        ],
         description="A magical liquid that improves your life's outlook.",
         can_take = True,
         price=-10,
@@ -537,6 +551,10 @@ ITEMS = {
     "water": Item(
         key="water",
         name="bottle of water",
+        aliases=["waterbottle",
+                 "water bottle",
+                 "bottle",
+        ],
         description="A bottle what has water in it.",
         can_take = True,
         drink_message=(
@@ -549,6 +567,8 @@ ITEMS = {
     "mushroom": Item(
         key="mushroom",
         name="a red mushroom",
+        aliases=["shroom"
+        ],
         description="A red mushroom with white spots.",
         can_take = True,
         eat_message=(
@@ -599,13 +619,18 @@ ITEMS = {
     "book": Item(
         key="book",
         name="a book",
+        aliases=["leather book",
+                 "leather-bound book",
+                 "leatherbound book",
+        ],
         description="A hefty leather-bound tome open to an interesting passage.",
         writing={'title':"The book is open to a page that reads:",
-                 'message': ("The break in your line of fate may indicate "
-                             "a change in location or career.",
-
-                             "You have more than one life line, which may "
-                             "indicate you are a cat.",
+                 'message': ("In the shadow of the eastern cliffs, the Dragon's Lair holds treasures untold.",
+                             
+                             "But beware: the guardian of gold is both fierce and fond of affection.",
+                             
+                             "Approach not with weapons drawn, but with a kind hand, for rumors hold the beast delights in the simplest of pleasures... "
+                             "a gentle pet atop its mighty head.",
                  )
         },
         can_take = True,
@@ -613,10 +638,13 @@ ITEMS = {
     "map": Item(
         key="map",
         name="Map of the Misty Woods",
+        aliases=["misty map",
+                 "map of woods"
+        ],
         description="A tattered parchment depicting an area thick with trees and mist. You can just make out what appears to be a winding path through the madness.",
         writing={'title':"The Misty Woods",
                  'message': (
-                             "┌---------------------------------------------┐",
+                             "┌---------------------   ---------------------┐",
                              "| ♣  ~  ♣  ♣  ♣  ♣  ~ |↓| ♣  ♣  ♣  ♣  ~  ♣  ♣ |",
                              "| ♣  ~  ♣  ♣  ~  ♣  ~ | | ~  ♣  ~  ♣  ♣  ♣  ♣ |",
                              "| ♣  ♣  ~  ♣  ~  ♣  ♣ | | ♣  ♣  ♣  ~  ♣  ♣  ~ |",
@@ -710,6 +738,13 @@ def header(title):
     title = fg.cyan(title)
     write(title)
     print()
+
+def victory():
+    wrap(f"After navigating the woods for hours, the once thick mist begins to retreat and ahead you notice the trees give way to a clearing...")
+    wrap(f"Congratulations! You have completed your task, and can now enjoy a relaxing picnic with your father.")
+    wrap(f"yopu home now")
+    PLAYER.place = "home"
+    
 
 class Quit(Command):
     def do(self):
@@ -864,9 +899,8 @@ class Go(Goroot): #rename this?
             current_length = len(current_place.current_path)
 
             if current_place.current_path == misty_path:
-                wrap(f"After navigating the woods for hours, the once thick mist begins to retreat and ahead you notice the trees give way to a clearing")
-                wrap(f"Congratulations! You have completed your task!")
-                quit() #TODO this breaks your test.
+                victory()
+                return
 
             if len(current_place.current_path) == path_length:
                 new_place = current_place.go('egress_location')

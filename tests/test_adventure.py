@@ -182,18 +182,18 @@ def test_collectable_find_name_plural_dict():
             key="octopus",
             name="a live octopus",
             description="It's grEIGHT.",
-            alias_plurals=['octopuses','octopi']
+            aliases=['octopuses','octopi']
         )
     }
-    # WHEN: the find method is called using either the alias_plurals
+    # WHEN: the find method is called using either the aliases
     item = Item.find('octopuses')
     item2 = Item.find('octopi')
 
     # THEN: the item is returned
     assert item.key == 'octopus', \
-        "The find method should return the Item object when passed a key equal to any alias_plurals"
+        "The find method should return the Item object when passed a key equal to any aliases"
     assert item2.key == 'octopus', \
-        "The find method should return the Item object when passed a key equal to any alias_plurals"
+        "The find method should return the Item object when passed a key equal to any aliases"
 
 def test_collectable_find_name_examine(capsys):
     # GIVEN: an item
@@ -474,7 +474,7 @@ def test_go_misty_clearing(capsys):
     Go(['south']).do()
     output = capsys.readouterr().out
 
-    assert "Congratulations! You have completed your task!" in output, \
+    assert "Congratulations! You have completed your task," in output, \
         "The Player is told they won the game."
 
 def test_examine_no_arg(capsys):
