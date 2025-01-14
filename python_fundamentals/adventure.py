@@ -682,7 +682,7 @@ ITEMS = {
 }
 
 PLAYER = Player(
-    place="woods",
+    place="home",
     current_health = 100,
     inventory={
                 # 'gems':2,
