@@ -376,6 +376,44 @@ def test_go_no_place(capsys):
     assert "Sorry, there is no 'west'" in output, \
         "Player should be told there is nothing in that direction"
 
+def test_go_misty_bad_direction(capsys):
+    adventure.PLAYER.place = 'misty-woods'
+    adventure.PLACES = {
+        "shire": Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            inventory={},
+            south='misty-woods'
+        ),
+        "misty-woods": Place(
+            key="misty-woods",
+            name="The Misty Woods",
+            description="Buncha misty hobbits.",
+            misty_descriptions=["Buncha misty hobbits 1",
+                                "Buncha misty hobbits 2",
+                                "Buncha misty hobbits 3",
+                                "Buncha misty hobbits 4",
+            ],
+            inventory={},
+            north='misty-woods',
+            south='misty-woods',
+            east='misty-woods',
+            west='misty-woods',
+            egress_location='shire',
+            misty_path = ['s','w','s','e','s'],
+            current_path = ['s','s']
+        ),
+    }
+
+    Go(['tohell']).do()
+    output = capsys.readouterr().out
+
+    assert adventure.PLACES["misty-woods"].current_path == ['s','s'], \
+        "A invalid direction should not add to the current path"
+    assert "Sorry, there is no 'tohell'" in output, \
+        "Player should be told the typed direction does not exist."
+
 def test_go_misty_mid_sequence(capsys):
     adventure.PLAYER.place = 'misty-woods'
     adventure.PLACES = {

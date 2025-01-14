@@ -25,17 +25,14 @@
 # Bugs:
     # Either prevent drinking health potion or water when at full health, OR alter message to say "you are already at full health"
     # dropping to 0 health does nothing
-    # I think a failed directional command (eg go wheast) gets saved to the current_path
+
+    # I think a failed directional command (eg go wheast) gets saved to the current_path (alternatively, you are crazy and this is not happening??? DONE?)
 
 # Alissa feedback after playing:
     # the "read shop menu" suggestion was about making a clear distinction between the shop inventory and the shop location inventory
     # dragons are easy to deal with once you know which is which (Brian's thought: maybe make the health penalty more severe?)
-    # Needs a victory text, but maybe don't need to quit the game - IN PROGRESS (started writing the function to give the victory message and have the player wakeup back at cottage the next day)
 
-    # not sure if the regular "woods" has a purpose - DONE (decided to keep as this is where the player can find mushrooms. I updated the description a bit)
-    # add waterbottle aliases - DONE
-    # no clue about petting the dragons - DONE (changed the book text)
-    # First arrow on map is confusing - DONE (just removed the top border entrance)
+    # Needs a victory text, but maybe don't need to quit the game - DONE? (started writing the function to give the victory message and have the player wakeup back at cottage the next day)
 
 
 from multiprocessing.dummy import current_process
@@ -685,7 +682,7 @@ ITEMS = {
 }
 
 PLAYER = Player(
-    place="home",
+    place="woods",
     current_health = 100,
     inventory={
                 # 'gems':2,
@@ -741,8 +738,9 @@ def header(title):
 
 def victory():
     wrap(f"After navigating the woods for hours, the once thick mist begins to retreat and ahead you notice the trees give way to a clearing...")
-    wrap(f"Congratulations! You have completed your task, and can now enjoy a relaxing picnic with your father.")
-    wrap(f"yopu home now")
+    wrap(f"By a tree stump and a large basket brimming with food, your father stands, waving warmly.")
+    wrap(f"Congratulations! You have completed your task, and enjoy a relaxing picnic with your father.")
+    wrap(f"As the sun begins to set, he leads you back to your cabin for the night.")
     PLAYER.place = "home"
     
 
@@ -906,7 +904,7 @@ class Go(Goroot): #rename this?
                 new_place = current_place.go('egress_location')
                 current_place.current_path = []
 
-                wrap(f"After wondering in circles for hours, you find yourself back:")
+                wrap(f"After wondering in circles for hours, you find yourself back where you started:")
                 header(new_place.name)
                 wrap(new_place.description)
                 return
