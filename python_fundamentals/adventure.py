@@ -25,6 +25,11 @@
 # Bugs:
     # Either prevent drinking health potion or water when at full health, OR alter message to say "you are already at full health"
     # dropping to 0 health does nothing
+        # health can be changed by consuming an item or the dragon and potentially other actions? so maybe a dead_check should happen in the main while loop
+    
+    # ascii images using the wrap() function get stretched
+        # subclass read command?
+        # is_image parameter to the wrap() function?
 
     # I think a failed directional command (eg go wheast) gets saved to the current_path (alternatively, you are crazy and this is not happening??? DONE?)
 
@@ -34,6 +39,9 @@
 
     # Needs a victory text, but maybe don't need to quit the game - DONE? (started writing the function to give the victory message and have the player wakeup back at cottage the next day)
 
+# NILA feedback
+    # map is still hard to read
+    # forgot examine command, maybe should add
 
 from multiprocessing.dummy import current_process
 from sys import stderr
@@ -683,9 +691,10 @@ ITEMS = {
 
 PLAYER = Player(
     place="home",
-    current_health = 100,
+    current_health = 1,
     inventory={
                 # 'gems':2,
+                'map':1
                },
 )
 
@@ -736,6 +745,19 @@ def header(title):
     write(title)
     print()
 
+def start_message():
+    print()
+    print("Welcome to Picnic Quest!")
+    print()
+
+    wrap((
+        "You wake to the soft glow of morning light filtering through the cottage's wooden shutters. Today is the day. "\
+        "A promise made weeks ago lingers in your mind; your father's secret picnic spot, hidden somewhere in the misty woods.",
+        "Your heart races with excitement as you swing your legs out of bed, already imagining the sights and sounds of the adventure ahead. "\
+        "The floorboards creak beneath your bare feet as you step toward the kitchen, eager to find him. But the cabin is unnervingly still.",
+        "His coat and boots are gone. On the rough-hewn writing desk lies an unexpected object: a folded note, weighed down by a stone, with your name scrawled on the front."
+    ))
+
 def victory():
     wrap(f"After navigating the woods for hours, the once thick mist begins to retreat and ahead you notice the trees give way to a clearing...")
     wrap(f"By a tree stump and a large basket brimming with food, your father stands, waving warmly.")
@@ -743,6 +765,25 @@ def victory():
     wrap(f"As the sun begins to set, he leads you back to your cabin for the night.")
     PLAYER.place = "home"
     
+def defeat():
+    wrap(("Your vision fades to black as your strength gives out. The world around you falls silent.",
+            "You have succumbed to the trials of this journey.",
+    ))
+    tombstone = (
+            "        _______",
+            "      /         \\",
+            "     /           \\",
+            "    |   R.I.P.    |",
+            "    |             |",
+            "    |   You have  |",
+            "    |   fallen.   |",
+            "    |             |",
+            "    |_____________|",
+            "     \\___________/"
+    )
+    wrap(tombstone)
+
+    quit()
 
 class Quit(Command):
     def do(self):
@@ -1199,17 +1240,7 @@ action_dict = {
 
 def main():
 
-    print()
-    print("Welcome to Picnic Quest!")
-    print()
-
-    wrap((
-        "You wake to the soft glow of morning light filtering through the cottage's wooden shutters. Today is the day. "\
-        "A promise made weeks ago lingers in your mind; your father's secret picnic spot, hidden somewhere in the misty woods.",
-        "Your heart races with excitement as you swing your legs out of bed, already imagining the sights and sounds of the adventure ahead. "\
-        "The floorboards creak beneath your bare feet as you step toward the kitchen, eager to find him. But the cabin is unnervingly still.",
-        "His coat and boots are gone. On the rough-hewn writing desk lies an unexpected object: a folded note, weighed down by a stone, with your name scrawled on the front."
-    ))
+    start_message()
 
     # print(repr(ITEMS['potion'])) #why was this here???????
 
@@ -1240,11 +1271,12 @@ def main():
                 cmd.do()
             except (InvalidItemError) as e:
                 abort(str(e))
-
-
         else:
             error("No such command.")
             continue
+
+        if PLAYER.current_health == 0:
+            defeat()
 
 if __name__ == "__main__":
     main()
