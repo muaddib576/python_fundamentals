@@ -23,25 +23,14 @@
     # help command?
 
 # Bugs:
-    # Either prevent drinking health potion or water when at full health, OR alter message to say "you are already at full health"
-    # dropping to 0 health does nothing
-        # health can be changed by consuming an item or the dragon and potentially other actions? so maybe a dead_check should happen in the main while loop
-    
-    # ascii images using the wrap() function get stretched
-        # subclass read command?
-        # is_image parameter to the wrap() function?
-
-    # I think a failed directional command (eg go wheast) gets saved to the current_path (alternatively, you are crazy and this is not happening??? DONE?)
 
 # Alissa feedback after playing:
     # the "read shop menu" suggestion was about making a clear distinction between the shop inventory and the shop location inventory
     # dragons are easy to deal with once you know which is which (Brian's thought: maybe make the health penalty more severe?)
 
-    # Needs a victory text, but maybe don't need to quit the game - DONE? (started writing the function to give the victory message and have the player wakeup back at cottage the next day)
-
 # NILA feedback
-    # map is still hard to read
-    # forgot examine command, maybe should add
+    # forgot examine command, maybe should add list of commands?
+        # sign in town the player can read with a list of "accomplishments" from other adventurers?
 
 from multiprocessing.dummy import current_process
 from sys import stderr
@@ -356,12 +345,16 @@ class Player(Contents):
 
     def change_health(self, amount):
         """Adjusts the players health by the given amount. Does not drop below 0 or above max."""
+        start_health = self.current_health
+        
         self.current_health += amount
 
         if self.current_health > MAX_HEALTH:
             self.current_health = MAX_HEALTH
         elif self.current_health < 0:
             self.current_health = 0
+
+        return self.current_health - start_health
 
 class Dragon_head(Item, Contents):
     MOODS = [
@@ -572,7 +565,8 @@ ITEMS = {
     "mushroom": Item(
         key="mushroom",
         name="a red mushroom",
-        aliases=["shroom"
+        aliases=["shroom",
+                 "red mushroom"
         ],
         description="A red mushroom with white spots.",
         can_take = True,
@@ -648,7 +642,7 @@ ITEMS = {
         ],
         description="A tattered parchment depicting an area thick with trees and mist. You can just make out what appears to be a winding path through the madness.",
         writing={'title':"The Misty Woods",
-                 'message': (
+                 'image': (
                              "┌---------------------   ---------------------┐",
                              "| ♣  ~  ♣  ♣  ♣  ♣  ~ |↓| ♣  ♣  ♣  ♣  ~  ♣  ♣ |",
                              "| ♣  ~  ♣  ♣  ~  ♣  ~ | | ~  ♣  ~  ♣  ♣  ♣  ♣ |",
@@ -691,10 +685,11 @@ ITEMS = {
 
 PLAYER = Player(
     place="home",
-    current_health = 1,
+    current_health = 2,
     inventory={
                 # 'gems':2,
-                'map':1
+                # 'map':1,
+                "potion":1
                },
 )
 
@@ -712,7 +707,7 @@ def abort(message):
     error(message)
     exit(1)
 
-def wrap(text, width=None, initial_indent=None, subsequent_indent=None):
+def wrap(text, width=None, initial_indent=None, subsequent_indent=None, is_image=None):
     width = width or WIDTH
     initial_indent = initial_indent or MARGIN
     subsequent_indent = subsequent_indent or MARGIN
@@ -732,8 +727,12 @@ def wrap(text, width=None, initial_indent=None, subsequent_indent=None):
         
         blocks.append(paragraph)
     
-    print(*blocks, sep="\n\n")
-    print()
+    if is_image:
+        print(*blocks, sep="\n")
+        print()
+    else:
+        print(*blocks, sep="\n\n")
+        print()
 
 def write(text):
     print(MARGIN, text, sep="")
@@ -766,6 +765,7 @@ def victory():
     PLAYER.place = "home"
     
 def defeat():
+    write(f"Health {BAR(PLAYER.current_health)}\n")
     wrap(("Your vision fades to black as your strength gives out. The world around you falls silent.",
             "You have succumbed to the trials of this journey.",
     ))
@@ -781,7 +781,7 @@ def defeat():
             "    |_____________|",
             "     \\___________/"
     )
-    wrap(tombstone)
+    wrap(tombstone, is_image=True)
 
     quit()
 
@@ -955,7 +955,7 @@ class Go(Goroot): #rename this?
 
             if new_place:
                 wrap(f"You spend some time walking {direction} and come upon:")
-                header(new_place.name)    
+                header(new_place.name)
                 wrap(new_place.misty_descriptions[current_length-1])
                 return
 
@@ -1101,7 +1101,10 @@ class Read(Command):
             return
 
         wrap(target_item.writing["title"])
-        wrap(target_item.writing["message"], initial_indent=MARGIN*2, subsequent_indent=MARGIN*2)       
+        if "image" in target_item.writing:
+            wrap(target_item.writing["image"], initial_indent=MARGIN*2, subsequent_indent=MARGIN*2, is_image=True)
+        if "message" in target_item.writing:
+            wrap(target_item.writing["message"], initial_indent=MARGIN*2, subsequent_indent=MARGIN*2)
 
 class Pet(Command):
     def do(self):
@@ -1145,7 +1148,7 @@ class Pet(Command):
         damage = target_dragon.calc_damage()
 
         PLAYER.add("gems",treasure)
-        PLAYER.change_health(-damage)
+        damage_dealt = PLAYER.change_health(-damage)
 
         sentences = [
             "You slowly creep forward...",
@@ -1157,7 +1160,7 @@ class Pet(Command):
 
         self.text_delay(sentences)
         print()
-        wrap(target_dragon.mood_text(treasure, damage))
+        wrap(target_dragon.mood_text(treasure, damage_dealt))
 
 class Consume(Command):
     def consume(self, args, action):
@@ -1185,8 +1188,10 @@ class Consume(Command):
         self.text_delay(consume_message)
         
         if target_item.health_change:
-            PLAYER.change_health(target_item.health_change)
-            wrap(f"You feel your health change by {target_item.health_change}.")
+            
+            change = PLAYER.change_health(target_item.health_change)
+            
+            wrap(f"You feel your health change by {change}.")
 
 class Eat(Consume):
     def do(self):
@@ -1241,8 +1246,6 @@ action_dict = {
 def main():
 
     start_message()
-
-    # print(repr(ITEMS['potion'])) #why was this here???????
 
     while True:
         print()

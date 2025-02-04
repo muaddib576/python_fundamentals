@@ -2147,7 +2147,7 @@ def test_pet_damage(capsys):
     # THEN: The player should receive some damage and be told about it.
     assert adventure.PLAYER.current_health == 43, \
         "The players health should be reduced by the damage amount"
-    assert "costing you 7 in health" in output, \
+    assert "costing you -7 in health" in output, \
         "The player should be told they received damage"
 
 def test_pet_no_damage(capsys):
@@ -2212,7 +2212,7 @@ def test_pet_treasure_and_damage(capsys):
     # THEN: The player should receive some damage and treasure be told about it.
     assert adventure.PLAYER.current_health == 45, \
         "The players health should be reduced by the damage amount"
-    assert "costing you 5 in health" in output, \
+    assert "costing you -5 in health" in output, \
         "The player should be told they received damage"
     assert adventure.PLAYER.inventory['gems'] == 25, \
         "The gems should be added to the player's inventory"
