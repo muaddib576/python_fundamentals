@@ -1,36 +1,32 @@
 """."""
 
-# You are in the process of reviewing all the #TODOs and then GRADUATION.
-
-# Needed:
-# VICTORY MESSAGE and behavior (quit? Or let player keep playing?)
-
 # Polish:
     # Add some delay to the various messages?
     # add flavor text to all descriptions
         # how will player know to pet?    
     # Cleanup/add command aliases
-    # make the misty woods lost progress more clear? - DONE
     # make n/e/s/w aliases for north/east/etc
+    # Should I split the game out into multiple files? eg one for the PLACES/ITEMS, one for the command classes, etc
 
 # Features:
     # Alissa suggested maybe replacing the "shop" command with a menu in the shop that the player can "read"
         # would need to have the writing dynamically generated. Think about it and discuss with Alissa
+        # the "read shop menu" suggestion was about making a clear distinction between the shop inventory and the shop location inventory
     # should I add a sell command? Is there a gameplay reason for this? ...immersion?
     # NOTE: maybe should there be a contingency if more than 1 qty is passed by the player? ""Sorry im confused, how many did you say??""
         # Alissa: start with some GIVEN WHEN THENS to identify what is expected player behavior and then decide what to do
-    # victory condition
-    # help command?
 
 # Bugs:
 
 # Alissa feedback after playing:
-    # the "read shop menu" suggestion was about making a clear distinction between the shop inventory and the shop location inventory
-    # dragons are easy to deal with once you know which is which (Brian's thought: maybe make the health penalty more severe?)
+    # dragons are easy to deal with once you know which is which
+        # Brian's thought: maybe make the health penalty more severe?
+                         # Or maybe reshuffle the moods after the player leaves the location? "the red head is moody today"?
+                         # Or each head cycles through the options? 
 
 # NILA feedback
     # forgot examine command, maybe should add list of commands?
-        # sign in town the player can read with a list of "accomplishments" from other adventurers?
+        # Brian's thought: help command? sign in town the player can read with a list of "accomplishments" from other adventurers? That takes coins to unlock more hints?
 
 from multiprocessing.dummy import current_process
 from sys import stderr
@@ -465,6 +461,8 @@ PLACES = {
         north="market",
         east="woods",
         west="home",
+        inventory={'monument':1,
+        },
     ),
     "market": Place(
         key="market",
@@ -633,6 +631,23 @@ ITEMS = {
                  )
         },
         can_take = True,
+    ),
+    "monument": Item(
+        key="monument",
+        name="large monument",
+        aliases=["statue",
+                 "plaque",
+        ],
+        description=f"A large stone monument with a {fg.lightyellow('read')}-able plaque.",
+        writing={'title':"The plaque looks recently polished and reads:",
+                 'message': (f"{fg.lightyellow('Look')} upon the legend of The Lopen, whose deeds still light our paths! In his quest, he would {fg.lightyellow('shop')} at the bustling market and {fg.lightyellow('go')} boldly into the unknown.",
+                             f"Ever curious, he did {fg.lightyellow('examine')} every hidden secret and bravely {fg.lightyellow('take')} on challenges, keeping a keen {fg.lightyellow('inventory')} of his victories.",
+                             f"When peril arose, he would {fg.lightyellow('drop')} all holding him back, then {fg.lightyellow('buy')} the wisdom of ancient masters and {fg.lightyellow('read')} the fabled scrolls of yore.",
+                             f"In moments of gentle repose, he would {fg.lightyellow('pet')} his steadfast companion, Sparky, before he would {fg.lightyellow('eat')} the feast of triumph and {fg.lightyellow('drink')} deeply from the wellspring of hope.",
+                             f"Let these words be your guide, brave traveler, as you follow in his heroic footsteps.",
+                 )
+        },
+        can_take = False,
     ),
     "map": Item(
         key="map",
