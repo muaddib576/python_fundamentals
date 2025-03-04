@@ -35,6 +35,8 @@ from console.progress import ProgressBar
 import textwrap
 from random import choice, randint
 from time import sleep
+# from python_fundamentals.flashcards import somefunction
+# from python_fundamentals.flashcards import *
 
 WIDTH = 60
 MARGIN = ' '*3
@@ -597,6 +599,9 @@ ITEMS = {
     "note": Item(
         key="note",
         name="note from father",
+        aliases=["folded note",
+                 "letter",
+        ],
         description="A folded note from your father. It's addressed to you.",
         writing={'title':"The tri-folded paper reads:",
                  'message': ("My child,",
@@ -608,7 +613,9 @@ ITEMS = {
                              
                              "Even I did not find my way here on my own. The town's old shopkeeper might be willing to help you out... for a price.",
 
-                             "I will be waiting for you with our lunch."
+                             "I will be waiting for you with our lunch.",
+
+                             f"P.S. Those who are lost can find inspiration when they {fg.lightyellow('examine')} the great hero's monument."
                  )
         },
         can_take = True,
@@ -766,10 +773,10 @@ def start_message():
 
     wrap((
         "You wake to the soft glow of morning light filtering through the cottage's wooden shutters. Today is the day. "\
-        "A promise made weeks ago lingers in your mind; your father's secret picnic spot, hidden somewhere in the misty woods.",
+        f"A promise made weeks ago lingers in your mind; your father's secret picnic spot, hidden somewhere in the {fg.lightcyan('misty woods')}.",
         "Your heart races with excitement as you swing your legs out of bed, already imagining the sights and sounds of the adventure ahead. "\
-        "The floorboards creak beneath your bare feet as you step toward the kitchen, eager to find him. But the cabin is unnervingly still.",
-        "His coat and boots are gone. On the rough-hewn writing desk lies an unexpected object: a folded note, weighed down by a stone, with your name scrawled on the front."
+        f"The floorboards creak beneath your bare feet as you step toward the kitchen, eager to find him. But the {fg.lightcyan('cabin')} is unnervingly still.",
+        f"His coat and boots are gone. On the rough-hewn writing desk lies an unexpected object: a {fg.lightcyan('folded note')}, weighed down by a stone, with your name scrawled on the front."
     ))
 
 def victory():
@@ -833,7 +840,7 @@ class Look(Command):
             nearby_name = getattr(current_place, direction)
 
             if nearby_name:
-                write(f"To the {direction} is {Place.get(nearby_name).name}.")
+                write(f"To the {fg.lightcyan(direction)} is {fg.lightcyan(Place.get(nearby_name).name)}.")
 
 class Shop(Command):
     def do(self):
@@ -1240,6 +1247,7 @@ action_dict = {
     "go": Go,
     "e": Examine,
     "examine": Examine,
+    "inspect": Examine,
     "t": Take,
     "take": Take,
     "grab": Take,
