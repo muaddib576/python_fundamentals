@@ -1,8 +1,9 @@
 
-
 from console.progress import ProgressBar
 from console import fg, bg, fx
 import textwrap
+
+from python_fundamentals.adventure_game.items_and_locations import PLAYER #TODO this is circular? used for victory()/defeat() messages
 
 WIDTH = 60
 MARGIN = ' '*3

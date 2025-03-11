@@ -1,5 +1,27 @@
 
+from console import fg, bg, fx
 
+from python_fundamentals.adventure_game.params_and_functions import (
+    write,
+    error,
+    debug,
+    header,
+    wrap,
+    victory,
+    MARGIN,
+)
+
+from python_fundamentals.adventure_game.classes import (
+    Command,
+    Place,
+    Item,
+)
+
+from python_fundamentals.adventure_game.items_and_locations import (
+    PLAYER, #TODO this is circular? used in quite a few places
+    ITEMS,
+    DRAGON_HEADS,
+)
 
 class Quit(Command):
     def do(self):

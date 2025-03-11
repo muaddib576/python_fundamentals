@@ -1,14 +1,22 @@
 
+from console import fg, bg, fx
 
-PLAYER = Player(
-    place="home",
-    current_health = 2,
-    inventory={
-                # 'gems':2,
-                # 'map':1,
-                "potion":1
-               },
+from python_fundamentals.adventure_game.classes import (
+    Player,
+    Place,
+    Item,
+    Dragon_head,
 )
+
+# PLAYER = Player(
+#     place="home",
+#     current_health = 2,
+#     inventory={
+#                 # 'gems':2,
+#                 # 'map':1,
+#                 "potion":1
+#                },
+# )
 
 DRAGON_HEADS = {
     "red": Dragon_head(

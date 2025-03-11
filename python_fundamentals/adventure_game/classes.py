@@ -1,13 +1,20 @@
 from time import sleep
 from random import choice, randint
 
-from python_fundamentals.adventure_game.params_and_functions import DELAY
-from python_fundamentals.adventure_game.params_and_functions import write
-from python_fundamentals.adventure_game.params_and_functions import BAR
-from python_fundamentals.adventure_game.params_and_functions import MAX_HEALTH
-from python_fundamentals.adventure_game.items_and_locations import PLAYER #TODO this is circular
+from python_fundamentals.adventure_game.params_and_functions import (
+    write,
+    error,
+    abort,
+    BAR,
+    MAX_HEALTH,
+    DELAY,
+)
 
-from python_fundamentals.adventure_game.items_and_locations import ITEMS
+from python_fundamentals.adventure_game.items_and_locations import (
+    PLAYER, #TODO this is circular?
+    PLACES,
+    ITEMS,
+)
 
 class InvalidItemError(Exception):
     ...
