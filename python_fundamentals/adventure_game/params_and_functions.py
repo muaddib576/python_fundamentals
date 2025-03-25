@@ -3,13 +3,15 @@ from console.progress import ProgressBar
 from console import fg, bg, fx
 import textwrap
 
-from python_fundamentals.adventure_game.items_and_locations import PLAYER #TODO this is circular? used for victory()/defeat() messages
+from python_fundamentals.adventure_game.player import (
+    PLAYER,
+    MAX_HEALTH,
+)
 
 WIDTH = 60
 MARGIN = ' '*3
 DELAY = 1
 DEBUG = False
-MAX_HEALTH = 100
 
 BAR = ProgressBar(
     total=(MAX_HEALTH + .1),

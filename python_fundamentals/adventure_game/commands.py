@@ -18,9 +18,12 @@ from python_fundamentals.adventure_game.classes import (
 )
 
 from python_fundamentals.adventure_game.items_and_locations import (
-    PLAYER, #TODO this is circular? used in quite a few places
     ITEMS,
     DRAGON_HEADS,
+)
+
+from python_fundamentals.adventure_game.player import (
+    PLAYER,
 )
 
 class Quit(Command):

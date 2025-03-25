@@ -6,14 +6,13 @@ from python_fundamentals.adventure_game.params_and_functions import (
     error,
     abort,
     BAR,
-    MAX_HEALTH,
+    # MAX_HEALTH,
     DELAY,
 )
 
-from python_fundamentals.adventure_game.items_and_locations import (
-    PLAYER, #TODO this is circular?
-    PLACES,
-    ITEMS,
+from python_fundamentals.adventure_game.player import (
+    Contents,
+    PLAYER,
 )
 
 class InvalidItemError(Exception):
@@ -114,6 +113,8 @@ class Command():
 
 class Collectable():
     """Base class for objects with collections"""
+    place_dict = {}
+    item_dict = {}
     def __init__(self, key, name, description):
         self.key = key
         self.name = name
@@ -122,42 +123,42 @@ class Collectable():
     def __repr__(self):
         return f"<{self.__class__.__name__} object={self.name}>"
 
-class Contents():
-    """Class for objects with inventories/contents"""
+# class Contents():
+#     """Class for objects with inventories/contents"""
     
-    def has_item(self, key: str, qty: int=1, inventory: dict=None):
-        """Return True if Object inventory has at least the specified quantity of key, else False"""
+#     def has_item(self, key: str, qty: int=1, inventory: dict=None):
+#         """Return True if Object inventory has at least the specified quantity of key, else False"""
 
-        if inventory is None:
-            inventory = self.inventory
+#         if inventory is None:
+#             inventory = self.inventory
 
-        return key in inventory and inventory[key] >= qty
+#         return key in inventory and inventory[key] >= qty
     
-    def has_shop_item(self, key, qty=1): #TODO this method seems redundant after the refactor?
-        """Return True if Object shop_inventory has at least the specified quantity of key, else False"""
+#     def has_shop_item(self, key, qty=1): #TODO this method seems redundant after the refactor?
+#         """Return True if Object shop_inventory has at least the specified quantity of key, else False"""
 
-        return key in self.shop_inventory and self.shop_inventory[key] >= qty
+#         return key in self.shop_inventory and self.shop_inventory[key] >= qty
     
-    def add(self, item, qty=1, inventory: dict=None): 
-        """Adds X item from specified inventory"""
+#     def add(self, item, qty=1, inventory: dict=None): 
+#         """Adds X item from specified inventory"""
        
-        if inventory is None:
-            inventory = self.inventory
+#         if inventory is None:
+#             inventory = self.inventory
 
-        inventory.setdefault(item, 0)
-        inventory[item] += qty
+#         inventory.setdefault(item, 0)
+#         inventory[item] += qty
 
-    def remove(self, item: str, qty: int=1, inventory: dict=None):
-        """Remove X item from specified inventory"""
+#     def remove(self, item: str, qty: int=1, inventory: dict=None):
+#         """Remove X item from specified inventory"""
 
-        if inventory is None:
-            inventory = self.inventory
+#         if inventory is None:
+#             inventory = self.inventory
         
-        if self.has_item(item, qty, inventory):
-            inventory[item] -= qty
+#         if self.has_item(item, qty, inventory):
+#             inventory[item] -= qty
 
-        if inventory[item] <= 0: # remove item from inventory if quantity is 0 or less
-            del inventory[item]
+#         if inventory[item] <= 0: # remove item from inventory if quantity is 0 or less
+#             del inventory[item]
 
 class Place(Collectable, Contents):
     def __init__(self, key, name, description, north=None, east=None, south=None, west=None, can=None, inventory=None, shop_inventory=None, egress_location=None, misty_path=None, current_path=None, misty_descriptions=None):
@@ -203,9 +204,9 @@ class Place(Collectable, Contents):
         return new_place
 
     @classmethod
-    def get(self, key, default=None):
+    def get(cls, key, default=None):
         """Takes a place key and returns the Place's instance"""
-        place = PLACES.get(key, default)
+        place = cls.place_dict.get(key, default)
 
         if place:
             return place
@@ -241,9 +242,9 @@ class Item(Collectable):
         self.health_change = health_change
 
     @classmethod
-    def get(self, key, default=None):
+    def get(cls, key, default=None):
         """Takes an item key and returns the Item's instance"""
-        item = ITEMS.get(key, default)
+        item = cls.item_dict.get(key, default)
 
         if item:
             return item
@@ -251,12 +252,12 @@ class Item(Collectable):
             raise InvalidItemError(f"This is embarrassing, but the information about {key} is missing.")
 
     @classmethod
-    def find(self, key):
+    def find(cls, key):
         """Returns an item's instance if passed an alias or key for the item"""
 
         target_key = ''
 
-        for instance in ITEMS.values():
+        for instance in cls.item_dict.values():
             # Check if player's key matched with item key, name, or unpacked alias list
             if key in (instance.key, instance.name, *instance.aliases):
                 target_key = instance.key
@@ -301,25 +302,6 @@ class Item(Collectable):
                 return f"Consuming will take {self.health_change} health."
         
         return ""
-
-class Player(Contents):
-    def __init__(self, place=None, current_health=None, inventory={}):
-        self.place = place
-        self.current_health = current_health
-        self.inventory = inventory
-
-    def change_health(self, amount):
-        """Adjusts the players health by the given amount. Does not drop below 0 or above max."""
-        start_health = self.current_health
-        
-        self.current_health += amount
-
-        if self.current_health > MAX_HEALTH:
-            self.current_health = MAX_HEALTH
-        elif self.current_health < 0:
-            self.current_health = 0
-
-        return self.current_health - start_health
 
 class Dragon_head(Item, Contents):
     MOODS = [

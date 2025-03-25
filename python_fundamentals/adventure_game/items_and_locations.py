@@ -2,21 +2,10 @@
 from console import fg, bg, fx
 
 from python_fundamentals.adventure_game.classes import (
-    Player,
     Place,
     Item,
     Dragon_head,
 )
-
-# PLAYER = Player(
-#     place="home",
-#     current_health = 2,
-#     inventory={
-#                 # 'gems':2,
-#                 # 'map':1,
-#                 "potion":1
-#                },
-# )
 
 DRAGON_HEADS = {
     "red": Dragon_head(
@@ -36,7 +25,7 @@ DRAGON_HEADS = {
     ),
 }
 
-PLACES = {
+PLACES = Place.place_dict = {
     "home": Place(
         key="home",
         name="Your Cottage",
@@ -116,7 +105,7 @@ PLACES = {
     ),
 }
 
-ITEMS = {
+ITEMS = Item.item_dict = {
     "potion": Item(
         key="potion",
         name="healing potion",
