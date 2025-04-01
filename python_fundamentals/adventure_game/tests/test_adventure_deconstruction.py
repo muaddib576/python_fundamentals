@@ -49,38 +49,39 @@ from python_fundamentals.adventure_game.commands import (
 )
 
 PLAYER_STATE = deepcopy(player.PLAYER)
-PLACES_STATE = deepcopy(items_and_locations.PLACES)
+PLACES_STATE = deepcopy(Place.place_dict)
 DRAGON_HEADS_STATE = deepcopy(items_and_locations.DRAGON_HEADS)
-ITEMS_STATE = deepcopy(items_and_locations.ITEMS)
+ITEMS_STATE = deepcopy(Item.item_dict)
 MARGIN_STATE = deepcopy(params_and_functions.MARGIN)
 WIDTH_STATE = deepcopy(params_and_functions.WIDTH)
 params_and_functions.DELAY = 0
 
 
-def revert():
+@pytest.fixture(autouse=True)
+def setup():
+
+    yield
+    
     """Revert game data to its original state."""
     player.PLAYER = deepcopy(PLAYER_STATE)
-    items_and_locations.PLACES = deepcopy(PLACES_STATE)
+    Place.place_dict = deepcopy(PLACES_STATE)
     items_and_locations.DRAGON_HEADS = deepcopy(DRAGON_HEADS_STATE)
-    items_and_locations.ITEMS = deepcopy(ITEMS_STATE)
+    Item.item_dict = deepcopy(ITEMS_STATE)
     params_and_functions.MARGIN = deepcopy(MARGIN_STATE)
     params_and_functions.WIDTH = deepcopy(WIDTH_STATE)
 
-
-@pytest.fixture(autouse=True)
-def teardown(request):
-    """Auto-add teardown method to all tests."""
-    request.addfinalizer(revert)
-
+    pass
+    
+    
 def test_collectable_get():
     # GIVEN: An item
-    items_and_locations.ITEMS = {}
-    items_and_locations.ITEMS['cup'] = Item(
+    Item.item_dict = {}
+    Item.item_dict['cup'] = Item(
         key="cup",
         name="cup",
         description="You can drink from it.",
     )
-
+    
     # WHEN: get class method is called on the key
     item = Item.get('cup')
 
@@ -89,7 +90,7 @@ def test_collectable_get():
 
 def test_collectable_get_missing():
     # GIVEN: An item dict
-    items_and_locations.ITEMS = {}
+    Item.item_dict = {}
 
     # WHEN: get() class method is called on an key that is not present
     with pytest.raises(Exception) as info:
@@ -101,7 +102,7 @@ def test_collectable_get_missing():
 
 def test_collectable_find_name():
     # GIVEN: an item
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "fake": Item(
             key="fake",
             name="fake alias",
@@ -122,7 +123,7 @@ def test_collectable_find_name():
 
 def test_collectable_find_key():
     # GIVEN: an item
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "fake": Item(
             key="fake",
             name="fake alias",
@@ -143,7 +144,7 @@ def test_collectable_find_key():
 
 def test_collectable_find_name_plural_s():
     # GIVEN: an item
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "potion": Item(
             key="potion",
             name="a healing potion",
@@ -164,7 +165,7 @@ def test_collectable_find_name_plural_s():
 
 def test_collectable_find_name_s_not_plural():
     # GIVEN: an item
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "potion": Item(
             key="potion",
             name="a healing potion",
@@ -185,7 +186,7 @@ def test_collectable_find_name_s_not_plural():
 
 def test_collectable_find_name_plural_dict():
     # GIVEN: an item
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "potion": Item(
             key="potion",
             name="a healing potion",
@@ -208,11 +209,15 @@ def test_collectable_find_name_plural_dict():
     assert item2.key == 'octopus', \
         "The find method should return the Item object when passed a key equal to any aliases"
 
+def test_do_nothing():
+    pass
+
 def test_collectable_find_name_examine(capsys):
     # GIVEN: an item
+
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {'grass':1}
-    items_and_locations.PLACES = {
+    Place.place_dict = {
         "shire": Place(
             key="shire",
             name="The Shire",
@@ -220,7 +225,7 @@ def test_collectable_find_name_examine(capsys):
             inventory={}
         )
     }
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "grass": Item(
             key="grass",
             name="unrelated alias",
@@ -230,6 +235,7 @@ def test_collectable_find_name_examine(capsys):
 
     # WHEN: the find method is called using either the name via the Examine class command
     # item = Item.find('unrelated alias')
+    breakpoint()
     Examine(['unrelated alias']).do()
     output = capsys.readouterr().out
 
@@ -241,13 +247,13 @@ def test_collectable_find_name_examine(capsys):
 def test_towards():
     # GIVEN: Two linked locations
 
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
             east="mordor"
         )
-    items_and_locations.PLACES["mordor"] = Place(
+    Place.place_dict["mordor"] = Place(
             key="mordor",
             name="Mordor",
             description="Buncha orcs.",
@@ -268,7 +274,7 @@ def test_towards():
 
 def test_teardown():
     """Test that item key added in previous test does not persist"""
-    assert "shire" not in items_and_locations.PLACES, \
+    assert "shire" not in Place.place_dict, \
         """Each test should have a fresh data set"""
 
 def test_error(capsys):
@@ -344,7 +350,7 @@ def test_add(start, amount, expected, message):
 
 def test_go(capsys):
     player.PLAYER.place = 'shire'
-    items_and_locations.PLACES = {
+    Place.place_dict = {
         "shire": Place(
             key="shire",
             name="The Shire",
@@ -371,7 +377,7 @@ def test_go(capsys):
 
 def test_go_no_place(capsys):
     player.PLAYER.place = 'shire'
-    items_and_locations.PLACES = {
+    Place.place_dict = {
         "shire": Place(
             key="shire",
             name="The Shire",
@@ -391,7 +397,7 @@ def test_go_no_place(capsys):
 
 def test_go_misty_bad_direction(capsys):
     player.PLAYER.place = 'misty-woods'
-    items_and_locations.PLACES = {
+    Place.place_dict = {
         "shire": Place(
             key="shire",
             name="The Shire",
@@ -422,14 +428,14 @@ def test_go_misty_bad_direction(capsys):
     Go(['tohell']).do()
     output = capsys.readouterr().out
 
-    assert items_and_locations.PLACES["misty-woods"].current_path == ['s','s'], \
+    assert Place.place_dict["misty-woods"].current_path == ['s','s'], \
         "A invalid direction should not add to the current path"
     assert "Sorry, there is no 'tohell'" in output, \
         "Player should be told the typed direction does not exist."
 
 def test_go_misty_mid_sequence(capsys):
     player.PLAYER.place = 'misty-woods'
-    items_and_locations.PLACES = {
+    Place.place_dict = {
         "shire": Place(
             key="shire",
             name="The Shire",
@@ -462,14 +468,14 @@ def test_go_misty_mid_sequence(capsys):
 
     assert player.PLAYER.place == 'misty-woods', \
         "After 3 moves in the mist, the player should still be in the mist."
-    assert items_and_locations.PLACES["misty-woods"].current_path == ['s','s','w'], \
+    assert Place.place_dict["misty-woods"].current_path == ['s','s','w'], \
         "Each move the player makes should be added to the current_path history"
     assert "Buncha misty hobbits 3" in output, \
         "Player should be told the same location's 3rd misty description"
 
 def test_go_misty_timeout(capsys):
     player.PLAYER.place = 'misty-woods'
-    items_and_locations.PLACES = {
+    Place.place_dict = {
         "shire": Place(
             key="shire",
             name="The Shire",
@@ -497,7 +503,7 @@ def test_go_misty_timeout(capsys):
 
     assert player.PLAYER.place == 'shire', \
         "After 5 moves in the mist, without the correct sequence, the player should get kicked out to the egress location"
-    assert items_and_locations.PLACES["misty-woods"].current_path == [], \
+    assert Place.place_dict["misty-woods"].current_path == [], \
         "AAfter 5 moves in the mist, without the correct sequence, the current_path history should be reset"
     assert "After wondering in circles for hours," in output, \
         "The Player is told they went in a big circle."
@@ -506,7 +512,7 @@ def test_go_misty_timeout(capsys):
     
 def test_go_misty_clearing(capsys):
     player.PLAYER.place = 'misty-woods'
-    items_and_locations.PLACES = {
+    Place.place_dict = {
         "misty-woods": Place(
             key="misty-woods",
             name="The Misty Woods",
@@ -540,7 +546,7 @@ def test_examine_missing_from_place_and_player_inv(capsys):
     #        place, and not in the player's inventory
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
-    items_and_locations.PLACES = {
+    Place.place_dict = {
         "shire": Place(
             key="shire",
             name="The Shire",
@@ -548,7 +554,7 @@ def test_examine_missing_from_place_and_player_inv(capsys):
             inventory={}
         )
     }
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "grass": Item(
             key="grass",
             name="grass blades",
@@ -570,7 +576,7 @@ def test_examine_missing_from_place(capsys):
     #        place, but is in the player's inventory
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {'grass':1}
-    items_and_locations.PLACES = {
+    Place.place_dict = {
         "shire": Place(
             key="shire",
             name="The Shire",
@@ -578,7 +584,7 @@ def test_examine_missing_from_place(capsys):
             inventory={}
         )
     }
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "grass": Item(
             key="grass",
             name="grass blades",
@@ -600,7 +606,7 @@ def test_examine_missing_from_player_inv(capsys):
     #        but is in the current place
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
-    items_and_locations.PLACES = {
+    Place.place_dict = {
         "shire": Place(
             key="shire",
             name="The Shire",
@@ -608,7 +614,7 @@ def test_examine_missing_from_player_inv(capsys):
             inventory={'grass':1,'hills':1}
         )
     }
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "grass": Item(
             key="grass",
             name="grass blades",
@@ -631,7 +637,7 @@ def test_examine_missing_from_player_inv(capsys):
 
 def test_examine_missing_item(capsys):
     player.PLAYER.place = 'shire'
-    items_and_locations.PLACES = {
+    Place.place_dict = {
         "shire": Place(
             key="shire",
             name="The Shire",
@@ -639,7 +645,7 @@ def test_examine_missing_item(capsys):
             inventory={'grass':1,'hills':1}
         )
     }
-    items_and_locations.ITEMS = {}
+    Item.item_dict = {}
 
     Examine(['hills']).do()
     output = capsys.readouterr().out
@@ -652,7 +658,7 @@ def test_examine_in_shop(capsys):
     #        but is in the current place, and the current place is a shop
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
-    items_and_locations.PLACES = {
+    Place.place_dict = {
         "shire": Place(
             key="shire",
             name="The Shire",
@@ -661,7 +667,7 @@ def test_examine_in_shop(capsys):
             can=['shop']
         )
     }
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "grass": Item(
             key="grass",
             name="grass blades",
@@ -686,12 +692,12 @@ def test_examine_in_shop(capsys):
         "The player should be told the health impact for an examined item."
 
 def test_get_place_start(capsys):
-    assert Command([]).player_place == items_and_locations.PLACES[player.PLAYER.place], \
+    assert Command([]).player_place == Place.place_dict[player.PLAYER.place], \
         "Starting location should be 'your cottage'"
     
 def test_get_place_missing_place(capsys):
     player.PLAYER.place = 'shire'
-    items_and_locations.PLACES = {}
+    Place.place_dict = {}
 
     with pytest.raises(InvalidPlaceError) as info:
         Command([]).player_place
@@ -732,7 +738,7 @@ def test_look_place(capsys):
     
     # GIVEN: The player's current location
     player.PLAYER.place = 'shire'
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
@@ -749,14 +755,14 @@ def test_look_items(capsys):
     
     # GIVEN: The player's current location
     player.PLAYER.place = 'shire'
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
             inventory={'grass':1}
         )
 
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "grass": Item(
             key="grass",
             name="grass blades",
@@ -776,7 +782,7 @@ def test_look_items_w_shop(capsys):
     
     # GIVEN: The player's current location
     player.PLAYER.place = 'shire'
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
@@ -784,7 +790,7 @@ def test_look_items_w_shop(capsys):
             shop_inventory={'horse':1},
         )
 
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "grass": Item(
             key="grass",
             name="grass blades",
@@ -811,7 +817,7 @@ def test_look_no_items(capsys):
     
     # GIVEN: The player's current location
     player.PLAYER.place = 'shire'
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
@@ -828,7 +834,7 @@ def test_look_nearby(capsys):
     
     # GIVEN: The player's current location
     player.PLAYER.place = 'shire'
-    items_and_locations.PLACES = {
+    Place.place_dict = {
         "shire": Place(
             key="shire",
             name="The Shire",
@@ -862,7 +868,7 @@ def test_look_no_nearby(capsys):
     
     # GIVEN: The player's current location
     player.PLAYER.place = 'shire'
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
@@ -880,14 +886,14 @@ def test_take_valid_item(capsys):
     # GIVEN: The player's current location and a valid item
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
             inventory={'grass':1}
         )
 
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "grass": Item(
             key="grass",
             name="grass blades",
@@ -905,7 +911,7 @@ def test_take_valid_item(capsys):
     assert 'grass' in player.PLAYER.inventory, "The tooken item should be in the player's inventory"
 
     # AND: the item is removed from the place
-    assert 'grass' not in items_and_locations.PLACES["shire"].inventory, "the tooken item should no longer be at the place"
+    assert 'grass' not in Place.place_dict["shire"].inventory, "the tooken item should no longer be at the place"
 
     # AND: the player is informed
     assert "You pick up" in output, "The player should be told they have aquired the item"
@@ -914,7 +920,7 @@ def test_take_missing_item(capsys):
     # GIVEN: The player's current location and an item that is not present
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
@@ -949,14 +955,14 @@ def test_take_untakable_item(capsys):
     # GIVEN: The player's current location and an untakable item
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
             inventory={'grass':1}
         )
 
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "grass": Item(
             key="grass",
             name="grass blades",
@@ -977,19 +983,19 @@ def test_take_untakable_item(capsys):
     assert 'grass' not in player.PLAYER.inventory, "The desired item should not be put in the player's inventory"
 
     # AND: the item is not removed from the location
-    assert 'grass' in items_and_locations.PLACES["shire"].inventory, "the desired item should remain at the place"
+    assert 'grass' in Place.place_dict["shire"].inventory, "the desired item should remain at the place"
 
 def test_take_quantity_one(capsys):
     # GIVEN: The current location with items present and player's inventory
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
             inventory={'ring': 1}
     ) 
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "ring": Item(
             key="ring",
             name="ring",
@@ -1003,7 +1009,7 @@ def test_take_quantity_one(capsys):
     output = capsys.readouterr().out
     
     # THEN: The item is removed from the current location's inventory
-    assert 'ring' not in items_and_locations.PLACES["shire"].inventory, \
+    assert 'ring' not in Place.place_dict["shire"].inventory, \
         "the tooken item should be removed from the current location inventory"
 
     # AND: The item is added to the player's inventory
@@ -1018,13 +1024,13 @@ def test_take_qty(capsys):
     # GIVEN: The current location and the items in the player's inventory
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
             inventory={'ring':10}
     )  
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "ring": Item(
             key="ring",
             name="ring",
@@ -1038,7 +1044,7 @@ def test_take_qty(capsys):
     output = capsys.readouterr().out
 
     # THEN: The item is removed from the current location's inventory
-    assert items_and_locations.PLACES["shire"].inventory['ring'] == 7, \
+    assert Place.place_dict["shire"].inventory['ring'] == 7, \
         "the tooken item quantity should be decreased by 3 in the location's inventory"
 
     # AND: The item is added from the players inventory
@@ -1053,13 +1059,13 @@ def test_take_invalid_qty(capsys):
     # GIVEN: The current location and the items in the player's inventory
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
             inventory={'ring':3}
     )  
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "ring": Item(
             key="ring",
             name="ring",
@@ -1073,7 +1079,7 @@ def test_take_invalid_qty(capsys):
     output = capsys.readouterr().out
 
     # THEN: The item is not removed from the current location's inventory
-    assert items_and_locations.PLACES["shire"].inventory['ring'] == 3, \
+    assert Place.place_dict["shire"].inventory['ring'] == 3, \
         "the tooken item quantity should be decreased by 3 in the location's inventory"
 
     # AND: The item is not added from the players inventory
@@ -1087,7 +1093,7 @@ def test_take_invalid_qty(capsys):
 def test_inventory(capsys):
     # GIVEN: Items in the player inventory
     player.PLAYER.inventory = {'lockpicks':1, 'knife':2}
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "lockpicks": Item(
             key="lockpicks",
             name="lockpicking tools",
@@ -1153,7 +1159,7 @@ def test_drop_no_arg(capsys):
 def test_drop_no_item(capsys):
     # GIVEN: The items in the player's inventory
     player.PLAYER.inventory = {}
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "ring": Item(
             key="ring",
             name="a ring",
@@ -1173,7 +1179,7 @@ def test_drop_quantity_one(capsys):
     # GIVEN: The current location and the items in the player's inventory
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {'ring':1}
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "ring": Item(
             key="ring",
             name="a ring",
@@ -1181,7 +1187,7 @@ def test_drop_quantity_one(capsys):
             can_take=True,
         )
     }
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
@@ -1197,7 +1203,7 @@ def test_drop_quantity_one(capsys):
         "The dropped item should be removed from player's inventory"
     
     # AND: The item is added to the current location's inventory
-    assert 'ring' in items_and_locations.PLACES["shire"].inventory, \
+    assert 'ring' in Place.place_dict["shire"].inventory, \
         "the dropped item should be added to the current location inventory"
 
     # AND: The player is informed
@@ -1208,7 +1214,7 @@ def test_drop_qty(capsys):
     # GIVEN: The current location and the items in the player's inventory
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {'ring':4}
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "ring": Item(
             key="ring",
             name="a ring",
@@ -1216,7 +1222,7 @@ def test_drop_qty(capsys):
             can_take=True,
         )
     }
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
@@ -1232,7 +1238,7 @@ def test_drop_qty(capsys):
         "The dropped item quantity should be reduced by 1 in player's inventory"
     
     # AND: The item is added to the current location's inventory
-    assert items_and_locations.PLACES["shire"].inventory['ring'] == 3, \
+    assert Place.place_dict["shire"].inventory['ring'] == 3, \
         "the dropped item quantity should be increased by the qty in the location inventory"
 
     # AND: The player is informed
@@ -1243,7 +1249,7 @@ def test_drop_invalid_qty(capsys):
     # GIVEN: The current location and the items in the player's inventory
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {'ring':2}
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "ring": Item(
             key="ring",
             name="a ring",
@@ -1251,7 +1257,7 @@ def test_drop_invalid_qty(capsys):
             can_take=True,
         )
     }
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
@@ -1267,7 +1273,7 @@ def test_drop_invalid_qty(capsys):
         "The invalid qty item should not be removed from the players's inventory"
     
     # AND: The item is not added to the current location's inventory
-    assert items_and_locations.PLACES["shire"].inventory['ring'] == 1, \
+    assert Place.place_dict["shire"].inventory['ring'] == 1, \
         "The invalid qty item should not be added to the location's inventory"
 
     # AND: The player is informed
@@ -1301,7 +1307,7 @@ def test_player_has_false_quantity():
 
 def test_place_has_true():
     # GIVEN: A place with an inventory
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
         key="shire",
         name="The Shire",
         description="Buncha hobbits.",
@@ -1309,12 +1315,12 @@ def test_place_has_true():
     )
 
     # WHEN: has_item() is called for an item/quantity the place possesses
-    assert items_and_locations.PLACES["shire"].has_item('ring', 1) == True, \
+    assert Place.place_dict["shire"].has_item('ring', 1) == True, \
         "Should return True if the place has at least the specified qty"
 
 def test_place_has_false():
     # GIVEN: A place with an inventory
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
         key="shire",
         name="The Shire",
         description="Buncha hobbits.",
@@ -1322,12 +1328,12 @@ def test_place_has_false():
     )
 
     # WHEN: has_item() is called for an item/quantity the place possesses
-    assert items_and_locations.PLACES["shire"].has_item('ring', 1) == False, \
+    assert Place.place_dict["shire"].has_item('ring', 1) == False, \
         "Should return False if the place does not have the item"
 
 def test_place_has_false_quantity():
     # GIVEN: A place with an inventory
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
         key="shire",
         name="The Shire",
         description="Buncha hobbits.",
@@ -1335,12 +1341,12 @@ def test_place_has_false_quantity():
     )
 
     # WHEN: has_item() is called for an item/quantity the place possesses
-    assert items_and_locations.PLACES["shire"].has_item('ring', 2) == False, \
+    assert Place.place_dict["shire"].has_item('ring', 2) == False, \
         "Should return False if the place does not have the specified qty"
 
 def test_place_has_shop_true():
     # GIVEN: A place with an inventory
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
         key="shire",
         name="The Shire",
         description="Buncha hobbits.",
@@ -1348,12 +1354,12 @@ def test_place_has_shop_true():
     )
 
     # WHEN: has_item() is called for an item/quantity the place possesses
-    assert items_and_locations.PLACES["shire"].has_shop_item('ring', 1) == True, \
+    assert Place.place_dict["shire"].has_shop_item('ring', 1) == True, \
         "Should return True if the place has at least the specified qty"
 
 def test_place_has_shop_false():
     # GIVEN: A place with an inventory
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
         key="shire",
         name="The Shire",
         description="Buncha hobbits.",
@@ -1361,12 +1367,12 @@ def test_place_has_shop_false():
     )
 
     # WHEN: has_item() is called for an item/quantity the place possesses
-    assert items_and_locations.PLACES["shire"].has_shop_item('ring', 1) == False, \
+    assert Place.place_dict["shire"].has_shop_item('ring', 1) == False, \
         "Should return False if the place does not have the item"
 
 def test_place_has_shop_false_quantity():
     # GIVEN: A place with an inventory
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
         key="shire",
         name="The Shire",
         description="Buncha hobbits.",
@@ -1374,12 +1380,12 @@ def test_place_has_shop_false_quantity():
     )
 
     # WHEN: has_item() is called for an item/quantity the place possesses
-    assert items_and_locations.PLACES["shire"].has_shop_item('ring', 2) == False, \
+    assert Place.place_dict["shire"].has_shop_item('ring', 2) == False, \
         "Should return False if the place does not have the specified qty"
 
 def test_is_for_sale():
     # GIVEN: An item with a price
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "lockpicks": Item(
             key="lockpicks",
             name="lockpicking tools",
@@ -1394,18 +1400,18 @@ def test_is_for_sale():
     }
 
     # THEN: An item with a price returns True
-    assert items_and_locations.ITEMS["lockpicks"].is_for_sale(), \
+    assert Item.item_dict["lockpicks"].is_for_sale(), \
         "An item with a price should return True"
     
     # AND: An item without a price returns False
-    assert not items_and_locations.ITEMS["knife"].is_for_sale(), \
+    assert not Item.item_dict["knife"].is_for_sale(), \
         "An item without a price should return False"
 
 # TODO add more shop tests, this one only covers part of what determines if an item shows in the shop
 def test_shop_can(capsys):
     # GIVEN: A place that can "shop" and has an inventory
     player.PLAYER.place = 'shire'
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
         key="shire",
         name="The Shire",
         description="Buncha hobbits.",
@@ -1414,7 +1420,7 @@ def test_shop_can(capsys):
                    'stew':1, 
         } 
     )
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "ring": Item(
             key="ring",
             name="The Ring",
@@ -1443,7 +1449,7 @@ def test_shop_can(capsys):
 def test_shop_no_can(capsys):
     # GIVEN: A place that does not have can = ["shop"]
     player.PLAYER.place = 'shire'
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
         key="shire",
         name="The Shire",
         description="Buncha hobbits.",
@@ -1451,7 +1457,7 @@ def test_shop_no_can(capsys):
                    'stew':1, 
         } 
     )
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "stew": Item(
             key="stew",
             name="Rabbit Stew",
@@ -1470,7 +1476,7 @@ def test_shop_no_can(capsys):
 
 def test_buy_no_arg(capsys):
     player.PLAYER.place = 'shire'
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
         key="shire",
         name="The Shire",
         description="Buncha hobbits.",
@@ -1488,7 +1494,7 @@ def test_buy_no_arg(capsys):
 def test_buy_no_can(capsys):
     # GIVEN: A place that does not have can = ["shop"]
     player.PLAYER.place = 'shire'
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
         key="shire",
         name="The Shire",
         description="Buncha hobbits.",
@@ -1505,7 +1511,7 @@ def test_buy_no_can(capsys):
 def test_buy_not_for_sale(capsys):
     # GIVEN: A place that can "shop" and has an inventory without a price
     player.PLAYER.place = 'shire'
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
         key="shire",
         name="The Shire",
         description="Buncha hobbits.",
@@ -1513,7 +1519,7 @@ def test_buy_not_for_sale(capsys):
         shop_inventory={'ring':1,
         } 
     )
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "ring": Item(
             key="ring",
             name="The Ring",
@@ -1532,7 +1538,7 @@ def test_buy_not_for_sale(capsys):
 def test_buy_for_sale(capsys):
     # GIVEN: A place that can "shop" and has an inventory with a price
     player.PLAYER.place = 'shire'
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
         key="shire",
         name="The Shire",
         description="Buncha hobbits.",
@@ -1540,7 +1546,7 @@ def test_buy_for_sale(capsys):
         shop_inventory={'stew':1, 
         } 
     )
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "stew": Item(
             key="stew",
             name="Rabbit Stew",
@@ -1561,7 +1567,7 @@ def test_buy_low_money(capsys):
     # GIVEN: A place that can "shop" and has an inventory with a price, and a poor player
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {'gems':1}
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
         key="shire",
         name="The Shire",
         description="Buncha hobbits.",
@@ -1569,7 +1575,7 @@ def test_buy_low_money(capsys):
         shop_inventory={'stew':1, 
         } 
     )
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "stew": Item(
             key="stew",
             name="Rabbit Stew",
@@ -1590,7 +1596,7 @@ def test_buy_no_money(capsys):
     # GIVEN: A place that can "shop" and has an inventory with a price, and a poor player
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
         key="shire",
         name="The Shire",
         description="Buncha hobbits.",
@@ -1598,7 +1604,7 @@ def test_buy_no_money(capsys):
         shop_inventory={'stew':1, 
         } 
     )
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "stew": Item(
             key="stew",
             name="Rabbit Stew",
@@ -1619,7 +1625,7 @@ def test_buy_no_money_free(capsys):
     # GIVEN: A place that can "shop" and has an inventory with a free price, and a player w/ no gems
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
         key="shire",
         name="The Shire",
         description="Buncha hobbits.",
@@ -1627,7 +1633,7 @@ def test_buy_no_money_free(capsys):
         shop_inventory={'stew':1, 
         } 
     )
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "stew": Item(
             key="stew",
             name="Rabbit Stew",
@@ -1647,7 +1653,7 @@ def test_buy_no_qty(capsys):
     # GIVEN: A place that can "shop" and has a single item with a price, and a moneyed player
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {'gems':50}
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
         key="shire",
         name="The Shire",
         description="Buncha hobbits.",
@@ -1655,7 +1661,7 @@ def test_buy_no_qty(capsys):
         shop_inventory={'stew':1,
         } 
     )
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "stew": Item(
             key="stew",
             name="Rabbit Stew",
@@ -1672,13 +1678,13 @@ def test_buy_no_qty(capsys):
     assert 'stew' in player.PLAYER.inventory, "The bought item should be in the player's inventory"
 
     # AND: the item is removed from the place
-    assert 'stew' not in items_and_locations.PLACES["shire"].shop_inventory, "the bought item should no longer be at the place"
+    assert 'stew' not in Place.place_dict["shire"].shop_inventory, "the bought item should no longer be at the place"
 
     # AND: The player's gems are reduced by the cost of the item
     assert player.PLAYER.inventory['gems'] == 40, "The players gems should be reduced by the cost of the item"
 
     # AND: The place's gems are increased by the cost of the item
-    assert items_and_locations.PLACES["shire"].shop_inventory['gems'] == 10, "The place's gems should be increased by the cost of the item"
+    assert Place.place_dict["shire"].shop_inventory['gems'] == 10, "The place's gems should be increased by the cost of the item"
 
     # AND: the player is informed
     assert "You bought 1 Rabbit Stew for 10 gems" in output, "The player should be told they have bought the item"
@@ -1687,7 +1693,7 @@ def test_buy_invalid_qty(capsys):
     # GIVEN: A place that can "shop" and has a multiple items with a price, and a moneyed player
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {'gems':50}
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
         key="shire",
         name="The Shire",
         description="Buncha hobbits.",
@@ -1695,7 +1701,7 @@ def test_buy_invalid_qty(capsys):
         shop_inventory={'stew':2, 
         } 
     )
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "stew": Item(
             key="stew",
             name="Rabbit Stew",
@@ -1712,13 +1718,13 @@ def test_buy_invalid_qty(capsys):
     assert 'stew' not in player.PLAYER.inventory.keys(), "The invalid qty purchase should not be in the player's inventory"
 
     # AND: the location's item qty should not change
-    assert items_and_locations.PLACES["shire"].shop_inventory['stew'] == 2, "The invalid qty purchase attempt should not change the location inv"
+    assert Place.place_dict["shire"].shop_inventory['stew'] == 2, "The invalid qty purchase attempt should not change the location inv"
 
     # AND: The player's gems should not change
     assert player.PLAYER.inventory['gems'] == 50, "The invalid qty purchase should not change the player's gems"
 
     # AND: The place's gems are increased by the cost of the item
-    assert 'gems' not in items_and_locations.PLACES["shire"].shop_inventory.keys(), "The invalid qty purchase should not change the place's gems"
+    assert 'gems' not in Place.place_dict["shire"].shop_inventory.keys(), "The invalid qty purchase should not change the place's gems"
 
     # AND: the player is informed
     assert "Sorry, there are not 3 stew here." in output, "The player should be told the location does not have the requested qty"
@@ -1727,7 +1733,7 @@ def test_buy_qty(capsys):
     # GIVEN: A place that can "shop" and has a multiple items with a price, and a moneyed player
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {'gems':50}
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
         key="shire",
         name="The Shire",
         description="Buncha hobbits.",
@@ -1735,7 +1741,7 @@ def test_buy_qty(capsys):
         shop_inventory={'stew':5, 
         } 
     )
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "stew": Item(
             key="stew",
             name="Rabbit Stew",
@@ -1752,13 +1758,13 @@ def test_buy_qty(capsys):
     assert player.PLAYER.inventory['stew'] == 3, "The bought item qty should be in the player's inventory"
 
     # AND: the item is removed from the place
-    assert items_and_locations.PLACES["shire"].shop_inventory['stew'] == 2, "the bought item qty should be removed from the place"
+    assert Place.place_dict["shire"].shop_inventory['stew'] == 2, "the bought item qty should be removed from the place"
 
     # AND: The player's gems are reduced by the cost of the item
     assert player.PLAYER.inventory['gems'] == 20, "The players gems should be reduced by the cost of the items"
 
     # AND: The place's gems are increased by the cost of the item
-    assert items_and_locations.PLACES["shire"].shop_inventory['gems'] == 30, "The place's gems should be increased by the cost of the items"
+    assert Place.place_dict["shire"].shop_inventory['gems'] == 30, "The place's gems should be increased by the cost of the items"
 
     # AND: the player is informed
     assert "You bought 3 Rabbit Stew" in output, "The player should be told they have bought the item"
@@ -1776,7 +1782,7 @@ def test_read_no_item(capsys):
     # GIVEN: a location and player inventory
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
@@ -1795,13 +1801,13 @@ def test_read_place_no_writing(capsys):
     # GIVEN: a location with an item that has no writing
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
             inventory={"stew":1}
         )
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "stew": Item(
             key="stew",
             name="Rabbit Stew",
@@ -1821,13 +1827,13 @@ def test_read_player_no_writing(capsys):
     # GIVEN: a player inventory with an item that has no writing
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {"stew":1}
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
             inventory={}
         )
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "stew": Item(
             key="stew",
             name="Rabbit Stew",
@@ -1847,13 +1853,13 @@ def test_read_place(capsys):
     # GIVEN: a place inventory with an item that has writing
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
             inventory={"magazine":1}
         )
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "magazine": Item(
             key="magazine",
             name="Old Magazine",
@@ -1879,13 +1885,13 @@ def test_read_player(capsys):
     # GIVEN: a player inventory with an item that has writing
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {"magazine":1}
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
             inventory={}
         )
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "magazine": Item(
             key="magazine",
             name="Old Magazine",
@@ -1942,7 +1948,7 @@ def test_pet_no_arg(capsys):
 def test_pet_cant(capsys):
     # GIVEN: a place where you can't pet anything
     player.PLAYER.place = 'shire'
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
@@ -1960,7 +1966,7 @@ def test_pet_cant(capsys):
 def test_pet_no_target(capsys):
     # GIVEN: The player is at a location that accepts petting
     player.PLAYER.place = 'shire'
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
@@ -1978,7 +1984,7 @@ def test_pet_no_target(capsys):
 def test_pet_no_color(capsys):
     # GIVEN: The player is at a location that accepts petting
     player.PLAYER.place = 'shire'
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
@@ -1996,7 +2002,7 @@ def test_pet_no_color(capsys):
 def test_pet_invalid_color(capsys):
     # GIVEN: The player is at a location that accepts petting and a list of valid colors
     player.PLAYER.place = 'shire'
-    items_and_locations.PLACES["shire"] = Place(
+    Place.place_dict["shire"] = Place(
             key="shire",
             name="The Shire",
             description="Buncha hobbits.",
@@ -2021,7 +2027,7 @@ def test_pet_invalid_color(capsys):
 def test_pet(capsys):
     # GIVEN: A dragon and a mood, and a player at a location that allows petting
     player.PLAYER.place = 'mountain'
-    items_and_locations.PLACES["mountain"] = Place(
+    Place.place_dict["mountain"] = Place(
             key="mountain",
             name="The Misty Mountain",
             description="Big ol rock.",
@@ -2071,7 +2077,7 @@ def test_pet_treasure(capsys):
     # GIVEN: A dragon with treasure
     player.PLAYER.place = 'mountain'
     player.PLAYER.inventory = {'gems':10}
-    items_and_locations.PLACES["mountain"] = Place(
+    Place.place_dict["mountain"] = Place(
             key="mountain",
             name="The Misty Mountain",
             description="Big ol rock.",
@@ -2103,7 +2109,7 @@ def test_pet_no_treasure(capsys):
     # GIVEN: A dragon with no treasure
     player.PLAYER.place = 'mountain'
     player.PLAYER.inventory = {'gems':10}
-    items_and_locations.PLACES["mountain"] = Place(
+    Place.place_dict["mountain"] = Place(
             key="mountain",
             name="The Misty Mountain",
             description="Big ol rock.",
@@ -2135,7 +2141,7 @@ def test_pet_damage(capsys):
     # GIVEN: A dragon with that does damage
     player.PLAYER.place = 'mountain'
     player.PLAYER.current_health = 50
-    items_and_locations.PLACES["mountain"] = Place(
+    Place.place_dict["mountain"] = Place(
             key="mountain",
             name="The Misty Mountain",
             description="Big ol rock.",
@@ -2167,7 +2173,7 @@ def test_pet_no_damage(capsys):
     # GIVEN: A dragon with that does damage
     player.PLAYER.place = 'mountain'
     player.PLAYER.current_health = 50
-    items_and_locations.PLACES["mountain"] = Place(
+    Place.place_dict["mountain"] = Place(
             key="mountain",
             name="The Misty Mountain",
             description="Big ol rock.",
@@ -2200,7 +2206,7 @@ def test_pet_treasure_and_damage(capsys):
     player.PLAYER.place = 'mountain'
     player.PLAYER.current_health = 50
     player.PLAYER.inventory = {'gems':10}
-    items_and_locations.PLACES["mountain"] = Place(
+    Place.place_dict["mountain"] = Place(
             key="mountain",
             name="The Misty Mountain",
             description="Big ol rock.",
@@ -2254,7 +2260,7 @@ def test_drink_no_arg(capsys):
 def test_consume_no_item(capsys):
     # GIVEN: an empty player inventory
     player.PLAYER.inventory = {'gems':10}
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "cracker": Item(
             key="cracker",
             name="saltine cracker",
@@ -2273,7 +2279,7 @@ def test_consume_no_item(capsys):
 def test_consume_invalid_item(capsys):
     # GIVEN: a non-consumable item in the player's inventory
     player.PLAYER.inventory = {'cracker':10}
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "cracker": Item(
             key="cracker",
             name="saltine cracker",
@@ -2293,7 +2299,7 @@ def test_consume_eat(capsys):
     # GIVEN: an eatable item in the player's inventory
     player.PLAYER.current_health = 50
     player.PLAYER.inventory = {'cracker':10}
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "cracker": Item(
             key="cracker",
             name="saltine cracker",
@@ -2329,7 +2335,7 @@ def test_consume_drink(capsys):
     # GIVEN: a drinkable item in the player's inventory
     player.PLAYER.current_health = 50
     player.PLAYER.inventory = {'poison':5}
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "poison": Item(
             key="poison",
             name="Rat Poison",
@@ -2365,7 +2371,7 @@ def test_consume_last_item(capsys):
     # GIVEN: a drinkable item in the player's inventory
     player.PLAYER.current_health = 50
     player.PLAYER.inventory = {'poison':1}
-    items_and_locations.ITEMS = {
+    Item.item_dict = {
         "poison": Item(
             key="poison",
             name="Rat Poison",

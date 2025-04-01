@@ -33,6 +33,7 @@
     # might even want to split classes into even smaller files (eg base classes in one file)
         # Alissa says that she would actually have each class be its own file, but this might be too much for me now
     # UPDATE: your tests are failing likely due to the changes made to the Item/Place classmethods and how the test deepcopy works?? Unsure
+    # UPDATE: you fixed the issue with the item_dict and place_dict, but not it seems the deepcopy methodology for the PLAYER.place is failing.
 
 from console import fg, bg, fx
 

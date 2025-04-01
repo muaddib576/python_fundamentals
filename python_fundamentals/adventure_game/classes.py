@@ -123,43 +123,6 @@ class Collectable():
     def __repr__(self):
         return f"<{self.__class__.__name__} object={self.name}>"
 
-# class Contents():
-#     """Class for objects with inventories/contents"""
-    
-#     def has_item(self, key: str, qty: int=1, inventory: dict=None):
-#         """Return True if Object inventory has at least the specified quantity of key, else False"""
-
-#         if inventory is None:
-#             inventory = self.inventory
-
-#         return key in inventory and inventory[key] >= qty
-    
-#     def has_shop_item(self, key, qty=1): #TODO this method seems redundant after the refactor?
-#         """Return True if Object shop_inventory has at least the specified quantity of key, else False"""
-
-#         return key in self.shop_inventory and self.shop_inventory[key] >= qty
-    
-#     def add(self, item, qty=1, inventory: dict=None): 
-#         """Adds X item from specified inventory"""
-       
-#         if inventory is None:
-#             inventory = self.inventory
-
-#         inventory.setdefault(item, 0)
-#         inventory[item] += qty
-
-#     def remove(self, item: str, qty: int=1, inventory: dict=None):
-#         """Remove X item from specified inventory"""
-
-#         if inventory is None:
-#             inventory = self.inventory
-        
-#         if self.has_item(item, qty, inventory):
-#             inventory[item] -= qty
-
-#         if inventory[item] <= 0: # remove item from inventory if quantity is 0 or less
-#             del inventory[item]
-
 class Place(Collectable, Contents):
     def __init__(self, key, name, description, north=None, east=None, south=None, west=None, can=None, inventory=None, shop_inventory=None, egress_location=None, misty_path=None, current_path=None, misty_descriptions=None):
         super().__init__(key, name, description)
