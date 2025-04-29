@@ -3,18 +3,15 @@ from console.progress import ProgressBar
 from console import fg, bg, fx
 import textwrap
 
-from python_fundamentals.adventure_game.player import (
-    PLAYER,
-    MAX_HEALTH,
-)
+import python_fundamentals.adventure_game.player as player
 
 WIDTH = 60
 MARGIN = ' '*3
 DELAY = 1
-DEBUG = False
+DEBUG = True
 
 BAR = ProgressBar(
-    total=(MAX_HEALTH + .1),
+    total=(player.MAX_HEALTH + .1),
     width=(WIDTH - len("Health") - len("100%")),
     clear_left=False,
 )
@@ -88,10 +85,10 @@ def victory():
     wrap(f"By a tree stump and a large basket brimming with food, your father stands, waving warmly.")
     wrap(f"Congratulations! You have completed your task, and enjoy a relaxing picnic with your father.")
     wrap(f"As the sun begins to set, he leads you back to your cabin for the night.")
-    PLAYER.place = "home"
+    player.PLAYER.place = "home"
     
 def defeat():
-    write(f"Health {BAR(PLAYER.current_health)}\n")
+    write(f"Health {BAR(player.PLAYER.current_health)}\n")
     wrap(("Your vision fades to black as your strength gives out. The world around you falls silent.",
             "You have succumbed to the trials of this journey.",
     ))

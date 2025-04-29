@@ -32,8 +32,8 @@
     # split Player class and PLAYER into a separate file
     # might even want to split classes into even smaller files (eg base classes in one file)
         # Alissa says that she would actually have each class be its own file, but this might be too much for me now
-    # UPDATE: your tests are failing likely due to the changes made to the Item/Place classmethods and how the test deepcopy works?? Unsure
-    # UPDATE: you fixed the issue with the item_dict and place_dict, but not it seems the deepcopy methodology for the PLAYER.place is failing.
+    # UPDATE: using the direct module reference seems to have resolved the issues.
+        # Only issue is params_and_functions.DELAY override is not working (so tests take some time to run). You kinda fixed this, but with a redundant import.
 
 from console import fg, bg, fx
 
@@ -63,7 +63,10 @@ from python_fundamentals.adventure_game.commands import (
     Drink,
 )
 
-from python_fundamentals.adventure_game.items_and_locations import PLAYER #TODO this is circular?
+# Even though it is not directly used, you need to import this so the dicts are initialized
+from python_fundamentals.adventure_game import items_and_locations
+
+import python_fundamentals.adventure_game.player as player
 
 #TODO generate this dynamically with a dunder method called "subclasses" or somesuch?
 action_dict = {
@@ -103,7 +106,7 @@ def main():
     while True:
         print()
 
-        debug(f"You are at: {PLAYER.place}")
+        debug(f"You are at: {player.PLAYER.place}")
 
         reply = input(fg.green("> ")).lower().strip()
 
@@ -131,7 +134,7 @@ def main():
             error("No such command.")
             continue
 
-        if PLAYER.current_health == 0:
+        if player.PLAYER.current_health == 0:
             defeat()
 
 if __name__ == "__main__":

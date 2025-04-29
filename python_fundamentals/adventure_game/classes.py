@@ -6,14 +6,11 @@ from python_fundamentals.adventure_game.params_and_functions import (
     error,
     abort,
     BAR,
-    # MAX_HEALTH,
     DELAY,
 )
 
-from python_fundamentals.adventure_game.player import (
-    Contents,
-    PLAYER,
-)
+import python_fundamentals.adventure_game.player as player
+# PLAYER = player.PLAYER
 
 class InvalidItemError(Exception):
     ...
@@ -30,7 +27,7 @@ class Command():
     @property
     def player_place(self):
         """gets the current player location and returns the place object"""
-        current_location = PLAYER.place
+        current_location = player.PLAYER.place
 
         player_place = Place.get(current_location)
         
@@ -102,7 +99,7 @@ class Command():
     def health_bar(self):
         """Displays the current health bar"""
         print()
-        write(f"Health {BAR(PLAYER.current_health)}")
+        write(f"Health {BAR(player.PLAYER.current_health)}")
 
     def text_delay(self, sentences):
         """Prints the elements from the variable with a DELAY between each"""
@@ -115,6 +112,7 @@ class Collectable():
     """Base class for objects with collections"""
     place_dict = {}
     item_dict = {}
+    dragon_dict = {}
     def __init__(self, key, name, description):
         self.key = key
         self.name = name
@@ -123,7 +121,7 @@ class Collectable():
     def __repr__(self):
         return f"<{self.__class__.__name__} object={self.name}>"
 
-class Place(Collectable, Contents):
+class Place(Collectable, player.Contents):
     def __init__(self, key, name, description, north=None, east=None, south=None, west=None, can=None, inventory=None, shop_inventory=None, egress_location=None, misty_path=None, current_path=None, misty_descriptions=None):
         super().__init__(key, name, description)
         self.north = north
@@ -162,7 +160,7 @@ class Place(Collectable, Contents):
         if not new_place:
             abort(f"Ruh roh, raggy! The GM seems to have forgotten the details of {destination}.")
 
-        PLAYER.place = new_place.key
+        player.PLAYER.place = new_place.key
 
         return new_place
 
@@ -184,10 +182,10 @@ class Place(Collectable, Contents):
     def buy(self, item, item_cost, qty=1):
         """Takes the item key and cost and calls add/remove w/ appropriate params"""
 
-        PLAYER.add(item, qty)
+        player.PLAYER.add(item, qty)
 
         if item_cost > 0: # the player might be able to 'buy' an item for no cost, so we check first
-            PLAYER.remove('gems',item_cost)
+            player.PLAYER.remove('gems',item_cost)
         
         self.remove(item, qty, self.shop_inventory)
 
@@ -266,7 +264,7 @@ class Item(Collectable):
         
         return ""
 
-class Dragon_head(Item, Contents):
+class Dragon_head(Item, player.Contents):
     MOODS = [
         {
             "mood": "cheerful",

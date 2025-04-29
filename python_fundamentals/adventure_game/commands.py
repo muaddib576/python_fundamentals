@@ -15,16 +15,10 @@ from python_fundamentals.adventure_game.classes import (
     Command,
     Place,
     Item,
+    Dragon_head,
 )
 
-from python_fundamentals.adventure_game.items_and_locations import (
-    ITEMS,
-    DRAGON_HEADS,
-)
-
-from python_fundamentals.adventure_game.player import (
-    PLAYER,
-)
+from python_fundamentals.adventure_game import player
 
 class Quit(Command):
     def do(self):
@@ -46,12 +40,12 @@ class Look(Command):
 
         # Display list of the items in the current location
         if current_place.inventory:
-            item_names = [ITEMS[x].name for x in current_place.inventory]
+            item_names = [Item.item_dict[x].name for x in current_place.inventory]
             
             wrap(f"You see {self.comma_list(item_names)} nearby.")
 
         if current_place.shop_inventory:
-            shop_item_names = [ITEMS[x].name for x in current_place.shop_inventory]
+            shop_item_names = [Item.item_dict[x].name for x in current_place.shop_inventory]
             
             wrap(f"Behind the counter, the shopkeeper has {self.comma_list(shop_item_names)} prominently displayed.")
 
@@ -74,7 +68,7 @@ class Shop(Command):
         header("Whater you buyin'?\n")
 
         for key, qty in current_place.shop_inventory.items():
-            item = ITEMS.get(key)
+            item = Item.item_dict.get(key)
             if item.is_for_sale():
 
                 prefix_text = f"${abs(item.price):>2d}. {item.name.title()} x{qty} : "
@@ -109,7 +103,7 @@ class Buy(Command):
         
         target_item = Item.find(target)
         
-        current_gems = PLAYER.inventory.get("gems", 0)
+        current_gems = player.PLAYER.inventory.get("gems", 0)
 
         if not target_item:
             error(f"There is no {target} in {current_place.name.lower()}.")
@@ -212,6 +206,7 @@ class Examine(Command):
         debug(f"Trying to examine: {self.arg_string}")
 
         target = self.arg_string
+
         current_place = self.player_place
         
         target_item = Item.find(target)
@@ -220,7 +215,7 @@ class Examine(Command):
             error(f"There is no {target} in {current_place.name.lower()}.")
             return
 
-        if not current_place.has_item(target_item.key) and not current_place.has_shop_item(target_item.key) and not PLAYER.has_item(target_item.key):
+        if not current_place.has_item(target_item.key) and not current_place.has_shop_item(target_item.key) and not player.PLAYER.has_item(target_item.key):
             error(f"There is no {target} in {current_place.name.lower()}.")
             return
 
@@ -263,7 +258,7 @@ class Take(Command):
             wrap(f"You try to pick up {target_item.name}, but it doesn't budge.")
             return  
 
-        PLAYER.add(target_item.key, qty)
+        player.PLAYER.add(target_item.key, qty)
         current_place.remove(target_item.key, qty)
 
         wrap(f"You pick up {qty} {target_item.name} and put it in your bag.")
@@ -278,11 +273,11 @@ class Inventory(Command):
 
         print()
 
-        if not PLAYER.inventory:
+        if not player.PLAYER.inventory:
             write("Inventory empty.")
             return
 
-        for name, qty in PLAYER.inventory.items():
+        for name, qty in player.PLAYER.inventory.items():
             item = Item.get(name)
             write(f"(x{qty:>2}) {item.name}")
 
@@ -306,8 +301,8 @@ class Drop(Command):
             error(f"There is no {target} in {current_place.name.lower()}.")
             return
 
-        if PLAYER.has_item(target_item.key, qty):
-            PLAYER.remove(target_item.key, qty)
+        if player.PLAYER.has_item(target_item.key, qty):
+            player.PLAYER.remove(target_item.key, qty)
             current_place.add(target_item.key, qty)
             wrap(f"You dropped {qty} {target_item.key} on the ground.")
             return
@@ -333,7 +328,7 @@ class Read(Command):
             error(f"There is no {target} in {current_place.name.lower()}.")
             return
 
-        if not (current_place.has_item(target_item.key) or PLAYER.has_item(target_item.key)):
+        if not (current_place.has_item(target_item.key) or player.PLAYER.has_item(target_item.key)):
             error(f"There is no {target} here.")
             return
 
@@ -379,17 +374,17 @@ class Pet(Command):
         # TODO this whole arg_string parsing to determine color assignment strat is a bit messy
         color = temp_arg_list[0]
 
-        if color not in DRAGON_HEADS.keys():
+        if color not in Dragon_head.dragon_dict.keys():
             error("You do not see such a dragon.")
             return
         
-        target_dragon = DRAGON_HEADS[color]
+        target_dragon = Dragon_head.dragon_dict[color]
 
         treasure = target_dragon.calc_treasure()
         damage = target_dragon.calc_damage()
 
-        PLAYER.add("gems",treasure)
-        damage_dealt = PLAYER.change_health(-damage)
+        player.PLAYER.add("gems",treasure)
+        damage_dealt = player.PLAYER.change_health(-damage)
 
         sentences = [
             "You slowly creep forward...",
@@ -414,7 +409,7 @@ class Consume(Command):
             error(f"Sorry, you do not posses a {target}.")
             return
 
-        if not PLAYER.has_item(target_item.key):
+        if not player.PLAYER.has_item(target_item.key):
             error(f"Sorry, you do not posses a {target}.")
             return
 
@@ -424,13 +419,13 @@ class Consume(Command):
             error(f"Sorry, your {target_item.name} is not {action}able.")
             return
 
-        PLAYER.remove(target_item.key)
+        player.PLAYER.remove(target_item.key)
 
         self.text_delay(consume_message)
         
         if target_item.health_change:
             
-            change = PLAYER.change_health(target_item.health_change)
+            change = player.PLAYER.change_health(target_item.health_change)
             
             wrap(f"You feel your health change by {change}.")
 

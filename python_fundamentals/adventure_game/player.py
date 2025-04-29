@@ -1,10 +1,4 @@
-# from python_fundamentals.adventure_game.params_and_functions import (
-#     MAX_HEALTH,
-# )
 
-# from python_fundamentals.adventure_game.classes import (
-#     Contents,
-# )
 
 MAX_HEALTH = 100
 

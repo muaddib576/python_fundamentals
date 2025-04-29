@@ -1,13 +1,13 @@
-from copy import deepcopy
 import pytest
+import importlib
 
-# import python_fundamentals.adventure as adventure
 import python_fundamentals.adventure_game.items_and_locations as items_and_locations
 import python_fundamentals.adventure_game.params_and_functions as params_and_functions
 import python_fundamentals.adventure_game.player as player
 
+import python_fundamentals.adventure_game.classes as classes
+
 from python_fundamentals.adventure_game.params_and_functions import (
-    MAX_HEALTH,
     error,
     abort,
     debug,
@@ -16,14 +16,7 @@ from python_fundamentals.adventure_game.params_and_functions import (
     wrap,
 )
 
-from python_fundamentals.adventure_game.items_and_locations import (
-    # ITEMS,
-    PLACES,
-    # DRAGON_HEADS,
-)
-
 from python_fundamentals.adventure_game.classes import (
-    Contents,
     Command,
     Place,
     Item,
@@ -48,30 +41,19 @@ from python_fundamentals.adventure_game.commands import (
     Drink,
 )
 
-PLAYER_STATE = deepcopy(player.PLAYER)
-PLACES_STATE = deepcopy(Place.place_dict)
-DRAGON_HEADS_STATE = deepcopy(items_and_locations.DRAGON_HEADS)
-ITEMS_STATE = deepcopy(Item.item_dict)
-MARGIN_STATE = deepcopy(params_and_functions.MARGIN)
-WIDTH_STATE = deepcopy(params_and_functions.WIDTH)
-params_and_functions.DELAY = 0
-
 
 @pytest.fixture(autouse=True)
 def setup():
 
-    yield
+    importlib.reload(items_and_locations)
+    importlib.reload(params_and_functions)
+    importlib.reload(player)
     
-    """Revert game data to its original state."""
-    player.PLAYER = deepcopy(PLAYER_STATE)
-    Place.place_dict = deepcopy(PLACES_STATE)
-    items_and_locations.DRAGON_HEADS = deepcopy(DRAGON_HEADS_STATE)
-    Item.item_dict = deepcopy(ITEMS_STATE)
-    params_and_functions.MARGIN = deepcopy(MARGIN_STATE)
-    params_and_functions.WIDTH = deepcopy(WIDTH_STATE)
+    # params_and_functions.DELAY = 0
+    classes.DELAY = 0
+    # TODO this solves the delay test issue, but I don't like that I am importing python_fundamentals.adventure_game.classes twice
 
-    pass
-    
+    yield
     
 def test_collectable_get():
     # GIVEN: An item
@@ -214,7 +196,7 @@ def test_do_nothing():
 
 def test_collectable_find_name_examine(capsys):
     # GIVEN: an item
-
+    # breakpoint()
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {'grass':1}
     Place.place_dict = {
@@ -235,7 +217,7 @@ def test_collectable_find_name_examine(capsys):
 
     # WHEN: the find method is called using either the name via the Examine class command
     # item = Item.find('unrelated alias')
-    breakpoint()
+    # breakpoint()
     Examine(['unrelated alias']).do()
     output = capsys.readouterr().out
 
@@ -262,7 +244,7 @@ def test_towards():
 
 
     # WHEN: One is passed a direction
-    place = PLACES["mordor"]
+    place = Place.place_dict["mordor"]
 
     # place.get("xxx")
     # Place.get("mordor")
@@ -1926,7 +1908,7 @@ def test_example(a, b, expected):
         (50, 10, 60, "A positive number should be added to health"),
         (50, -10, 40, "A negative number should be subtracted from health"),
         (50, -51, 0, "Heath should not drop below 0"),
-        (50, 51, MAX_HEALTH, "Health should not go above {MAX_HEALTH}"),
+        (50, 51, player.MAX_HEALTH, "Health should not go above {MAX_HEALTH}"),
 ])
 def test_change_health(start, amount, expected, message):
     # GIVEN: the player's initial health
@@ -2008,7 +1990,7 @@ def test_pet_invalid_color(capsys):
             description="Buncha hobbits.",
             can=['pet'],
         )
-    items_and_locations.DRAGON_HEADS = {
+    Dragon_head.dragon_dict = {
             "red": Dragon_head(
                 key="red",
                 name="Red Dragon",
@@ -2036,7 +2018,7 @@ def test_pet(capsys):
     items_and_locations.Dragon_head.MOODS = [
         {"mood": "moody", "treasure": [], "damage": [], "message": ("")}
     ]
-    items_and_locations.DRAGON_HEADS = {
+    Dragon_head.dragon_dict = {
             "purple": Dragon_head(
                 key="purple",
                 name="Purple Dragon",
@@ -2057,7 +2039,7 @@ def test_moods_assignment():
     items_and_locations.Dragon_head.MOODS = [
         {"mood": "moody", "treasure": [1,1], "damage": [2,2], "message": ("snorts at you.")}
     ]
-    items_and_locations.DRAGON_HEADS = {
+    Dragon_head.dragon_dict = {
             "purple": Dragon_head(
                 key="purple",
                 name="Purple Dragon",
@@ -2066,10 +2048,10 @@ def test_moods_assignment():
     }
     
     # THEN: the instantiated dragon should have the mood assigned, and the mood should be removed
-    assert items_and_locations.DRAGON_HEADS["purple"].mood == "moody", "The mood should be assigned"
-    assert items_and_locations.DRAGON_HEADS["purple"].treasure == [1,1], "The treasure should be assigned"
-    assert items_and_locations.DRAGON_HEADS["purple"].damage == [2,2], "The damage should be assigned"
-    assert items_and_locations.DRAGON_HEADS["purple"].message == "snorts at you.", "The message should be assigned"
+    assert Dragon_head.dragon_dict["purple"].mood == "moody", "The mood should be assigned"
+    assert Dragon_head.dragon_dict["purple"].treasure == [1,1], "The treasure should be assigned"
+    assert Dragon_head.dragon_dict["purple"].damage == [2,2], "The damage should be assigned"
+    assert Dragon_head.dragon_dict["purple"].message == "snorts at you.", "The message should be assigned"
     assert len(items_and_locations.Dragon_head.MOODS) == 0, \
         "The mood should be removed from the list after assignment"
 
@@ -2083,7 +2065,7 @@ def test_pet_treasure(capsys):
             description="Big ol rock.",
             can=['pet'],
         )
-    items_and_locations.DRAGON_HEADS = {
+    Dragon_head.dragon_dict = {
             "purple": Dragon_head(
                 key="purple",
                 name="Purple Dragon",
@@ -2115,7 +2097,7 @@ def test_pet_no_treasure(capsys):
             description="Big ol rock.",
             can=['pet'],
         )
-    items_and_locations.DRAGON_HEADS = {
+    Dragon_head.dragon_dict = {
             "purple": Dragon_head(
                 key="purple",
                 name="Purple Dragon",
@@ -2147,7 +2129,7 @@ def test_pet_damage(capsys):
             description="Big ol rock.",
             can=['pet'],
         )
-    items_and_locations.DRAGON_HEADS = {
+    Dragon_head.dragon_dict = {
             "purple": Dragon_head(
                 key="purple",
                 name="Purple Dragon",
@@ -2179,7 +2161,7 @@ def test_pet_no_damage(capsys):
             description="Big ol rock.",
             can=['pet'],
         )
-    items_and_locations.DRAGON_HEADS = {
+    Dragon_head.dragon_dict = {
             "purple": Dragon_head(
                 key="purple",
                 name="Purple Dragon",
@@ -2212,7 +2194,7 @@ def test_pet_treasure_and_damage(capsys):
             description="Big ol rock.",
             can=['pet'],
         )
-    items_and_locations.DRAGON_HEADS = {
+    Dragon_head.dragon_dict = {
             "purple": Dragon_head(
                 key="purple",
                 name="Purple Dragon",

@@ -7,7 +7,7 @@ from python_fundamentals.adventure_game.classes import (
     Dragon_head,
 )
 
-DRAGON_HEADS = {
+DRAGON_HEADS = Dragon_head.dragon_dict = {
     "red": Dragon_head(
         key="red",
         name="Red Dragon Head",
@@ -281,8 +281,8 @@ ITEMS = Item.item_dict = {
     "dragon": Item(
         key="dragon",
         name="dragon",
-        description= (f"A large dragon with heads of {', '.join(list(DRAGON_HEADS.keys())[0:-1])}, " \
-                      f"and {list(DRAGON_HEADS.keys())[-1]}."
+        description= (f"A large dragon with heads of {', '.join(list(Dragon_head.dragon_dict.keys())[0:-1])}, " \
+                      f"and {list(Dragon_head.dragon_dict.keys())[-1]}."
         )
     ),
 }
