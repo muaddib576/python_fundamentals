@@ -21,12 +21,16 @@ from python_fundamentals.adventure_game.classes import (
 from python_fundamentals.adventure_game import player
 
 class Quit(Command):
+    aliases = ['quit', 'q']
+
     def do(self):
         """Ends the game"""
         write("Goodbye. Thanks for playing!")
         quit()
 
 class Look(Command):
+    aliases = ['look','l']
+
     def do(self):
         """Lists the items present in the current location, and all nearby locations"""
 
@@ -56,6 +60,8 @@ class Look(Command):
                 write(f"To the {fg.lightcyan(direction)} is {fg.lightcyan(Place.get(nearby_name).name)}.")
 
 class Shop(Command):
+    aliases = ['shop','s']
+
     def do(self):
         """Does the shop, duh"""
 
@@ -83,6 +89,8 @@ class Shop(Command):
         print()
 
 class Buy(Command):
+    aliases = ['buy','b','purchase']
+
     def do(self):
         """Exchanges the players gems for items in shops"""
 
@@ -130,6 +138,8 @@ class Buy(Command):
         wrap(f"You bought {qty} {target_item.name} for {item_cost} gems and put it in your bag.")
 
 class Goroot(Command):
+    aliases = ['go','g','walk']
+
     def goroot(self, direction):
         """Moves to the specified location"""  
 
@@ -159,6 +169,15 @@ class Go(Goroot): #rename this?
 
         direction = self.arg_string
         current_place = self.player_place
+        compass_aliases = {'n':'north',
+                           'e':'east',
+                           's':'south',
+                           'w':'west'
+        }
+
+        # accounts for player using n/s/e/w instead of full direction
+        if direction in compass_aliases.keys():
+            direction = compass_aliases[direction]
 
         if direction not in self.compass:
             error(f"Sorry, there is no '{direction}'")
@@ -197,6 +216,8 @@ class Go(Goroot): #rename this?
         self.goroot(direction)
 
 class Examine(Command):
+    aliases = ['examine','e','inspect']
+
     def do(self):
         """Prints a description of the specified item, and qty/price if in the shop"""
         if not self.arg_string:
@@ -227,6 +248,8 @@ class Examine(Command):
             return
 
 class Take(Command):
+    aliases = ['take','t','grab','pickup']
+
     def do(self):
         """Removes the specified item from the location and adds to inventory"""
         if not self.arg_string:
@@ -264,6 +287,8 @@ class Take(Command):
         wrap(f"You pick up {qty} {target_item.name} and put it in your bag.")
 
 class Inventory(Command):
+    aliases = ['inventory','i','bag']
+
     def do(self):
         """Displays the current contents of the player inventory"""
 
@@ -282,6 +307,8 @@ class Inventory(Command):
             write(f"(x{qty:>2}) {item.name}")
 
 class Drop(Command):
+    aliases = ['drop','d']
+
     def do(self):
         """Removed the specified item from the player's inventory and adds it to the location"""
 
@@ -310,6 +337,8 @@ class Drop(Command):
         error(f"You dont have {qty} {target_item.key} to drop.")
 
 class Read(Command):
+    aliases = ['read','r']
+
     def do(self):
         """Prints any writing on the specified item"""
 
@@ -343,6 +372,8 @@ class Read(Command):
             wrap(target_item.writing["message"], initial_indent=MARGIN*2, subsequent_indent=MARGIN*2)
 
 class Pet(Command):
+    aliases = ['pet','p']
+
     def do(self):
         """Performs the Pet action on the specified dragon"""
 
@@ -430,6 +461,8 @@ class Consume(Command):
             wrap(f"You feel your health change by {change}.")
 
 class Eat(Consume):
+    aliases = ['eat']
+
     def do(self):
         """Performs the Eat action by calling the Consume action"""
         if not self.arg_string:
@@ -440,6 +473,8 @@ class Eat(Consume):
         self.consume(self.arg_string, action)
 
 class Drink(Consume):
+    aliases = ['drink']
+
     def do(self):
         """Performs the Eat action by calling the Consume action"""
         if not self.arg_string:

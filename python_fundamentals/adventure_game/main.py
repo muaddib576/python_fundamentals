@@ -5,8 +5,8 @@
     # add flavor text to all descriptions
         # how will player know to pet?    
     # Cleanup/add command aliases
-    # make n/e/s/w aliases for north/east/etc
-    # Should I split the game out into multiple files? eg one for the PLACES/ITEMS, one for the command classes, etc
+        # NOTE: you mostly implemented this, just need to validate and write a test to check for dupe aliases (you started test_action_keys)
+    # make n/e/s/w aliases for north/east/etc ******DONE******
 
 # Features:
     # Alissa suggested maybe replacing the "shop" command with a menu in the shop that the player can "read"
@@ -27,13 +27,6 @@
 # NILA feedback
     # forgot examine command, maybe should add list of commands?
         # Brian's thought: help command? sign in town the player can read with a list of "accomplishments" from other adventurers? That takes coins to unlock more hints?
-
-# Conversion to multiple files
-    # split Player class and PLAYER into a separate file
-    # might even want to split classes into even smaller files (eg base classes in one file)
-        # Alissa says that she would actually have each class be its own file, but this might be too much for me now
-    # UPDATE: using the direct module reference seems to have resolved the issues.
-        # Only issue is params_and_functions.DELAY override is not working (so tests take some time to run). You kinda fixed this, but with a redundant import.
 
 from console import fg, bg, fx
 
@@ -63,43 +56,71 @@ from python_fundamentals.adventure_game.commands import (
     Drink,
 )
 
-# Even though it is not directly used, you need to import this so the dicts are initialized
+# Even though it is not directly used in main.py, you need to import this so the dicts are initialized
 from python_fundamentals.adventure_game import items_and_locations
 
 import python_fundamentals.adventure_game.player as player
 
-#TODO generate this dynamically with a dunder method called "subclasses" or somesuch?
-action_dict = {
-    "q": Quit,
-    "quit": Quit,
-    "l": Look,
-    "look": Look,
-    "s": Shop,
-    "shop": Shop,
-    "g": Go,
-    "go": Go,
-    "e": Examine,
-    "examine": Examine,
-    "inspect": Examine,
-    "t": Take,
-    "take": Take,
-    "grab": Take,
-    "pickup": Take,
-    "i": Inventory,    
-    "inventory": Inventory,
-    "d": Drop,    
-    "drop": Drop,
-    "b": Buy,
-    "buy": Buy,
-    "r": Read,
-    "read": Read,
-    "p": Pet,
-    "pet": Pet,
-    "eat": Eat,
-    "drink": Drink,
-}
+def gen_action_dict():
+    """Generates a dictionary of all alias/command pairs"""
+    action_dict = {}
+    command_list = [Quit,
+                Look,
+                Shop,
+                Go,
+                Examine,
+                Take,
+                Inventory,
+                Drop,
+                Buy,
+                Read,
+                Pet,
+                Eat,
+                Drink,
+]
+
+    for command in command_list:
+        for alias in command.aliases:
+            action_dict[alias] = command
+
+    return action_dict
+
+# TODO this is the old action_dict, you just need to validate it is the same as the new one (aside from the additions) then you can delete
+# action_dict = {
+#     "q": Quit,
+#     "quit": Quit,
+#     "l": Look,
+#     "look": Look,
+#     "s": Shop,
+#     "shop": Shop,
+#     "g": Go,
+#     "go": Go,
+#     "e": Examine,
+#     "examine": Examine,
+#     "inspect": Examine,
+#     "t": Take,
+#     "take": Take,
+#     "grab": Take,
+#     "pickup": Take,
+#     "i": Inventory,    
+#     "inventory": Inventory,
+#     "bag": Inventory,
+#     "d": Drop,    
+#     "drop": Drop,
+#     "b": Buy,
+#     "buy": Buy,
+#     "purchase": Buy,
+#     "r": Read,
+#     "read": Read,
+#     "p": Pet,
+#     "pet": Pet,
+#     "eat": Eat,
+#     "drink": Drink,
+# }
 
 def main():
+
+    action_dict = gen_action_dict()
 
     start_message()
 

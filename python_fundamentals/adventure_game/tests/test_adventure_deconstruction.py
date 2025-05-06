@@ -6,6 +6,7 @@ import python_fundamentals.adventure_game.params_and_functions as params_and_fun
 import python_fundamentals.adventure_game.player as player
 
 import python_fundamentals.adventure_game.classes as classes
+# redundant import needed to set DELAY = 0 for the tests
 
 from python_fundamentals.adventure_game.params_and_functions import (
     error,
@@ -41,6 +42,10 @@ from python_fundamentals.adventure_game.commands import (
     Drink,
 )
 
+from python_fundamentals.adventure_game.main import (
+    action_dict,
+)
+
 
 @pytest.fixture(autouse=True)
 def setup():
@@ -52,9 +57,17 @@ def setup():
     # params_and_functions.DELAY = 0
     classes.DELAY = 0
     # TODO this solves the delay test issue, but I don't like that I am importing python_fundamentals.adventure_game.classes twice
+    # Maybe it's best not to care about this, as it only affects the test file...
 
     yield
-    
+
+def test_action_keys():
+    # TODO finish this
+    # GIVEN: the full action_dict
+    ...
+
+    # THEN: there should be no duplicate keys
+
 def test_collectable_get():
     # GIVEN: An item
     Item.item_dict = {}
