@@ -60,10 +60,10 @@ class Player(Contents):
 
 PLAYER = Player(
     place="home",
-    current_health = 2,
+    current_health = 100,
     inventory={
                 # 'gems':2,
                 # 'map':1,
-                "potion":1
+                # "potion":1
                },
 )

@@ -7,24 +7,6 @@ from python_fundamentals.adventure_game.classes import (
     Dragon_head,
 )
 
-DRAGON_HEADS = Dragon_head.dragon_dict = {
-    "red": Dragon_head(
-        key="red",
-        name="Red Dragon Head",
-        description="It's red.",
-    ),
-    "black": Dragon_head(
-        key="black",
-        name="Black Dragon Head",
-        description="It's black.",
-    ),
-    "silver": Dragon_head(
-        key="silver",
-        name="Silver Dragon Head",
-        description="It's silver.",
-    ),
-}
-
 PLACES = Place.place_dict = {
     "home": Place(
         key="home",
@@ -41,7 +23,8 @@ PLACES = Place.place_dict = {
     "town-square": Place(
         key="town-square",
         name="Town Square",
-        description="The square part of town.",
+        description="A vaguely square cobblestone plaza. In the center a large stone monument, "\
+            "ringed by various thatched-roof buildings and echoing with the sounds of daily life.",
         north="market",
         east="woods",
         west="home",
@@ -97,11 +80,29 @@ PLACES = Place.place_dict = {
     "cave": Place(
         key="cave",
         name="Foreboding Cave",
-        description="A big ol' cave entrance.",
+        description="A big ol' cave entrance. The rim and nearby ground are singed black.",
         north="hill",
         can=['pet'],
         inventory={'dragon':1,
         },
+    ),
+}
+
+DRAGON_HEADS = Dragon_head.dragon_dict = {
+    "red": Dragon_head(
+        key="red",
+        name="Red Dragon Head",
+        description="One of three heads, this one is a mottled red",
+    ),
+    "black": Dragon_head(
+        key="black",
+        name="Black Dragon Head",
+        description="One of three heads, this one is a deep, oily black.",
+    ),
+    "silver": Dragon_head(
+        key="silver",
+        name="Silver Dragon Head",
+        description="One of three heads, this one gleams silver.",
     ),
 }
 
@@ -146,7 +147,7 @@ ITEMS = Item.item_dict = {
     ),
     "mushroom": Item(
         key="mushroom",
-        name="a red mushroom",
+        name="A red mushroom",
         aliases=["shroom",
                  "red mushroom"
         ],

@@ -138,8 +138,6 @@ class Buy(Command):
         wrap(f"You bought {qty} {target_item.name} for {item_cost} gems and put it in your bag.")
 
 class Goroot(Command):
-    aliases = ['go','g','walk']
-
     def goroot(self, direction):
         """Moves to the specified location"""  
 
@@ -157,6 +155,7 @@ class Goroot(Command):
             wrap(new_place.description)
 
 class Go(Goroot): #rename this?
+    aliases = ['go','g','walk','move']
     compass = ['north','east','south','west','egress_location'] #overrides the default compass for misty-woods use
     def do(self):
         """Performs the misty version of Go command when player is in the relevant location"""

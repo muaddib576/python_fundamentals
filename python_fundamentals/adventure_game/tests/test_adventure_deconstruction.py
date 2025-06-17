@@ -40,10 +40,11 @@ from python_fundamentals.adventure_game.commands import (
     Consume,
     Eat,
     Drink,
+    Quit
 )
 
 from python_fundamentals.adventure_game.main import (
-    action_dict,
+    gen_action_dict,
 )
 
 
@@ -62,11 +63,29 @@ def setup():
     yield
 
 def test_action_keys():
-    # TODO finish this
     # GIVEN: the full action_dict
-    ...
+    action_dict_test = gen_action_dict()
+    actual_commands = set(action_dict_test.values())
 
-    # THEN: there should be no duplicate keys
+    # AND: expected keys
+    expected_commands = {Quit,
+                         Look,
+                         Shop,
+                         Go,
+                         Examine,
+                         Take,
+                         Inventory,
+                         Drop,
+                         Buy,
+                         Read,
+                         Pet,
+                         Eat,
+                         Drink,
+    }
+
+    # THEN: All the expected commands should be there?
+    assert expected_commands.issubset(actual_commands), \
+        "The constructed list should contain the player accessible Commands"
 
 def test_collectable_get():
     # GIVEN: An item
@@ -207,7 +226,7 @@ def test_collectable_find_name_plural_dict():
 def test_do_nothing():
     pass
 
-def test_collectable_find_name_examine(capsys):
+def test_collectable_find_name_examine(capsys: pytest.CaptureFixture[str]):
     # GIVEN: an item
     # breakpoint()
     player.PLAYER.place = 'shire'
@@ -272,7 +291,7 @@ def test_teardown():
     assert "shire" not in Place.place_dict, \
         """Each test should have a fresh data set"""
 
-def test_error(capsys):
+def test_error(capsys: pytest.CaptureFixture[str]):
     error("error test")
     output = capsys.readouterr().out
     
@@ -282,25 +301,25 @@ def test_abort():
     with pytest.raises(SystemExit):
         abort("abort test")
 
-def test_debug(capsys):
+def test_debug(capsys: pytest.CaptureFixture[str]):
     debug("debug test")
     output = capsys.readouterr().out
 
     assert output == f"!!! debug test\n"
 
-def test_header(capsys):
+def test_header(capsys: pytest.CaptureFixture[str]):
     header("header test")
     output = capsys.readouterr().out
 
     assert output == f"{params_and_functions.MARGIN}header test\n\n"
 
-def test_write(capsys):
+def test_write(capsys: pytest.CaptureFixture[str]):
     write("write test")
     output = capsys.readouterr().out
 
     assert output == f"{params_and_functions.MARGIN}write test\n"
 
-def test_wrap(capsys):
+def test_wrap(capsys: pytest.CaptureFixture[str]):
     # GIVEN: The default WIDTH and MARGIN
     params_and_functions.WIDTH = 10
     params_and_functions.MARGIN = ' '*3
@@ -313,7 +332,7 @@ def test_wrap(capsys):
     # THEN: the default WIDTH and MARGIN are used
     assert output == f"{params_and_functions.MARGIN}*******\n{params_and_functions.MARGIN}*******\n\n"
 
-def test_wrap_custom(capsys):
+def test_wrap_custom(capsys: pytest.CaptureFixture[str]):
     # WHEN: the wrap function is passed custom width and margin values
     test_string = '*' * 11
     width = 10
@@ -343,7 +362,7 @@ def test_add(start, amount, expected, message):
     # THEN: the player's health should be changed by the # passed to health_change
     assert player.PLAYER.inventory['gems'] == expected, message
 
-def test_go(capsys):
+def test_go(capsys: pytest.CaptureFixture[str]):
     player.PLAYER.place = 'shire'
     Place.place_dict = {
         "shire": Place(
@@ -370,7 +389,7 @@ def test_go(capsys):
     assert "Buncha drawf skellies" in output, \
         "Player should be told their new location's description"
 
-def test_go_no_place(capsys):
+def test_go_no_place(capsys: pytest.CaptureFixture[str]):
     player.PLAYER.place = 'shire'
     Place.place_dict = {
         "shire": Place(
@@ -390,7 +409,7 @@ def test_go_no_place(capsys):
     assert "Sorry, there is no 'west'" in output, \
         "Player should be told there is nothing in that direction"
 
-def test_go_misty_bad_direction(capsys):
+def test_go_misty_bad_direction(capsys: pytest.CaptureFixture[str]):
     player.PLAYER.place = 'misty-woods'
     Place.place_dict = {
         "shire": Place(
@@ -428,7 +447,7 @@ def test_go_misty_bad_direction(capsys):
     assert "Sorry, there is no 'tohell'" in output, \
         "Player should be told the typed direction does not exist."
 
-def test_go_misty_mid_sequence(capsys):
+def test_go_misty_mid_sequence(capsys: pytest.CaptureFixture[str]):
     player.PLAYER.place = 'misty-woods'
     Place.place_dict = {
         "shire": Place(
@@ -468,7 +487,7 @@ def test_go_misty_mid_sequence(capsys):
     assert "Buncha misty hobbits 3" in output, \
         "Player should be told the same location's 3rd misty description"
 
-def test_go_misty_timeout(capsys):
+def test_go_misty_timeout(capsys: pytest.CaptureFixture[str]):
     player.PLAYER.place = 'misty-woods'
     Place.place_dict = {
         "shire": Place(
@@ -505,7 +524,7 @@ def test_go_misty_timeout(capsys):
     assert "Buncha hobbits." in output, \
         "Player should be told their new location's description"
     
-def test_go_misty_clearing(capsys):
+def test_go_misty_clearing(capsys: pytest.CaptureFixture[str]):
     player.PLAYER.place = 'misty-woods'
     Place.place_dict = {
         "misty-woods": Place(
@@ -529,14 +548,14 @@ def test_go_misty_clearing(capsys):
     assert "Congratulations! You have completed your task," in output, \
         "The Player is told they won the game."
 
-def test_examine_no_arg(capsys):
+def test_examine_no_arg(capsys: pytest.CaptureFixture[str]):
     Examine([]).do()
     output = capsys.readouterr().out
 
     assert "Error: You cannot examine nothing.\n" in output, \
         "Passing no argument should throw an error"
 
-def test_examine_missing_from_place_and_player_inv(capsys):
+def test_examine_missing_from_place_and_player_inv(capsys: pytest.CaptureFixture[str]):
     # GIVEN: That the item the player wants to examine is not in the current
     #        place, and not in the player's inventory
     player.PLAYER.place = 'shire'
@@ -566,7 +585,7 @@ def test_examine_missing_from_place_and_player_inv(capsys):
     assert "Error: There is no grass in the shire." in output, \
         "An Examine target not in the current location or player inventory should throw an error"
 
-def test_examine_missing_from_place(capsys):
+def test_examine_missing_from_place(capsys: pytest.CaptureFixture[str]):
     # GIVEN: That the item the player wants to examine is not in the current
     #        place, but is in the player's inventory
     player.PLAYER.place = 'shire'
@@ -596,7 +615,7 @@ def test_examine_missing_from_place(capsys):
     assert "It's grass." in output, \
         "A valid Examine target should print the item description."
 
-def test_examine_missing_from_player_inv(capsys):
+def test_examine_missing_from_player_inv(capsys: pytest.CaptureFixture[str]):
     # GIVEN: That the item the player wants to examine is not in the player's inventorty
     #        but is in the current place
     player.PLAYER.place = 'shire'
@@ -630,7 +649,7 @@ def test_examine_missing_from_player_inv(capsys):
     assert "-7 health" in output, \
         "The player should be told the health impact for an examined item."
 
-def test_examine_missing_item(capsys):
+def test_examine_missing_item(capsys: pytest.CaptureFixture[str]):
     player.PLAYER.place = 'shire'
     Place.place_dict = {
         "shire": Place(
@@ -648,7 +667,7 @@ def test_examine_missing_item(capsys):
     assert 'There is no hills in' in output, \
         "If a key is not preset in ITEMS, the player should be told it is not at the location."
 
-def test_examine_in_shop(capsys):
+def test_examine_in_shop(capsys: pytest.CaptureFixture[str]):
     # GIVEN: That the item the player wants to examine is not in the player's inventorty
     #        but is in the current place, and the current place is a shop
     player.PLAYER.place = 'shire'
@@ -686,11 +705,11 @@ def test_examine_in_shop(capsys):
     assert "+7 health" in output, \
         "The player should be told the health impact for an examined item."
 
-def test_get_place_start(capsys):
+def test_get_place_start(capsys: pytest.CaptureFixture[str]):
     assert Command([]).player_place == Place.place_dict[player.PLAYER.place], \
         "Starting location should be 'your cottage'"
     
-def test_get_place_missing_place(capsys):
+def test_get_place_missing_place(capsys: pytest.CaptureFixture[str]):
     player.PLAYER.place = 'shire'
     Place.place_dict = {}
 
@@ -729,7 +748,7 @@ def test_comma_list_0():
     # THEN: an error is returned
     assert test_string == "", "A list of nothing should return an empty string"
 
-def test_look_place(capsys):
+def test_look_place(capsys: pytest.CaptureFixture[str]):
     
     # GIVEN: The player's current location
     player.PLAYER.place = 'shire'
@@ -746,7 +765,7 @@ def test_look_place(capsys):
     # THEN: The player is told the description of the current location
     assert "Buncha hobbits" in output, "The description of the current location should print"
 
-def test_look_items(capsys):
+def test_look_items(capsys: pytest.CaptureFixture[str]):
     
     # GIVEN: The player's current location
     player.PLAYER.place = 'shire'
@@ -773,7 +792,7 @@ def test_look_items(capsys):
     # THEN: The player is told the list of items present in the location
     assert "grass blades" in output, "The names of the items in the current locations should print"
 
-def test_look_items_w_shop(capsys):
+def test_look_items_w_shop(capsys: pytest.CaptureFixture[str]):
     
     # GIVEN: The player's current location
     player.PLAYER.place = 'shire'
@@ -808,7 +827,7 @@ def test_look_items_w_shop(capsys):
     assert "grass blades" in output, "The names of the items in the location's inventory should print"
     assert "Poo Brained Horse" in output, "The names of the items in the location's shop_inventory should print"
 
-def test_look_no_items(capsys):
+def test_look_no_items(capsys: pytest.CaptureFixture[str]):
     
     # GIVEN: The player's current location
     player.PLAYER.place = 'shire'
@@ -825,7 +844,7 @@ def test_look_no_items(capsys):
     # THEN: The player is told the list of items present in the location
     assert "You see" not in output, "If there are no items in the location, you can't see anything"
 
-def test_look_nearby(capsys):
+def test_look_nearby(capsys: pytest.CaptureFixture[str]):
     
     # GIVEN: The player's current location
     player.PLAYER.place = 'shire'
@@ -859,7 +878,7 @@ def test_look_nearby(capsys):
     assert "Mordor" in output, "The names of the nearby locations should print"
     assert "The Sea" in output, "The names of the nearby locations should print"
 
-def test_look_no_nearby(capsys):
+def test_look_no_nearby(capsys: pytest.CaptureFixture[str]):
     
     # GIVEN: The player's current location
     player.PLAYER.place = 'shire'
@@ -876,7 +895,7 @@ def test_look_no_nearby(capsys):
     # THEN: The player is told the list of nearby places
     assert "To the" not in output, "If there is nothing nearby, the names of the nearby locations should not print"
 
-def test_take_valid_item(capsys):
+def test_take_valid_item(capsys: pytest.CaptureFixture[str]):
     
     # GIVEN: The player's current location and a valid item
     player.PLAYER.place = 'shire'
@@ -911,7 +930,7 @@ def test_take_valid_item(capsys):
     # AND: the player is informed
     assert "You pick up" in output, "The player should be told they have aquired the item"
 
-def test_take_missing_item(capsys):
+def test_take_missing_item(capsys: pytest.CaptureFixture[str]):
     # GIVEN: The player's current location and an item that is not present
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
@@ -946,7 +965,7 @@ def test_raises_example():
     exception = info.value
     assert "wrong" in str(exception)
 
-def test_take_untakable_item(capsys):
+def test_take_untakable_item(capsys: pytest.CaptureFixture[str]):
     # GIVEN: The player's current location and an untakable item
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
@@ -980,7 +999,7 @@ def test_take_untakable_item(capsys):
     # AND: the item is not removed from the location
     assert 'grass' in Place.place_dict["shire"].inventory, "the desired item should remain at the place"
 
-def test_take_quantity_one(capsys):
+def test_take_quantity_one(capsys: pytest.CaptureFixture[str]):
     # GIVEN: The current location with items present and player's inventory
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
@@ -1015,7 +1034,7 @@ def test_take_quantity_one(capsys):
     assert "You pick up 1 ring and put it in your bag." in output, \
         "The player should be told they picked up the item"
 
-def test_take_qty(capsys):
+def test_take_qty(capsys: pytest.CaptureFixture[str]):
     # GIVEN: The current location and the items in the player's inventory
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
@@ -1050,7 +1069,7 @@ def test_take_qty(capsys):
     assert "You pick up 3 ring and put it in your bag." in output, \
         "The player should be told they took the item"
 
-def test_take_invalid_qty(capsys):
+def test_take_invalid_qty(capsys: pytest.CaptureFixture[str]):
     # GIVEN: The current location and the items in the player's inventory
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
@@ -1085,7 +1104,7 @@ def test_take_invalid_qty(capsys):
     assert "Sorry, there are not 4 ring available to take here" in output, \
         "The player should be told there are not enough"
 
-def test_inventory(capsys):
+def test_inventory(capsys: pytest.CaptureFixture[str]):
     # GIVEN: Items in the player inventory
     player.PLAYER.inventory = {'lockpicks':1, 'knife':2}
     Item.item_dict = {
@@ -1111,7 +1130,7 @@ def test_inventory(capsys):
     # AND: The inventory contents are displayed
     assert '(x 2) blunt knife' in output, "The player should be told the items their inventory"
 
-def test_inventory_empty(capsys):
+def test_inventory_empty(capsys: pytest.CaptureFixture[str]):
     # GIVEN: An empty player inventory
     player.PLAYER.inventory = {}
 
@@ -1142,7 +1161,7 @@ def test_args_setter(args, expected_string, expected_qty):
     assert cmd.arg_string == expected_string
     assert cmd.arg_qty == expected_qty
 
-def test_drop_no_arg(capsys):
+def test_drop_no_arg(capsys: pytest.CaptureFixture[str]):
     # WHEN: The player calls Drop with no argument
     Drop([]).do()
     output = capsys.readouterr().out
@@ -1151,7 +1170,7 @@ def test_drop_no_arg(capsys):
     assert "Error: You cannot drop nothing.\n" in output, \
         "Passing no argument should throw an error"
 
-def test_drop_no_item(capsys):
+def test_drop_no_item(capsys: pytest.CaptureFixture[str]):
     # GIVEN: The items in the player's inventory
     player.PLAYER.inventory = {}
     Item.item_dict = {
@@ -1170,7 +1189,7 @@ def test_drop_no_item(capsys):
     # THEN: The player is told they do not have the item to drop
     assert "You dont have 1 ring to drop" in output, "The player cannot drop an item not in their inventory"
 
-def test_drop_quantity_one(capsys):
+def test_drop_quantity_one(capsys: pytest.CaptureFixture[str]):
     # GIVEN: The current location and the items in the player's inventory
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {'ring':1}
@@ -1205,7 +1224,7 @@ def test_drop_quantity_one(capsys):
     assert "You dropped 1 ring on the ground." in output, \
         "The player should be told they dropped the item"
 
-def test_drop_qty(capsys):
+def test_drop_qty(capsys: pytest.CaptureFixture[str]):
     # GIVEN: The current location and the items in the player's inventory
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {'ring':4}
@@ -1240,7 +1259,7 @@ def test_drop_qty(capsys):
     assert "You dropped 2 ring on the ground." in output, \
         "The player should be told they dropped the item"
 
-def test_drop_invalid_qty(capsys):
+def test_drop_invalid_qty(capsys: pytest.CaptureFixture[str]):
     # GIVEN: The current location and the items in the player's inventory
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {'ring':2}
@@ -1403,7 +1422,7 @@ def test_is_for_sale():
         "An item without a price should return False"
 
 # TODO add more shop tests, this one only covers part of what determines if an item shows in the shop
-def test_shop_can(capsys):
+def test_shop_can(capsys: pytest.CaptureFixture[str]):
     # GIVEN: A place that can "shop" and has an inventory
     player.PLAYER.place = 'shire'
     Place.place_dict["shire"] = Place(
@@ -1441,7 +1460,7 @@ def test_shop_can(capsys):
     assert "The Ring" not in output, \
         "The player should not be told the item without a price is for sale."
 
-def test_shop_no_can(capsys):
+def test_shop_no_can(capsys: pytest.CaptureFixture[str]):
     # GIVEN: A place that does not have can = ["shop"]
     player.PLAYER.place = 'shire'
     Place.place_dict["shire"] = Place(
@@ -1469,7 +1488,7 @@ def test_shop_no_can(capsys):
     assert "Sorry, you can't shop here." in output, \
         "The player should be told they are unable to shop."
 
-def test_buy_no_arg(capsys):
+def test_buy_no_arg(capsys: pytest.CaptureFixture[str]):
     player.PLAYER.place = 'shire'
     Place.place_dict["shire"] = Place(
         key="shire",
@@ -1486,7 +1505,7 @@ def test_buy_no_arg(capsys):
     assert "Error: You cannot buy nothing.\n" in output, \
         "Passing no argument should throw an error"
 
-def test_buy_no_can(capsys):
+def test_buy_no_can(capsys: pytest.CaptureFixture[str]):
     # GIVEN: A place that does not have can = ["shop"]
     player.PLAYER.place = 'shire'
     Place.place_dict["shire"] = Place(
@@ -1503,7 +1522,7 @@ def test_buy_no_can(capsys):
     assert "Sorry, you can't shop here." in output, \
         "The player should be told they are unable to shop."
 
-def test_buy_not_for_sale(capsys):
+def test_buy_not_for_sale(capsys: pytest.CaptureFixture[str]):
     # GIVEN: A place that can "shop" and has an inventory without a price
     player.PLAYER.place = 'shire'
     Place.place_dict["shire"] = Place(
@@ -1530,7 +1549,7 @@ def test_buy_not_for_sale(capsys):
     assert "Sorry, that item is not for sale" in output, \
         "The player should be told the item without a price is not for sale."
 
-def test_buy_for_sale(capsys):
+def test_buy_for_sale(capsys: pytest.CaptureFixture[str]):
     # GIVEN: A place that can "shop" and has an inventory with a price
     player.PLAYER.place = 'shire'
     Place.place_dict["shire"] = Place(
@@ -1558,7 +1577,7 @@ def test_buy_for_sale(capsys):
     assert "Sorry, Rabbit Stew is not for sale" not in output, \
         "The player should not be told the item with a price is not for sale."
 
-def test_buy_low_money(capsys):
+def test_buy_low_money(capsys: pytest.CaptureFixture[str]):
     # GIVEN: A place that can "shop" and has an inventory with a price, and a poor player
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {'gems':1}
@@ -1587,7 +1606,7 @@ def test_buy_low_money(capsys):
     assert "Sorry, you can't afford Rabbit Stew" not in output, \
         "The player should not be told they are unable to afford the item."
 
-def test_buy_no_money(capsys):
+def test_buy_no_money(capsys: pytest.CaptureFixture[str]):
     # GIVEN: A place that can "shop" and has an inventory with a price, and a poor player
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
@@ -1616,7 +1635,7 @@ def test_buy_no_money(capsys):
     assert "Sorry, you can't afford Rabbit Stew" not in output, \
         "The player should not be told they are unable to afford the item."
 
-def test_buy_no_money_free(capsys):
+def test_buy_no_money_free(capsys: pytest.CaptureFixture[str]):
     # GIVEN: A place that can "shop" and has an inventory with a free price, and a player w/ no gems
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
@@ -1644,7 +1663,7 @@ def test_buy_no_money_free(capsys):
     # THEN: the player is not told they cannot afford the item
     assert "You bought 1 Rabbit Stew" in output, "The player should be told they have bought the item"
 
-def test_buy_no_qty(capsys):
+def test_buy_no_qty(capsys: pytest.CaptureFixture[str]):
     # GIVEN: A place that can "shop" and has a single item with a price, and a moneyed player
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {'gems':50}
@@ -1684,7 +1703,7 @@ def test_buy_no_qty(capsys):
     # AND: the player is informed
     assert "You bought 1 Rabbit Stew for 10 gems" in output, "The player should be told they have bought the item"
 
-def test_buy_invalid_qty(capsys):
+def test_buy_invalid_qty(capsys: pytest.CaptureFixture[str]):
     # GIVEN: A place that can "shop" and has a multiple items with a price, and a moneyed player
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {'gems':50}
@@ -1724,7 +1743,7 @@ def test_buy_invalid_qty(capsys):
     # AND: the player is informed
     assert "Sorry, there are not 3 stew here." in output, "The player should be told the location does not have the requested qty"
 
-def test_buy_qty(capsys):
+def test_buy_qty(capsys: pytest.CaptureFixture[str]):
     # GIVEN: A place that can "shop" and has a multiple items with a price, and a moneyed player
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {'gems':50}
@@ -1764,7 +1783,7 @@ def test_buy_qty(capsys):
     # AND: the player is informed
     assert "You bought 3 Rabbit Stew" in output, "The player should be told they have bought the item"
 
-def test_read_no_arg(capsys):
+def test_read_no_arg(capsys: pytest.CaptureFixture[str]):
     # WHEN: The player calls read with no argument
     Read([]).do()
     output = capsys.readouterr().out
@@ -1773,7 +1792,7 @@ def test_read_no_arg(capsys):
     assert "Error: You cannot read nothing.\n" in output, \
         "Passing no argument should throw an error"
 
-def test_read_no_item(capsys):
+def test_read_no_item(capsys: pytest.CaptureFixture[str]):
     # GIVEN: a location and player inventory
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
@@ -1792,7 +1811,7 @@ def test_read_no_item(capsys):
     assert "There is no magazine" in output, \
         "The player should be told the desired item is not present"
 
-def test_read_place_no_writing(capsys):
+def test_read_place_no_writing(capsys: pytest.CaptureFixture[str]):
     # GIVEN: a location with an item that has no writing
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
@@ -1818,7 +1837,7 @@ def test_read_place_no_writing(capsys):
     assert "There is nothing to read." in output, \
         "The player should be told the item has nothing to read"
 
-def test_read_player_no_writing(capsys):
+def test_read_player_no_writing(capsys: pytest.CaptureFixture[str]):
     # GIVEN: a player inventory with an item that has no writing
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {"stew":1}
@@ -1844,7 +1863,7 @@ def test_read_player_no_writing(capsys):
     assert "There is nothing to read." in output, \
         "The player should be told the item has nothing to read"
 
-def test_read_place(capsys):
+def test_read_place(capsys: pytest.CaptureFixture[str]):
     # GIVEN: a place inventory with an item that has writing
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
@@ -1876,7 +1895,7 @@ def test_read_place(capsys):
     assert "blah blah blah blah blah" in output, \
         "The player should be told the item's message"
 
-def test_read_player(capsys):
+def test_read_player(capsys: pytest.CaptureFixture[str]):
     # GIVEN: a player inventory with an item that has writing
     player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {"magazine":1}
@@ -1933,14 +1952,14 @@ def test_change_health(start, amount, expected, message):
     # THEN: the player's health should be changed by the # passed to health_change
     assert player.PLAYER.current_health == expected, message
 
-def test_pet_no_arg(capsys):
+def test_pet_no_arg(capsys: pytest.CaptureFixture[str]):
     Pet([]).do()
     output = capsys.readouterr().out
 
     assert "Error: You cannot pet nothing.\n" in output, \
         "Passing no argument should throw an error"
 
-def test_pet_cant(capsys):
+def test_pet_cant(capsys: pytest.CaptureFixture[str]):
     # GIVEN: a place where you can't pet anything
     player.PLAYER.place = 'shire'
     Place.place_dict["shire"] = Place(
@@ -1958,7 +1977,7 @@ def test_pet_cant(capsys):
     assert "You cannot do that here." in output, \
         "The player should be told petting isn't an option at the current location"
 
-def test_pet_no_target(capsys):
+def test_pet_no_target(capsys: pytest.CaptureFixture[str]):
     # GIVEN: The player is at a location that accepts petting
     player.PLAYER.place = 'shire'
     Place.place_dict["shire"] = Place(
@@ -1976,7 +1995,7 @@ def test_pet_no_target(capsys):
     assert "What are you trying to pet?" in output, \
         "If 'dragon' or 'head' is not specified, the player should be told to specify the target for the pets."
 
-def test_pet_no_color(capsys):
+def test_pet_no_color(capsys: pytest.CaptureFixture[str]):
     # GIVEN: The player is at a location that accepts petting
     player.PLAYER.place = 'shire'
     Place.place_dict["shire"] = Place(
@@ -1994,7 +2013,7 @@ def test_pet_no_color(capsys):
     assert "Which dragon's head do you want to pet?" in output, \
         "The player should be told they must specify which dragon they want to pet."
 
-def test_pet_invalid_color(capsys):
+def test_pet_invalid_color(capsys: pytest.CaptureFixture[str]):
     # GIVEN: The player is at a location that accepts petting and a list of valid colors
     player.PLAYER.place = 'shire'
     Place.place_dict["shire"] = Place(
@@ -2019,7 +2038,7 @@ def test_pet_invalid_color(capsys):
     assert "You do not see such a dragon." in output, \
         "The player should be told the color is not valid."
 
-def test_pet(capsys):
+def test_pet(capsys: pytest.CaptureFixture[str]):
     # GIVEN: A dragon and a mood, and a player at a location that allows petting
     player.PLAYER.place = 'mountain'
     Place.place_dict["mountain"] = Place(
@@ -2068,7 +2087,7 @@ def test_moods_assignment():
     assert len(items_and_locations.Dragon_head.MOODS) == 0, \
         "The mood should be removed from the list after assignment"
 
-def test_pet_treasure(capsys):
+def test_pet_treasure(capsys: pytest.CaptureFixture[str]):
     # GIVEN: A dragon with treasure
     player.PLAYER.place = 'mountain'
     player.PLAYER.inventory = {'gems':10}
@@ -2100,7 +2119,7 @@ def test_pet_treasure(capsys):
     assert "5 gems" in output, \
         "The player should be told they received gems"
 
-def test_pet_no_treasure(capsys):
+def test_pet_no_treasure(capsys: pytest.CaptureFixture[str]):
     # GIVEN: A dragon with no treasure
     player.PLAYER.place = 'mountain'
     player.PLAYER.inventory = {'gems':10}
@@ -2132,7 +2151,7 @@ def test_pet_no_treasure(capsys):
     assert "gems" not in output, \
         "The player should not be told they received gems"
 
-def test_pet_damage(capsys):
+def test_pet_damage(capsys: pytest.CaptureFixture[str]):
     # GIVEN: A dragon with that does damage
     player.PLAYER.place = 'mountain'
     player.PLAYER.current_health = 50
@@ -2164,7 +2183,7 @@ def test_pet_damage(capsys):
     assert "costing you -7 in health" in output, \
         "The player should be told they received damage"
 
-def test_pet_no_damage(capsys):
+def test_pet_no_damage(capsys: pytest.CaptureFixture[str]):
     # GIVEN: A dragon with that does damage
     player.PLAYER.place = 'mountain'
     player.PLAYER.current_health = 50
@@ -2196,7 +2215,7 @@ def test_pet_no_damage(capsys):
     assert "in health" not in output, \
         "The player should not be told they received damage"
 
-def test_pet_treasure_and_damage(capsys):
+def test_pet_treasure_and_damage(capsys: pytest.CaptureFixture[str]):
     # GIVEN: A dragon with that does damage and gives treasure
     player.PLAYER.place = 'mountain'
     player.PLAYER.current_health = 50
@@ -2233,7 +2252,7 @@ def test_pet_treasure_and_damage(capsys):
     assert "15 gems" in output, \
         "The player should be told they received gems"
 
-def test_eat_no_arg(capsys):
+def test_eat_no_arg(capsys: pytest.CaptureFixture[str]):
     # WHEN: the player attempts to eat/drink but does not specify an item
     Eat([]).do()
     output = capsys.readouterr().out
@@ -2242,7 +2261,7 @@ def test_eat_no_arg(capsys):
     assert "Error: You cannot eat nothing.\n" in output, \
     "Passing no argument should throw an error"
 
-def test_drink_no_arg(capsys):
+def test_drink_no_arg(capsys: pytest.CaptureFixture[str]):
     # WHEN: the player attempts to eat/drink but does not specify an item
     Drink([]).do()
     output = capsys.readouterr().out
@@ -2252,7 +2271,7 @@ def test_drink_no_arg(capsys):
     "Passing no argument should throw an error"
 
 
-def test_consume_no_item(capsys):
+def test_consume_no_item(capsys: pytest.CaptureFixture[str]):
     # GIVEN: an empty player inventory
     player.PLAYER.inventory = {'gems':10}
     Item.item_dict = {
@@ -2271,7 +2290,7 @@ def test_consume_no_item(capsys):
     assert "you do not posses a cracker." in output, \
         "The player should be told if they are missing the desired consumable"
 
-def test_consume_invalid_item(capsys):
+def test_consume_invalid_item(capsys: pytest.CaptureFixture[str]):
     # GIVEN: a non-consumable item in the player's inventory
     player.PLAYER.inventory = {'cracker':10}
     Item.item_dict = {
@@ -2290,7 +2309,7 @@ def test_consume_invalid_item(capsys):
     assert "Sorry, your saltine cracker is not eatable." in output, \
     "The player should be told if they are missing the desired consumable"
 
-def test_consume_eat(capsys):
+def test_consume_eat(capsys: pytest.CaptureFixture[str]):
     # GIVEN: an eatable item in the player's inventory
     player.PLAYER.current_health = 50
     player.PLAYER.inventory = {'cracker':10}
@@ -2326,7 +2345,7 @@ def test_consume_eat(capsys):
     assert "You feel your health change by 10." in output, \
         "The player should be told their health changed"
 
-def test_consume_drink(capsys):
+def test_consume_drink(capsys: pytest.CaptureFixture[str]):
     # GIVEN: a drinkable item in the player's inventory
     player.PLAYER.current_health = 50
     player.PLAYER.inventory = {'poison':5}
@@ -2362,7 +2381,7 @@ def test_consume_drink(capsys):
     assert "You feel your health change by -25." in output, \
         "The player should be told their health changed"
 
-def test_consume_last_item(capsys):
+def test_consume_last_item(capsys: pytest.CaptureFixture[str]):
     # GIVEN: a drinkable item in the player's inventory
     player.PLAYER.current_health = 50
     player.PLAYER.inventory = {'poison':1}
