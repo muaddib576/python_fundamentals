@@ -10,12 +10,17 @@
     # Alissa suggested maybe replacing the "shop" command with a menu in the shop that the player can "read"
         # would need to have the writing dynamically generated. Think about it and discuss with Alissa
         # the "read shop menu" suggestion was about making a clear distinction between the shop inventory and the shop location inventory
-    # NOTE: maybe should there be a contingency if more than 1 qty is passed by the player? ""Sorry im confused, how many did you say??""
-        # Alissa: start with some GIVEN WHEN THENS to identify what is expected player behavior and then decide what to do
     # Alissa's feedback: dragons are easy to deal with once you know which is which
-        # Brian's thought: maybe make the health penalty more severe?
-                         # Or maybe reshuffle the moods after the player leaves the location? "the red head is moody today"?
-                         # Or each head cycles through the options? 
+        # Shuffle the moods after each pet. But eating the mushrooms found in the forrest gives player a status effect with lets them see the cheerful head's aura
+            # need to add/change:
+                # in-game breadcrumbing about mushroom effects wrt dragon auras
+                # switch to randomizing dragon moods
+                # player status (good for 2 player actions? or just have a IRL time check)
+                # renewable mushrooms (shop sells them? Forrest shrooms respawn over time?)
+                # check within examine to see aura when player.status == 'fried'
+                # check the balance of the reward/punishments from the moods
+                # for fun: maybe some text color change and/or animation when examining anything while player.status == 'fried'?
+                    # lolcat library
 
 from console import fg, bg, fx
 
@@ -102,6 +107,12 @@ def main():
             cmd = klass(args)
             #TODO change things to make args positional
             # cmd = klass(*args)
+
+            # If the player passes more than one qty, the cmd should not be do()ed
+            if len(cmd.arg_qty) > 1:
+                error("Sorry, that is too many numbers. Slow down and try again.")
+                continue
+
             try:
                 cmd.do()
             except (InvalidItemError) as e:

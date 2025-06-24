@@ -292,27 +292,32 @@ class Dragon_head(Item, player.Contents):
 
     def __init__(self, key, name, description, mood=None, treasure=None, damage=None, message=None):
         super().__init__(key, name, description)
-        self.mood = mood
+        # self.mood = mood
         self.treasure = treasure
         self.damage = damage
         self.message = message
-        self._init_mood()
+        # self._init_mood()
         
-    def _init_mood(self):
-        if not self.__class__.MOODS:
-            return
+    # def _init_mood(self):
+    #     if not self.__class__.MOODS:
+    #         return
 
-        mood = choice(self.__class__.MOODS)
+    #     mood = choice(self.__class__.MOODS)
 
-        self.mood = self.mood or mood["mood"]
-        self.treasure = self.treasure or mood["treasure"]
-        self.damage = self.damage or mood["damage"]
-        self.message = self.message or mood["message"]
-        self.__class__.MOODS.remove(mood)
+    #     self.mood = self.mood or mood["mood"]
+    #     self.treasure = self.treasure or mood["treasure"]
+    #     self.damage = self.damage or mood["damage"]
+    #     self.message = self.message or mood["message"]
+    #     self.__class__.MOODS.remove(mood)
+
+    @property
+    def mood(self):
+        return choice(self.__class__.MOODS)
 
     def calc_treasure(self):
         """Returns an int value from within the Dragon's treasure range"""
-        treasure_range = self.treasure or [0,0]
+        # treasure_range = self.treasure or [0,0]
+        treasure_range = self.mood["treasure"] or [0,0]
         treasure_amount = randint(*treasure_range)
 
         return treasure_amount
@@ -320,7 +325,8 @@ class Dragon_head(Item, player.Contents):
     def calc_damage(self):
         """Returns an int value from within the Dragon's damage range"""
 
-        damage_range = self.damage or [0,0]
+        # damage_range = self.damage or [0,0]
+        damage_range = self.mood["damage"] or [0,0]
         damage_amount = randint(*damage_range)
 
         return damage_amount
@@ -328,7 +334,8 @@ class Dragon_head(Item, player.Contents):
     def mood_text(self, treasure_amount, damage_amount):
         """Given a treasure and damage amount, returns the formatted text specific to the dragon's mood"""
 
-        message_text = self.message
+        # message_text = self.message
+        message_text = self.mood["message"]
         message_text = message_text.format(treasure=treasure_amount, damage=damage_amount)
 
         mood_text = f"The dragon's {self.mood} {self.key} head {message_text}"

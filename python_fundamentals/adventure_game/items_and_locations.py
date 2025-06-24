@@ -276,6 +276,8 @@ ITEMS = Item.item_dict = {
     "gems": Item(
         key="gems",
         name="gems",
+        aliases=["gem",
+        ],
         description="The realm's primary currency. They also look pretty.",
         can_take = True,
     ),
