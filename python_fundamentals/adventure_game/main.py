@@ -15,6 +15,8 @@
             # need to add/change:
                 # in-game breadcrumbing about mushroom effects wrt dragon auras
                 # switch to randomizing dragon moods
+                    #TODO You randomized, but the selection persists
+                    # TODO you made a mess, rethink how you want to be randomly assigning
                 # player status (good for 2 player actions? or just have a IRL time check)
                 # renewable mushrooms (shop sells them? Forrest shrooms respawn over time?)
                 # check within examine to see aura when player.status == 'fried'
