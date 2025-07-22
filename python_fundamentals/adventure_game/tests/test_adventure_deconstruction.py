@@ -2097,15 +2097,18 @@ def test_pet_treasure(capsys: pytest.CaptureFixture[str]):
             description="Big ol rock.",
             can=['pet'],
         )
+    items_and_locations.Dragon_head.MOODS = [
+            {"mood": "generous",
+            "treasure": [5,5],
+            "damage": [],
+            "message": ("thinks you're adorable! He gives you {treasure} gems!")
+            }
+    ]
     Dragon_head.dragon_dict = {
             "purple": Dragon_head(
                 key="purple",
                 name="Purple Dragon",
                 description="It's purple.",
-                mood="generous",
-                treasure=[5, 5],
-                damage=[],
-                message="thinks you're adorable! He gives you {treasure} gems!",
             )
     }
 
@@ -2129,15 +2132,18 @@ def test_pet_no_treasure(capsys: pytest.CaptureFixture[str]):
             description="Big ol rock.",
             can=['pet'],
         )
+    items_and_locations.Dragon_head.MOODS = [
+            {"mood": "generous",
+            "treasure": [],
+            "damage": [],
+            "message": ("")
+            }
+    ]
     Dragon_head.dragon_dict = {
             "purple": Dragon_head(
                 key="purple",
                 name="Purple Dragon",
                 description="It's purple.",
-                mood="generous",
-                treasure=[],
-                damage=[],
-                message="",
             )
     }
 
@@ -2161,15 +2167,18 @@ def test_pet_damage(capsys: pytest.CaptureFixture[str]):
             description="Big ol rock.",
             can=['pet'],
         )
+    items_and_locations.Dragon_head.MOODS = [
+            {"mood": "generous",
+            "treasure": [],
+            "damage": [7,7],
+            "message": ("singes your hair, costing you {damage} in health.")
+            }
+    ]
     Dragon_head.dragon_dict = {
             "purple": Dragon_head(
                 key="purple",
                 name="Purple Dragon",
                 description="It's purple.",
-                mood="generous",
-                treasure=[],
-                damage=[7,7],
-                message="singes your hair, costing you {damage} in health.",
             )
     }
 
@@ -2193,15 +2202,18 @@ def test_pet_no_damage(capsys: pytest.CaptureFixture[str]):
             description="Big ol rock.",
             can=['pet'],
         )
+    items_and_locations.Dragon_head.MOODS = [
+            {"mood": "generous",
+            "treasure": [],
+            "damage": [],
+            "message": ("")
+            }
+    ]
     Dragon_head.dragon_dict = {
             "purple": Dragon_head(
                 key="purple",
                 name="Purple Dragon",
                 description="It's purple.",
-                mood="generous",
-                treasure=[],
-                damage=[],
-                message="",
             )
     }
 
@@ -2226,15 +2238,18 @@ def test_pet_treasure_and_damage(capsys: pytest.CaptureFixture[str]):
             description="Big ol rock.",
             can=['pet'],
         )
+    items_and_locations.Dragon_head.MOODS = [
+            {"mood": "generous",
+            "treasure": [15,15],
+            "damage": [5,5],
+            "message": ("He gives you {treasure} gems! But bites, costing you {damage} in health.")
+            }
+    ]
     Dragon_head.dragon_dict = {
             "purple": Dragon_head(
                 key="purple",
                 name="Purple Dragon",
                 description="It's purple.",
-                mood="generous",
-                treasure=[15,15],
-                damage=[5,5],
-                message="He gives you {treasure} gems! But bites, costing you {damage} in health.",
             )
     }
 

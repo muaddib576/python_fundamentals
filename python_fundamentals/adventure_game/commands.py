@@ -428,6 +428,8 @@ class Pet(Command):
         print()
         wrap(target_dragon.mood_text(treasure, damage_dealt))
 
+        target_dragon.randomize_mood()
+
 class Consume(Command):
     def consume(self, args, action):
         """Performs the Consume action on the specified item"""

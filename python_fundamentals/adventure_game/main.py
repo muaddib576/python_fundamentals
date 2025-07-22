@@ -16,7 +16,10 @@
                 # in-game breadcrumbing about mushroom effects wrt dragon auras
                 # switch to randomizing dragon moods
                     #TODO You randomized, but the selection persists
-                    # TODO you made a mess, rethink how you want to be randomly assigning
+                        # create a randomize_mood method that is triggered at the end of the pet command. The method should reset the moods for all dragon heads)
+                        # the randomize_mood method should set all the dragon_heads as the same time
+                        # Actually, maybe instead there should be a clear_moods method that happens at the end of the pet command, and affects all dragon heads?
+                            # That way the initialization of the moods can be simpler? Maybe just check what moods are not assigned to the other two heads?
                 # player status (good for 2 player actions? or just have a IRL time check)
                 # renewable mushrooms (shop sells them? Forrest shrooms respawn over time?)
                 # check within examine to see aura when player.status == 'fried'
