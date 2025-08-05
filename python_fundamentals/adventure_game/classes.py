@@ -298,7 +298,15 @@ class Dragon_head(Item, player.Contents):
         self.damage = None
         self.message = None
         # _ = self.mood_dict # this will force the mood_dict property to be called, which will set the mood and other attributes
-        self.randomize_mood()
+        # self.randomize_mood()
+
+    @classmethod
+    def shuffle_moods(cls):
+        available_moods = cls.MOODS.copy()
+        for head in cls.dragon_dict.values():
+            mood = choice(available_moods)
+            available_moods.remove(mood)
+            head._apply_mood(mood) #this is not correct yet, the underscore indicates a private method, but this is run at the class level
 
     @property
     def mood_dict(self):
@@ -311,7 +319,7 @@ class Dragon_head(Item, player.Contents):
 
     def randomize_mood(self):
         self._mood_dict = choice(self.__class__.MOODS)
-        # self.__class__.MOODS.remove(self._mood_dict)
+        self.__class__.MOODS.remove(self._mood_dict)
         self._apply_mood(self._mood_dict)
 
     def _apply_mood(self, mood_dict):
