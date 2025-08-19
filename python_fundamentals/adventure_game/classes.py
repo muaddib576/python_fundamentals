@@ -290,43 +290,64 @@ class Dragon_head(Item, player.Contents):
         },
     ]
 
+    _instances = []
+
     def __init__(self, key, name, description):
         super().__init__(key, name, description)
+        self.__class__._instances.append(self)
+
         self._mood_dict = None
-        self.mood = None
-        self.treasure = None
-        self.damage = None
-        self.message = None
-        # _ = self.mood_dict # this will force the mood_dict property to be called, which will set the mood and other attributes
-        # self.randomize_mood()
+        # self.mood = None
+        # self.treasure = None
+        # self.damage = None
+        # self.message = None
+
+        # self.__class__.shuffle_moods()
+        # TODO: you need to change where this is called. Alliss suggests outside the class (maybe main?).
+        # You also need to solve for the _instances growing when running tests.
 
     @classmethod
     def shuffle_moods(cls):
+        """Randomized moods to all instances."""
         available_moods = cls.MOODS.copy()
-        for head in cls.dragon_dict.values():
+
+        for head in cls._instances:
             mood = choice(available_moods)
             available_moods.remove(mood)
-            head._apply_mood(mood) #this is not correct yet, the underscore indicates a private method, but this is run at the class level
+            head._mood_dict = mood
+            # head._apply_mood(mood)
 
     @property
-    def mood_dict(self):
-        return self._mood_dict
+    def mood(self):
+        return self._mood_dict["mood"]
     
-    @mood_dict.setter
-    def mood_dict(self, value):
-        self._mood_dict = value
-        self._apply_mood(value)
+    @property
+    def treasure(self):
+        return self._mood_dict["treasure"]
 
-    def randomize_mood(self):
-        self._mood_dict = choice(self.__class__.MOODS)
-        self.__class__.MOODS.remove(self._mood_dict)
-        self._apply_mood(self._mood_dict)
+    @property
+    def damage(self):
+        return self._mood_dict["damage"]
+    
+    @property
+    def message(self):
+        return self._mood_dict["message"]
 
-    def _apply_mood(self, mood_dict):
-        self.mood = mood_dict["mood"]
-        self.treasure = mood_dict["treasure"]
-        self.damage = mood_dict["damage"]
-        self.message = mood_dict["message"]
+    # def _apply_mood(self, mood_dict):
+    #     """"Applies the mood dictionary to attributes."""
+    #     self._mood_dict = mood_dict
+    #     self.mood = mood_dict["mood"]
+    #     self.treasure = mood_dict["treasure"]
+    #     self.damage = mood_dict["damage"]
+    #     self.message = mood_dict["message"]
+
+   # @property
+    # def mood_dict(self):
+    #     return self._mood_dict
+    
+    # @mood_dict.setter
+    # def mood_dict(self, value):
+    #     self._apply_mood(value)
 
     def calc_treasure(self):
         """Returns an int value from within the Dragon's treasure range"""
@@ -355,4 +376,6 @@ class Dragon_head(Item, player.Contents):
         mood_text = f"The dragon's {self.mood} {self.key} head {message_text}"
 
         return mood_text
+
+Dragon_head.shuffle_moods()
     

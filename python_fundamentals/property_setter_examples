@@ -1,0 +1,69 @@
+# NOTE: this is not neccessarily what I think you should do, it is just an lesson on properties
+    
+    # This example shows why the ._apply_mood() method is is problematic
+    
+    # if you do this
+    head._apply_mood({"mood": "silly"})
+
+    # then set mood_dict without calling _apply_mood()
+    head._mood_dict = {"mood": "serious"}
+
+    # then head.mood will not be the same as what is in _mood_dict (this will be false)
+    head._mood_dict["mood"] == head.mood # false
+    head.mood == "silly"                 # true
+    head._mood_dict["mood"] == "serious" # true
+    
+    # On the other hand, if you had a mood_dict getter and setteer like so:
+
+    @property
+    def mood_dict(self):
+        return self.__dict__["_mood_dict"]
+    
+    @mood_dict.setter
+    def mood_dict(self, value):
+        self._mood_dict = value
+        self.mood = value["mood"]
+        self.treasure = value["treasure"]
+        self.damage = value["damage"]
+        self.message = value["message"]
+
+    # Then it would be much less likely for .mood to be different from ._mood_dict["mood"], because no matter what, when you do:
+
+    head._mood_dict = mood_dict
+
+    # It will update head.mood
+    
+    # BUT, Because .mood is not associated with ._mood_dict in a determanistic way, you an still have a problem where:
+    
+    head._mood_dict = {"mood": "silly"}
+    head.mood = "serious"
+
+    # Which is why instead I would recommend writing getters for .mood (and the rest), to ensure they always return the value from ._mood dict.
+
+    @property
+    def mood(self):
+        return self._mood_dict["mood"]
+    
+    # Also, (unless you add a setter, which in this case you shouldn't), it is not possible to set .mood.
+    
+    head.mood = "silly" # will throw an exception
+
+    # But, if you wanted to be able to set .mood, you could do this:
+    
+    @mood.setter
+    def mood(self, value):
+        self._mood_dict["mood"] = value
+
+    # that would ensure:
+    
+    head._mood_dict = {"mood": "silly"}
+    head.mood = "serious"
+    head._mood_dict["mood"] == head.mood  # true
+
+    # *technically* it is still possible to mess this up outside of the class by doing:
+    
+    head._mood = "serious"
+    
+    # but if you do that, you know you're misbehaving
+    
+    # ---

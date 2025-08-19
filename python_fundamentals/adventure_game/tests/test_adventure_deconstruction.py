@@ -50,8 +50,9 @@ from python_fundamentals.adventure_game.main import (
 
 @pytest.fixture(autouse=True)
 def setup():
-
+    breakpoint()
     importlib.reload(items_and_locations)
+    breakpoint()
     importlib.reload(params_and_functions)
     importlib.reload(player)
     
