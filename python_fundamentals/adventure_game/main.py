@@ -15,8 +15,7 @@
             # need to add/change:
                 # in-game breadcrumbing about mushroom effects wrt dragon auras
                 # switch to randomizing dragon moods
-                    #TODO You randomized, but the selection persists
-                        # Alissa suggested to do the randomization as a classmethod. That way all relevant dragon_heads will be dealt with at the same time
+                    #TODO You randomized, but you need to think through how _instances is populated (especially wrt tests)
                 # player status (good for 2 player actions? or just have a IRL time check)
                 # renewable mushrooms (shop sells them? Forrest shrooms respawn over time?)
                 # check within examine to see aura when player.status == 'fried'
@@ -33,8 +32,6 @@ from python_fundamentals.adventure_game.params_and_functions import (
     start_message,
     defeat,
 )
-
-from python_fundamentals.adventure_game.classes import InvalidItemError
 
 # DO I not need this anymore??
 from python_fundamentals.adventure_game.commands import (
@@ -55,6 +52,7 @@ from python_fundamentals.adventure_game.commands import (
 
 from python_fundamentals.adventure_game.classes import (
     Command,
+    InvalidItemError,
 )
 
 # Even though it is not directly used in main.py, you need to import this so the dicts are initialized
@@ -80,8 +78,15 @@ def gen_action_dict():
 
     return action_dict
 
-def main():
+def initialize_world():
+    """Initializes the game world. For now, just shuffles the dragon moods. Eventually, may refactor everything to do more."""
+    
+    # Shuffle the dragon moods at the start of the game
+    items_and_locations.Dragon_head.shuffle_moods()
 
+def main():
+    initialize_world()
+    
     action_dict = gen_action_dict()
 
     start_message()

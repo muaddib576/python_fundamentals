@@ -1,7 +1,6 @@
 import pytest
 import importlib
 
-import python_fundamentals.adventure_game.items_and_locations as items_and_locations
 import python_fundamentals.adventure_game.params_and_functions as params_and_functions
 import python_fundamentals.adventure_game.player as player
 
@@ -50,12 +49,14 @@ from python_fundamentals.adventure_game.main import (
 
 @pytest.fixture(autouse=True)
 def setup():
-    breakpoint()
-    importlib.reload(items_and_locations)
-    breakpoint()
     importlib.reload(params_and_functions)
     importlib.reload(player)
     
+    # Reset the various item_and_location dicts
+    Place.place_dict.clear()
+    Dragon_head.dragon_dict.clear()
+    Item.item_dict.clear()
+
     # params_and_functions.DELAY = 0
     classes.DELAY = 0
     # TODO this solves the delay test issue, but I don't like that I am importing python_fundamentals.adventure_game.classes twice
@@ -706,9 +707,10 @@ def test_examine_in_shop(capsys: pytest.CaptureFixture[str]):
     assert "+7 health" in output, \
         "The player should be told the health impact for an examined item."
 
-def test_get_place_start(capsys: pytest.CaptureFixture[str]):
-    assert Command([]).player_place == Place.place_dict[player.PLAYER.place], \
-        "Starting location should be 'your cottage'"
+# TODO Delete? This can no longer be tested, as the player_place is now only set in main.py
+# def test_get_place_start(capsys: pytest.CaptureFixture[str]):
+#     assert Command([]).player_place == Place.place_dict[player.PLAYER.place], \
+#         "Starting location should be 'your cottage'"
     
 def test_get_place_missing_place(capsys: pytest.CaptureFixture[str]):
     player.PLAYER.place = 'shire'
@@ -1173,6 +1175,7 @@ def test_drop_no_arg(capsys: pytest.CaptureFixture[str]):
 
 def test_drop_no_item(capsys: pytest.CaptureFixture[str]):
     # GIVEN: The items in the player's inventory
+    player.PLAYER.place = 'shire'
     player.PLAYER.inventory = {}
     Item.item_dict = {
         "ring": Item(
@@ -1182,6 +1185,12 @@ def test_drop_no_item(capsys: pytest.CaptureFixture[str]):
             can_take=True,
         )
     }
+    Place.place_dict["shire"] = Place(
+            key="shire",
+            name="The Shire",
+            description="Buncha hobbits.",
+            inventory={}
+    )
 
     # WHEN: The player tries to drop an item not in their inventory
     Drop(['ring']).do()
