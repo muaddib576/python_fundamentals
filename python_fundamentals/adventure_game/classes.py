@@ -295,9 +295,7 @@ class Dragon_head(Item, player.Contents):
     def __init__(self, key, name, description):
         super().__init__(key, name, description)
         
-        # TODO: You need move this out of the init? Perhaps a classmethod that is called once all instances are created? or initialize_world() in main.py and manually create in each relevant test?
         self.__class__._instances.append(self)
-
         self._mood_dict = None
 
     @classmethod

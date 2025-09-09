@@ -55,6 +55,7 @@ def setup():
     # Reset the various item_and_location dicts
     Place.place_dict.clear()
     Dragon_head.dragon_dict.clear()
+    Dragon_head._instances.clear()
     Item.item_dict.clear()
 
     # params_and_functions.DELAY = 0
@@ -2057,7 +2058,7 @@ def test_pet(capsys: pytest.CaptureFixture[str]):
             description="Big ol rock.",
             can=['pet'],
         )
-    items_and_locations.Dragon_head.MOODS = [
+    Dragon_head.MOODS = [
         {"mood": "moody", "treasure": [], "damage": [], "message": ("")}
     ]
     Dragon_head.dragon_dict = {
@@ -2067,6 +2068,7 @@ def test_pet(capsys: pytest.CaptureFixture[str]):
                 description="It's purple.",
             )
     }
+    # Dragon_head.shuffle_moods()
     
     # WHEN: the player pets the dragon
     Pet(['purple', 'head']).do()
@@ -2078,7 +2080,7 @@ def test_pet(capsys: pytest.CaptureFixture[str]):
 
 def test_moods_assignment():
     # GIVEN: A dragon and a mood
-    items_and_locations.Dragon_head.MOODS = [
+    Dragon_head.MOODS = [
         {"mood": "moody", "treasure": [1,1], "damage": [2,2], "message": ("snorts at you.")}
     ]
     Dragon_head.dragon_dict = {
@@ -2088,13 +2090,15 @@ def test_moods_assignment():
                 description="It's purple.",
             )
     }
+    # Moods are only assigned at game start or when player pets, so we call shuffle_moods here
+    Dragon_head.shuffle_moods()
     
     # THEN: the instantiated dragon should have the mood assigned, and the mood should be removed
     assert Dragon_head.dragon_dict["purple"].mood == "moody", "The mood should be assigned"
     assert Dragon_head.dragon_dict["purple"].treasure == [1,1], "The treasure should be assigned"
     assert Dragon_head.dragon_dict["purple"].damage == [2,2], "The damage should be assigned"
     assert Dragon_head.dragon_dict["purple"].message == "snorts at you.", "The message should be assigned"
-    assert len(items_and_locations.Dragon_head.MOODS) == 0, \
+    assert len(Dragon_head.MOODS) == 0, \
         "The mood should be removed from the list after assignment"
 
 def test_pet_treasure(capsys: pytest.CaptureFixture[str]):
@@ -2107,7 +2111,7 @@ def test_pet_treasure(capsys: pytest.CaptureFixture[str]):
             description="Big ol rock.",
             can=['pet'],
         )
-    items_and_locations.Dragon_head.MOODS = [
+    Dragon_head.MOODS = [
             {"mood": "generous",
             "treasure": [5,5],
             "damage": [],
@@ -2142,7 +2146,7 @@ def test_pet_no_treasure(capsys: pytest.CaptureFixture[str]):
             description="Big ol rock.",
             can=['pet'],
         )
-    items_and_locations.Dragon_head.MOODS = [
+    Dragon_head.MOODS = [
             {"mood": "generous",
             "treasure": [],
             "damage": [],
@@ -2177,7 +2181,7 @@ def test_pet_damage(capsys: pytest.CaptureFixture[str]):
             description="Big ol rock.",
             can=['pet'],
         )
-    items_and_locations.Dragon_head.MOODS = [
+    Dragon_head.MOODS = [
             {"mood": "generous",
             "treasure": [],
             "damage": [7,7],
@@ -2212,7 +2216,7 @@ def test_pet_no_damage(capsys: pytest.CaptureFixture[str]):
             description="Big ol rock.",
             can=['pet'],
         )
-    items_and_locations.Dragon_head.MOODS = [
+    Dragon_head.MOODS = [
             {"mood": "generous",
             "treasure": [],
             "damage": [],
@@ -2248,7 +2252,7 @@ def test_pet_treasure_and_damage(capsys: pytest.CaptureFixture[str]):
             description="Big ol rock.",
             can=['pet'],
         )
-    items_and_locations.Dragon_head.MOODS = [
+    Dragon_head.MOODS = [
             {"mood": "generous",
             "treasure": [15,15],
             "damage": [5,5],

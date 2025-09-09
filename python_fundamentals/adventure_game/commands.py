@@ -407,7 +407,10 @@ class Pet(Command):
         if color not in Dragon_head.dragon_dict.keys():
             error("You do not see such a dragon.")
             return
-        
+
+        # Shuffle the dragon moods each time the player pets a dragons
+        Dragon_head.shuffle_moods()
+
         target_dragon = Dragon_head.dragon_dict[color]
 
         treasure = target_dragon.calc_treasure()

@@ -15,7 +15,9 @@
             # need to add/change:
                 # in-game breadcrumbing about mushroom effects wrt dragon auras
                 # switch to randomizing dragon moods
-                    #TODO You randomized, but you need to think through how _instances is populated (especially wrt tests)
+                    #TODO You randomized, but you need to think through how _instances is populated (especially wrt tests).
+                    # Also need to inform the player that the moods are shuffled each pet
+                    # Also should add a test to check that the length of moods = the length of dragon heads, just in case
                 # player status (good for 2 player actions? or just have a IRL time check)
                 # renewable mushrooms (shop sells them? Forrest shrooms respawn over time?)
                 # check within examine to see aura when player.status == 'fried'
