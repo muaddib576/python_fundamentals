@@ -408,9 +408,6 @@ class Pet(Command):
             error("You do not see such a dragon.")
             return
 
-        # Shuffle the dragon moods each time the player pets a dragons
-        Dragon_head.shuffle_moods()
-
         target_dragon = Dragon_head.dragon_dict[color]
 
         treasure = target_dragon.calc_treasure()
@@ -430,6 +427,9 @@ class Pet(Command):
         self.text_delay(sentences)
         print()
         wrap(target_dragon.mood_text(treasure, damage_dealt))
+
+        # Shuffle the dragon moods after each time the player pets a dragon
+        Dragon_head.shuffle_moods()
 
 class Consume(Command):
     def consume(self, args, action):

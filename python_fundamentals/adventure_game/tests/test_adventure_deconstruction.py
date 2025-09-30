@@ -2068,7 +2068,8 @@ def test_pet(capsys: pytest.CaptureFixture[str]):
                 description="It's purple.",
             )
     }
-    # Dragon_head.shuffle_moods()
+    # Moods are only assigned at game start or when player pets, so we call shuffle_moods here
+    Dragon_head.shuffle_moods()
     
     # WHEN: the player pets the dragon
     Pet(['purple', 'head']).do()
@@ -2098,8 +2099,46 @@ def test_moods_assignment():
     assert Dragon_head.dragon_dict["purple"].treasure == [1,1], "The treasure should be assigned"
     assert Dragon_head.dragon_dict["purple"].damage == [2,2], "The damage should be assigned"
     assert Dragon_head.dragon_dict["purple"].message == "snorts at you.", "The message should be assigned"
-    assert len(Dragon_head.MOODS) == 0, \
-        "The mood should be removed from the list after assignment"
+
+def test_moods_reassignment():
+    # GIVEN: A dragon and a mood, and a player at a location that allows petting
+    player.PLAYER.place = 'mountain'
+    Place.place_dict["mountain"] = Place(
+            key="mountain",
+            name="The Misty Mountain",
+            description="Big ol rock.",
+            can=['pet'],
+        )
+    Dragon_head.MOODS = [
+        {"mood": "moody", "treasure": [1,1], "damage": [2,2], "message": ("snorts at you.")}
+    ]
+    Dragon_head.dragon_dict = {
+            "purple": Dragon_head(
+                key="purple",
+                name="Purple Dragon",
+                description="It's purple.",
+            )
+    }
+    # Moods are only assigned at game start or when player pets, so we call shuffle_moods here
+    Dragon_head.shuffle_moods()
+    
+    # THEN: the instantiated dragon should have the mood assigned, and the mood should be removed
+    assert Dragon_head.dragon_dict["purple"].mood == "moody", "The mood should be assigned"
+    assert Dragon_head.dragon_dict["purple"].treasure == [1,1], "The treasure should be assigned"
+    assert Dragon_head.dragon_dict["purple"].damage == [2,2], "The damage should be assigned"
+    assert Dragon_head.dragon_dict["purple"].message == "snorts at you.", "The message should be assigned"
+
+    # THEN WHEN: The player pets the dragon, the mood is shuffled after (in this test we remove randomness by changing the mood list)
+    Dragon_head.MOODS = [
+        {"mood": "moody_2", "treasure": [2,2], "damage": [3,3], "message": ("glares at you.")}
+    ]
+
+    Pet(['purple', 'head']).do()
+
+    assert Dragon_head.dragon_dict["purple"].mood == "moody_2", "The mood should be assigned"
+    assert Dragon_head.dragon_dict["purple"].treasure == [2,2], "The treasure should be assigned"
+    assert Dragon_head.dragon_dict["purple"].damage == [3,3], "The damage should be assigned"
+    assert Dragon_head.dragon_dict["purple"].message == "glares at you.", "The message should be assigned"
 
 def test_pet_treasure(capsys: pytest.CaptureFixture[str]):
     # GIVEN: A dragon with treasure
@@ -2125,6 +2164,8 @@ def test_pet_treasure(capsys: pytest.CaptureFixture[str]):
                 description="It's purple.",
             )
     }
+    # Moods are only assigned at game start or when player pets, so we call shuffle_moods here
+    Dragon_head.shuffle_moods()
 
     # WHEN: the player pets the dragon
     Pet(['purple', 'head']).do()
@@ -2160,6 +2201,8 @@ def test_pet_no_treasure(capsys: pytest.CaptureFixture[str]):
                 description="It's purple.",
             )
     }
+    # Moods are only assigned at game start or when player pets, so we call shuffle_moods here
+    Dragon_head.shuffle_moods()
 
     # WHEN: the player pets the dragon
     Pet(['purple', 'head']).do()
@@ -2195,6 +2238,8 @@ def test_pet_damage(capsys: pytest.CaptureFixture[str]):
                 description="It's purple.",
             )
     }
+    # Moods are only assigned at game start or when player pets, so we call shuffle_moods here
+    Dragon_head.shuffle_moods()
 
     # WHEN: the player pets the dragon
     Pet(['purple', 'head']).do()
@@ -2230,6 +2275,8 @@ def test_pet_no_damage(capsys: pytest.CaptureFixture[str]):
                 description="It's purple.",
             )
     }
+    # Moods are only assigned at game start or when player pets, so we call shuffle_moods here
+    Dragon_head.shuffle_moods()
 
     # WHEN: the player pets the dragon
     Pet(['purple', 'head']).do()
@@ -2266,6 +2313,8 @@ def test_pet_treasure_and_damage(capsys: pytest.CaptureFixture[str]):
                 description="It's purple.",
             )
     }
+    # Moods are only assigned at game start or when player pets, so we call shuffle_moods here
+    Dragon_head.shuffle_moods()
 
     # WHEN: the player pets the dragon
     Pet(['purple', 'head']).do()
