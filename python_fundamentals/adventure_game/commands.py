@@ -9,6 +9,7 @@ from python_fundamentals.adventure_game.params_and_functions import (
     wrap,
     victory,
     MARGIN,
+    DELAY
 )
 
 from python_fundamentals.adventure_game.classes import (
@@ -426,10 +427,13 @@ class Pet(Command):
 
         self.text_delay(sentences)
         print()
-        wrap(target_dragon.mood_text(treasure, damage_dealt))
+        self.text_delay([target_dragon.mood_text(treasure, damage_dealt)])
 
         # Shuffle the dragon moods after each time the player pets a dragon
         Dragon_head.shuffle_moods()
+        
+        print()
+        wrap(["After a brief pause, the dragon shudders and settles back into his resting pose. You get the sense its moods have shifted."])
 
 class Consume(Command):
     def consume(self, args, action):

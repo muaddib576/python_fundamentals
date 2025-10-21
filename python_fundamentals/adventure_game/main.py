@@ -13,19 +13,20 @@
     # Alissa's feedback: dragons are easy to deal with once you know which is which
         # Shuffle the moods after each pet. But eating the mushrooms found in the forrest gives player a status effect with lets them see the cheerful head's aura
             # need to add/change:
-                # in-game breadcrumbing about mushroom effects wrt dragon auras
-                # switch to randomizing dragon moods
-                    # TODO Also need to inform the player that the moods are shuffled each pet
-                    # TODO Also should add a test to check that the length of moods = the length of dragon heads, just in case
-                        # this might not really be compatible with the test setup because items_and_locations is not imported for tests?
-                            # I could import, but then I would need to skip the test fixture for that one
-                            # or I could just do a manual check in initialize_world() in main.py? Not a test, but would immediately error out if something is wrong
-                # player status (good for 2 player actions? or just have a IRL time check)
-                # renewable mushrooms (shop sells them? Forrest shrooms respawn over time?)
-                # check within examine to see aura when player.status == 'fried'
-                # check the balance of the reward/punishments from the moods
+                # add player self.current_status
+                # add player.current_status to inspect output?
+                # update player status after eating mushrooms
                 # for fun: maybe some text color change and/or animation when examining anything while player.status == 'fried'?
                     # lolcat library
+                    # Will need to update the wrap() and write() functions to reference player.current_status
+                # when using examine and player.status == 'fried' then player can see mood/aura colors
+                # remove the 'fried' status after either:
+                    # a set number of player actions
+                    # a set time period IRL??
+                # in-game breadcrumbing about mushroom effects wrt dragon auras
+                # renewable mushrooms (shop sells them? Forrest shrooms respawn over time?)
+                # check the balance of the reward/punishments from the moods
+                # for fun: maybe add a 'sick' status if the player eats too many mushrooms?
 
 from console import fg, bg, fx
 
@@ -85,6 +86,10 @@ def gen_action_dict():
 def initialize_world():
     """Initializes the game world. For now, just shuffles the dragon moods. Eventually, may refactor everything to do more."""
     
+    if len(items_and_locations.DRAGON_HEADS) != len(items_and_locations.Dragon_head.MOODS):
+        error("Error initializing game world: number of dragon heads does not equal number of dragon moods.")
+        quit()
+
     # Shuffle the dragon moods at the start of the game
     items_and_locations.Dragon_head.shuffle_moods()
 

@@ -46,7 +46,6 @@ from python_fundamentals.adventure_game.main import (
     gen_action_dict,
 )
 
-
 @pytest.fixture(autouse=True)
 def setup():
     importlib.reload(params_and_functions)
