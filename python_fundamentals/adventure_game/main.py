@@ -14,12 +14,13 @@
         # Shuffle the moods after each pet. But eating the mushrooms found in the forrest gives player a status effect with lets them see the cheerful head's aura
             # need to add/change:
                 # add player self.current_status
-                # add player.current_status to inspect output?
+                # add player.current_status to the inventory output?
                 # update player status after eating mushrooms
                 # for fun: maybe some text color change and/or animation when examining anything while player.status == 'fried'?
                     # lolcat library
                     # Will need to update the wrap() and write() functions to reference player.current_status
-                # when using examine and player.status == 'fried' then player can see mood/aura colors
+                # when using inventory/examine and player.status == 'fried' then player can see mood/aura colors
+                    # perhaps update the wrap()/write() functions to reference player.current_status
                 # remove the 'fried' status after either:
                     # a set number of player actions
                     # a set time period IRL??

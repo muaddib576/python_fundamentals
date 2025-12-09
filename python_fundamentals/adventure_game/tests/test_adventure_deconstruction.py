@@ -364,6 +364,27 @@ def test_add(start, amount, expected, message):
     # THEN: the player's health should be changed by the # passed to health_change
     assert player.PLAYER.inventory['gems'] == expected, message
 
+def test_player_add_status():
+    # GIVEN: A player with no status effects
+    player.PLAYER.status_effects = {}
+
+    # WHEN: A status effect is added
+    player.PLAYER.add_status('giddy', 60)
+
+    # THEN: The status effect is added to the dict
+    assert 'giddy' in player.PLAYER.status_effects, \
+        "The status effect should be added to the player's status_effects dict"
+    # assert time() TODO: check the expiration time is correct
+
+def test_player_has_status():
+    ...
+
+def test_player_has_status_expired():
+    ...
+
+def test_player_has_status_missing():
+    ...
+
 def test_go(capsys: pytest.CaptureFixture[str]):
     player.PLAYER.place = 'shire'
     Place.place_dict = {
