@@ -1,4 +1,4 @@
-from time import sleep
+from time import sleep, time
 from random import choice, randint
 
 from python_fundamentals.adventure_game.params_and_functions import (

@@ -1,4 +1,4 @@
-
+from time import time
 from console import fg, bg, fx
 
 from python_fundamentals.adventure_game.params_and_functions import (
@@ -290,13 +290,25 @@ class Inventory(Command):
     aliases = ['inventory','i','bag']
 
     def do(self):
-        """Displays the current contents of the player inventory"""
+        """Displays the players health, statuses, and current inventory contents"""
 
         debug("Trying to show player inventory.")
 
         self.health_bar()
 
         print()
+      
+        status_text = []
+        for status, expires_at in player.PLAYER.status_effects.items():
+            if time() < expires_at:
+                status_text.append(f"{status}: {(expires_at - time()):.0f} seconds remaining.")
+            
+        if status_text:
+            final_text = ["Active status effects:",] + status_text
+
+            wrap(final_text, initial_indent=MARGIN*2, subsequent_indent=MARGIN*2)
+            
+            print()
 
         if not player.PLAYER.inventory:
             write("Inventory empty.")

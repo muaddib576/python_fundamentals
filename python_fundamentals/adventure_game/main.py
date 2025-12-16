@@ -13,7 +13,6 @@
     # Alissa's feedback: dragons are easy to deal with once you know which is which
         # Shuffle the moods after each pet. But eating the mushrooms found in the forrest gives player a status effect with lets them see the cheerful head's aura
             # need to add/change:
-                # add player self.current_status
                 # add player.current_status to the inventory output?
                 # update player status after eating mushrooms
                 # for fun: maybe some text color change and/or animation when examining anything while player.status == 'fried'?

@@ -87,6 +87,10 @@ class Player(Contents):
 PLAYER = Player(
     place="home",
     current_health = 100,
-    status_effects = {},
+    # status_effects = {},
+    status_effects = {'giddy': time() + 60,
+                      'pensive': time() + 120,
+                      'mad': time() - 60,
+    },
     inventory = {},
 )

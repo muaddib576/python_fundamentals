@@ -374,16 +374,64 @@ def test_player_add_status():
     # THEN: The status effect is added to the dict
     assert 'giddy' in player.PLAYER.status_effects, \
         "The status effect should be added to the player's status_effects dict"
-    # assert time() TODO: check the expiration time is correct
+    
+def test_player_add_status_multi():
+    # GIVEN: A player with status effects
+    player.PLAYER.status_effects = {'giddy': 1765845731.411882}
+
+    # WHEN: A status effect is added
+    player.PLAYER.add_status('pensive', 60)
+
+    # THEN: The status effect is added to the dict, and the previous one remains
+    assert 'pensive' in player.PLAYER.status_effects, \
+        "The status effect should be added to the player's status_effects dict"
+    assert 'giddy' in player.PLAYER.status_effects, \
+        "The status effect should be added to the player's status_effects dict"
 
 def test_player_has_status():
-    ...
+    # GIVEN: A player with no status effects
+    player.PLAYER.status_effects = {}
+
+    # WHEN: A status effect is added
+    player.PLAYER.add_status('giddy', 60)
+
+    # THEN: The status effect is added to the dict and check_status() returns True within duration
+    assert player.PLAYER.check_status('giddy') == True, \
+        "Checking within the duration should return True"
 
 def test_player_has_status_expired():
-    ...
+    # GIVEN: A player with no status effects
+    player.PLAYER.status_effects = {}
 
-def test_player_has_status_missing():
-    ...
+    # WHEN: A status effect is added
+    player.PLAYER.add_status('giddy', 0)
+
+    # THEN: The status effect is added to the dict and check_status() returns False outside duration
+    assert player.PLAYER.check_status('giddy') == False, \
+        "Checking outside the duration should return False"
+
+def test_player_missing_status():
+    # GIVEN: A player with status effects
+    player.PLAYER.status_effects = {'giddy': 1765845731.411882}
+
+    # WHEN: check_status() is called for a missing status, it returns False
+    assert player.PLAYER.check_status('pensive') == False, \
+        "Checking a missing status should return False"
+
+def test_player_had_old_status():
+    # GIVEN: A player with status effects
+    player.PLAYER.status_effects = {'giddy': 1765845731.411882}
+
+    # THEN: check_status() returns False before refresh
+    assert player.PLAYER.check_status('giddy') == False, \
+        "Checking within the duration should return True"
+
+    # WHEN: A the same status effect is added again
+    player.PLAYER.add_status('giddy', 60)
+
+    # THEN: check_status() returns True within duration
+    assert player.PLAYER.check_status('giddy') == True, \
+        "Checking within the duration should return True"
 
 def test_go(capsys: pytest.CaptureFixture[str]):
     player.PLAYER.place = 'shire'
