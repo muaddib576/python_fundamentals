@@ -297,26 +297,45 @@ class Inventory(Command):
         self.health_bar()
 
         print()
+        print()
       
         status_text = []
         for status, expires_at in player.PLAYER.status_effects.items():
             if time() < expires_at:
-                status_text.append(f"{status}: {(expires_at - time()):.0f} seconds remaining.")
+                status_text.append(f"{status.title()} ({(expires_at - time()):.0f}s)")
             
         if status_text:
-            final_text = ["Active status effects:",] + status_text
 
-            wrap(final_text, initial_indent=MARGIN*2, subsequent_indent=MARGIN*2)
+            status_header = "Status effects: "
+            status_header_len = len(status_header)
+            status_indent = MARGIN + (' ' * status_header_len)
+
+            status_first_line = status_header + status_text[0]
+
+            wrap(status_first_line)
+            wrap(status_text[1:], initial_indent=status_indent, subsequent_indent=status_indent)
             
+            print()
             print()
 
         if not player.PLAYER.inventory:
             write("Inventory empty.")
             return
 
-        for name, qty in player.PLAYER.inventory.items():
+        inventory_header = "Inventory: "
+        inventory_header_len = len(inventory_header)
+        inventory_indent = MARGIN + (' ' * inventory_header_len)
+
+        for i, (name, qty) in enumerate(player.PLAYER.inventory.items()):
             item = Item.get(name)
-            write(f"(x{qty:>2}) {item.name}")
+            item_text = f"{item.name.title()} (x{qty:>2})"
+
+            if i == 0:
+                inventory_first_line = inventory_header + item_text
+                wrap(inventory_first_line)
+                continue
+            
+            wrap(item_text, initial_indent=inventory_indent, subsequent_indent=inventory_indent)
 
 class Drop(Command):
     aliases = ['drop','d']

@@ -1,0 +1,77 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36" version="26.1.2">
+  <diagram name="Page-1" id="JyzzYujxqHS-Ys0BXHNS">
+    <mxGraphModel dx="1383" dy="770" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" background="none" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="Jq2eEWlM-XUtOnqd9k1_-8" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="9481VUSA2gzopdG8dV_q-1" target="Jq2eEWlM-XUtOnqd9k1_-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="9481VUSA2gzopdG8dV_q-1" value="Command()" style="rounded=1;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+          <mxGeometry x="60" y="70" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Jq2eEWlM-XUtOnqd9k1_-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="Jq2eEWlM-XUtOnqd9k1_-1" target="Jq2eEWlM-XUtOnqd9k1_-12">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="440" y="220" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Jq2eEWlM-XUtOnqd9k1_-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="Jq2eEWlM-XUtOnqd9k1_-1" target="Jq2eEWlM-XUtOnqd9k1_-9">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="380" y="170" />
+              <mxPoint x="478" y="170" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Jq2eEWlM-XUtOnqd9k1_-1" value="Collectable()" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="320" y="70" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Jq2eEWlM-XUtOnqd9k1_-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="Jq2eEWlM-XUtOnqd9k1_-2" target="Jq2eEWlM-XUtOnqd9k1_-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="Jq2eEWlM-XUtOnqd9k1_-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="Jq2eEWlM-XUtOnqd9k1_-2" target="Jq2eEWlM-XUtOnqd9k1_-13">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="650" y="320" />
+              <mxPoint x="464" y="320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Jq2eEWlM-XUtOnqd9k1_-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="Jq2eEWlM-XUtOnqd9k1_-2" target="Jq2eEWlM-XUtOnqd9k1_-9">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="650" y="170" />
+              <mxPoint x="529" y="170" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Jq2eEWlM-XUtOnqd9k1_-2" value="Contents()" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="590" y="70" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Jq2eEWlM-XUtOnqd9k1_-3" value="Player(Contents)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="210" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Jq2eEWlM-XUtOnqd9k1_-7" value="All_commands(Command)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="210" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Jq2eEWlM-XUtOnqd9k1_-9" value="Place(Collectable, Contents)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="400" y="210" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Jq2eEWlM-XUtOnqd9k1_-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="Jq2eEWlM-XUtOnqd9k1_-12" target="Jq2eEWlM-XUtOnqd9k1_-13">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="300" y="320" />
+              <mxPoint x="416" y="320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="Jq2eEWlM-XUtOnqd9k1_-12" value="Item(Collectable)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="240" y="210" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="Jq2eEWlM-XUtOnqd9k1_-13" value="Dragon_head(Item, Contents)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="330" y="370" width="220" height="60" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

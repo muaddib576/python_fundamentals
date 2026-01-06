@@ -92,5 +92,8 @@ PLAYER = Player(
                       'pensive': time() + 120,
                       'mad': time() - 60,
     },
-    inventory = {},
+    inventory = {'potion': 5,
+                 'gems': 203,
+                 'lockpicks': 7,
+    },
 )
