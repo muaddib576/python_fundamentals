@@ -30,6 +30,10 @@ def abort(message):
     error(message)
     exit(1)
 
+def text_style_guide():
+    """Returns the current global style guide for player visible text"""
+    
+
 def wrap(text, width=None, initial_indent=None, subsequent_indent=None, is_image=None):
     width = width or WIDTH
     initial_indent = initial_indent or MARGIN

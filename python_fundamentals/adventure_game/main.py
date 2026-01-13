@@ -13,18 +13,15 @@
     # Alissa's feedback: dragons are easy to deal with once you know which is which
         # Shuffle the moods after each pet. But eating the mushrooms found in the forrest gives player a status effect with lets them see the cheerful head's aura
             # need to add/change:
-                # add player.current_status to the inventory output?
-                    # convert the s to m where relevant??
-                # update player status after eating mushrooms
                 # for fun: maybe some text color change and/or animation when examining anything while player.status == 'fried'?
-                    # lolcat library
+                    # lolcat library https://github.com/Abhishek8394/lol-cat-py
                     # Will need to update the wrap() and write() functions to reference player.current_status
+                        # make text_style_guide() function which is called by the wrap()/write() functions?
+                        # 
                 # when using inventory/examine and player.status == 'fried' then player can see mood/aura colors
                     # perhaps update the wrap()/write() functions to reference player.current_status
-                # remove the 'fried' status after either:
-                    # a set number of player actionsii
-                    # a set time period IRL??
-                # in-game breadcrumbing about mushroom effects wrt dragon auras
+                # in-game breadcrumbing about mushroom effects wrt dragon auras.
+                    # Maybe a foraging book?
                 # renewable mushrooms (shop sells them? Forrest shrooms respawn over time?)
                 # check the balance of the reward/punishments from the moods
                 # for fun: maybe add a 'sick' status if the player eats too many mushrooms?

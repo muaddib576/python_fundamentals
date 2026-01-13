@@ -1197,10 +1197,10 @@ def test_inventory(capsys: pytest.CaptureFixture[str]):
     output = capsys.readouterr().out
 
     # THEN: The inventory contents are displayed
-    assert '(x 1) lockpicking tools' in output, "The player should be told the items their inventory"
+    assert 'Lockpicking Tools (x 1)' in output, "The player should be told the items their inventory"
 
     # AND: The inventory contents are displayed
-    assert '(x 2) blunt knife' in output, "The player should be told the items their inventory"
+    assert 'Blunt Knife (x 2)' in output, "The player should be told the items their inventory"
 
 def test_inventory_empty(capsys: pytest.CaptureFixture[str]):
     # GIVEN: An empty player inventory
@@ -2467,7 +2467,8 @@ def test_consume_eat(capsys: pytest.CaptureFixture[str]):
             eat_message=("You place the cracker on your tongue.",
                          "It tastes salty.",
             ),
-            health_change=10
+            health_change=10,
+            status_effect={"full":60}
             ),
     }
 
@@ -2491,6 +2492,10 @@ def test_consume_eat(capsys: pytest.CaptureFixture[str]):
     assert "You feel your health change by 10." in output, \
         "The player should be told their health changed"
 
+    # THEN: the player is given any relevant status effects
+    assert 'full' in player.PLAYER.status_effects, \
+        "The players status_effect should be updated"
+
 def test_consume_drink(capsys: pytest.CaptureFixture[str]):
     # GIVEN: a drinkable item in the player's inventory
     player.PLAYER.current_health = 50
@@ -2503,7 +2508,8 @@ def test_consume_drink(capsys: pytest.CaptureFixture[str]):
             drink_message=("You sip the contents of the bottle.",
                            "It tastes revolting.",
             ),
-            health_change=-25
+            health_change=-25,
+            status_effect={"poisoned":30}
             ),
     }
 
@@ -2526,6 +2532,10 @@ def test_consume_drink(capsys: pytest.CaptureFixture[str]):
     # THEN: The player is told their health was adjusted
     assert "You feel your health change by -25." in output, \
         "The player should be told their health changed"
+
+    # THEN: the player is given any relevant status effects
+    assert 'poisoned' in player.PLAYER.status_effects, \
+        "The players status_effect should be updated"
 
 def test_consume_last_item(capsys: pytest.CaptureFixture[str]):
     # GIVEN: a drinkable item in the player's inventory

@@ -192,7 +192,7 @@ class Place(Collectable, player.Contents):
         self.add('gems', item_cost, self.shop_inventory)
 
 class Item(Collectable):
-    def __init__(self, key, name, description, aliases=None, writing=None, can_take=False, price=None, drink_message=None, eat_message=None, health_change=None):
+    def __init__(self, key, name, description, aliases=None, writing=None, can_take=False, price=None, drink_message=None, eat_message=None, health_change=None, status_effect=None):
         super().__init__(key, name, description)
         self.aliases = aliases or []
         self.writing = writing
@@ -201,6 +201,7 @@ class Item(Collectable):
         self.drink_message = drink_message
         self.eat_message = eat_message
         self.health_change = health_change
+        self.status_effect = status_effect
 
     @classmethod
     def get(cls, key, default=None):

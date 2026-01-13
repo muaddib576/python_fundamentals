@@ -158,7 +158,8 @@ ITEMS = Item.item_dict = {
             "Things start to look swirllllly...",
             "Your tummy doesn't feel so good.",
         ),
-        health_change=-15
+        health_change=-15,
+        status_effect={"enlightened":60},
     ),
     "lockpicks": Item(
         key="lockpicks",

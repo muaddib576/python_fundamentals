@@ -497,6 +497,10 @@ class Consume(Command):
             
             wrap(f"You feel your health change by {change}.")
 
+        if target_item.status_effect:
+            for status, duration in target_item.status_effect.items():
+                player.PLAYER.add_status(status, duration)
+
 class Eat(Consume):
     aliases = ['eat']
 
