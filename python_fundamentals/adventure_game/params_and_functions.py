@@ -2,6 +2,8 @@
 from console.progress import ProgressBar
 from console import fg, bg, fx
 import textwrap
+from random import randint
+import math
 
 import python_fundamentals.adventure_game.player as player
 
@@ -30,9 +32,20 @@ def abort(message):
     error(message)
     exit(1)
 
-def text_style_guide():
+def text_style_guide(text):
     """Returns the current global style guide for player visible text"""
     
+    # TODO: make this conditional on the player status
+    # TODO: address the fact that input text already has some fb color information (there should be a library that can handle that)
+    # TODO: this breaks a loooot of tests, but maybe that doesn't matter given it will only be active periodically
+
+    output = []
+    for i, char in enumerate(text):
+        r = int(127 * (math.sin(.3 * i + 0) + 1))
+        g = int(127 * (math.sin(.3 * i + 2) + 1))
+        b = int(127 * (math.sin(.3 * i + 4) + 1))
+        output.append(f"\033[38;2;{r};{g};{b}m{char}\033[0m")
+    return "".join(output)
 
 def wrap(text, width=None, initial_indent=None, subsequent_indent=None, is_image=None):
     width = width or WIDTH
@@ -52,7 +65,7 @@ def wrap(text, width=None, initial_indent=None, subsequent_indent=None, is_image
             subsequent_indent=subsequent_indent
         )
         
-        blocks.append(paragraph)
+        blocks.append(text_style_guide(paragraph))
     
     if is_image:
         print(*blocks, sep="\n")
