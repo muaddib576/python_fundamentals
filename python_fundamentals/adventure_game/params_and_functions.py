@@ -4,6 +4,7 @@ from console import fg, bg, fx
 import textwrap
 from random import randint
 import math
+from rich.text import Text
 
 import python_fundamentals.adventure_game.player as player
 
@@ -35,12 +36,17 @@ def abort(message):
 def text_style_guide(text):
     """Returns the current global style guide for player visible text"""
     
+    # TODO: update all write() to be wrap()?
     # TODO: make this conditional on the player status
     # TODO: address the fact that input text already has some fb color information (there should be a library that can handle that)
+        # You kinda accidentally solved this with r_text = Text.from_ansi(text) because the Text object is not being fully utilized/printed
     # TODO: this breaks a loooot of tests, but maybe that doesn't matter given it will only be active periodically
 
+    r_text = Text.from_ansi(text)
+
     output = []
-    for i, char in enumerate(text):
+    for i, char in enumerate(r_text):
+    # if not char.style:
         r = int(127 * (math.sin(.3 * i + 0) + 1))
         g = int(127 * (math.sin(.3 * i + 2) + 1))
         b = int(127 * (math.sin(.3 * i + 4) + 1))
