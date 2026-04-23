@@ -5,8 +5,12 @@ import textwrap
 from random import randint
 import math
 from rich.text import Text
+from rich.style import Style
+from rich.console import Console
 
 import python_fundamentals.adventure_game.player as player
+
+r_console = Console()
 
 WIDTH = 60
 MARGIN = ' '*3
@@ -40,22 +44,37 @@ def text_style_guide(text):
     # TODO: make this conditional on the player status
     # TODO: address the fact that input text already has some fb color information (there should be a library that can handle that)
         # You kinda accidentally solved this with r_text = Text.from_ansi(text) because the Text object is not being fully utilized/printed
-    # TODO: look into: instead of current implementation, use the console lib to find the relevant hex code and use that instead (maybe ask Alissa again)
     # TODO: this breaks a loooot of tests, but maybe that doesn't matter given it will only be active periodically
+    # TODO: maybe change the eat mushroom text to go rianbow in the middle? (eg swiiiirlllllly)
+    # TODO: make sure the effect is actually wearing off. The text seems to stay colorful, but only for some messages?
+    # TODO: look into: instead of current implementation, use the console lib to find the relevant hex code and use that instead (maybe ask Alissa again). YOU NEED TO CONVERT TO FULLY USE RICH_TEXT OR ONLY USE CONSOLE
+
+    r_text = Text.from_ansi(text)
 
     if "enlightened" in player.PLAYER.status_effects.keys():
-        r_text = Text.from_ansi(text)
 
-        output = []
+        # create set of indexes with prior styles for exception from rainbowification
+        excluded_indexes = set()
+        
+        for span in r_text.spans:
+            span_style = span.style
+
+            if span_style and span_style.color is not None:
+                excluded_indexes.update(range(span.start, span.end))
+        
         for i, char in enumerate(r_text):
-        # if not char.style:
+            if i in excluded_indexes:
+                continue
+
             r = int(127 * (math.sin(.3 * i + 0) + 1))
             g = int(127 * (math.sin(.3 * i + 2) + 1))
             b = int(127 * (math.sin(.3 * i + 4) + 1))
-            output.append(f"\033[38;2;{r};{g};{b}m{char}\033[0m")
-        return "".join(output)
+
+            rainbow_style = Style(color=f"#{r:02x}{g:02x}{b:02x}")
+
+            r_text.stylize(rainbow_style, i, i+1)
     
-    return text
+    return r_text
 
 def wrap(text, width=None, initial_indent=None, subsequent_indent=None, is_image=None):
     width = width or WIDTH
@@ -78,11 +97,22 @@ def wrap(text, width=None, initial_indent=None, subsequent_indent=None, is_image
         blocks.append(text_style_guide(paragraph))
     
     if is_image:
-        print(*blocks, sep="\n")
-        print()
+        for block in blocks:
+            r_console.print(block)
+        r_console.print()
+
+        # print(*blocks, sep="\n")
+        # print()
     else:
-        print(*blocks, sep="\n\n")
-        print()
+        for i, block in enumerate(blocks):
+            if i > 0:
+                r_console.print()
+            r_console.print(block)
+        r_console.print()
+
+        # print(*blocks, sep="\n\n")
+        # print()
+        
 
 def write(text):
     print(MARGIN, text, sep="")
