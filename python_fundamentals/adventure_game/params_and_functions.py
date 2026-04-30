@@ -26,11 +26,12 @@ BAR = ProgressBar(
 def debug(message):
     """De debug"""
     if DEBUG:
-        print(fg.lightblack(f"!!! {message}"))
+        r_console.print(f"!!! {message}", style = 'bright_black')
     
 def error(message):
     """Prints da error"""
-    print(f"{fg.red('Error:')} {message}")
+    text = Text.assemble(("Error:", "red"), f" {message}")
+    r_console.print(text)
 
 def abort(message):
     """Prints fatal error message and exits the program"""
@@ -47,7 +48,7 @@ def text_style_guide(text):
     # TODO: this breaks a loooot of tests, but maybe that doesn't matter given it will only be active periodically
     # TODO: maybe change the eat mushroom text to go rianbow in the middle? (eg swiiiirlllllly)
     # TODO: make sure the effect is actually wearing off. The text seems to stay colorful, but only for some messages?
-    # TODO: look into: instead of current implementation, use the console lib to find the relevant hex code and use that instead (maybe ask Alissa again). YOU NEED TO CONVERT TO FULLY USE RICH_TEXT OR ONLY USE CONSOLE
+    # TODO: Finish refactoring to use rich.console (you left off on updating wrap())
 
     r_text = Text.from_ansi(text)
 
@@ -115,13 +116,14 @@ def wrap(text, width=None, initial_indent=None, subsequent_indent=None, is_image
         
 
 def write(text):
+    if isinstance(text, Text):
+        r_console.print(Text(MARGIN) + text)
+        return
     print(MARGIN, text, sep="")
 
 def header(title):
-    title = fx.bold(title)
-    title = fx.underline(title)
-    title = fg.cyan(title)
-    write(title)
+    title2 = Text(f"{title}", style="bold underline cyan")
+    write(title2)
     print()
 
 def start_message():
@@ -129,12 +131,33 @@ def start_message():
     print("Welcome to Picnic Quest!")
     print()
 
+    # TODO: delete this after confirming parity
     wrap((
         "You wake to the soft glow of morning light filtering through the cottage's wooden shutters. Today is the day. "\
         f"A promise made weeks ago lingers in your mind; your father's secret picnic spot, hidden somewhere in the {fg.lightcyan('misty woods')}.",
         "Your heart races with excitement as you swing your legs out of bed, already imagining the sights and sounds of the adventure ahead. "\
         f"The floorboards creak beneath your bare feet as you step toward the kitchen, eager to find him. But the {fg.lightcyan('cabin')} is unnervingly still.",
         f"His coat and boots are gone. On the rough-hewn writing desk lies an unexpected object: a {fg.lightcyan('folded note')}, weighed down by a stone, with your name scrawled on the front."
+    ))
+
+    wrap((
+        Text.assemble(
+            "You wake to the soft glow of morning light filtering through the cottage's wooden shutters. Today is the day. "
+            "A promise made weeks ago lingers in your mind; your father's secret picnic spot, hidden somewhere in the "
+            ("misty woods", "bright_cyan"),
+            ".",
+        ),
+        Text.assemble(
+            "Your heart races with excitement as you swing your legs out of bed, already imagining the sights and sounds of the adventure ahead. "
+            "The floorboards creak beneath your bare feet as you step toward the kitchen, eager to find him. But the ",
+            ("cabin", "bright_cyan"),
+            " is unnervingly still.",
+        ),
+        Text.assemble(
+            "His coat and boots are gone. On the rough-hewn writing desk lies an unexpected object: a ",
+            ("folded note", "bright_cyan"),
+            " weighed down by a stone, with your name scrawled on the front."
+        )
     ))
 
 def victory():
