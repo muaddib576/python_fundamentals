@@ -7,6 +7,7 @@ import math
 from rich.text import Text
 from rich.style import Style
 from rich.console import Console
+from rich.padding import Padding
 
 import python_fundamentals.adventure_game.player as player
 
@@ -50,20 +51,21 @@ def text_style_guide(text):
     # TODO: make sure the effect is actually wearing off. The text seems to stay colorful, but only for some messages?
     # TODO: Finish refactoring to use rich.console (you left off on updating wrap())
 
-    r_text = Text.from_ansi(text)
+    if not isinstance(text, Text):
+        text = Text.from_ansi(text)
 
     if "enlightened" in player.PLAYER.status_effects.keys():
 
         # create set of indexes with prior styles for exception from rainbowification
         excluded_indexes = set()
         
-        for span in r_text.spans:
+        for span in text.spans:
             span_style = span.style
 
             if span_style and span_style.color is not None:
                 excluded_indexes.update(range(span.start, span.end))
         
-        for i, char in enumerate(r_text):
+        for i, char in enumerate(text):
             if i in excluded_indexes:
                 continue
 
@@ -73,9 +75,9 @@ def text_style_guide(text):
 
             rainbow_style = Style(color=f"#{r:02x}{g:02x}{b:02x}")
 
-            r_text.stylize(rainbow_style, i, i+1)
+            text.stylize(rainbow_style, i, i+1)
     
-    return r_text
+    return text
 
 def wrap(text, width=None, initial_indent=None, subsequent_indent=None, is_image=None):
     width = width or WIDTH
@@ -85,18 +87,28 @@ def wrap(text, width=None, initial_indent=None, subsequent_indent=None, is_image
     if isinstance(text, str):
         text = (text,)
 
+    if isinstance(text, Text):
+        text = (text,)
+
     blocks = []
 
-    for stanza in text:
-        paragraph = textwrap.fill(
-            stanza,
-            width,
-            initial_indent=initial_indent,
-            subsequent_indent=subsequent_indent
-        )
-        
-        blocks.append(text_style_guide(paragraph))
-    
+    for i, stanza in enumerate(text):
+        # paragraph = textwrap.fill(
+        #     stanza,
+        #     width,
+        #     initial_indent=initial_indent,
+        #     subsequent_indent=subsequent_indent
+        # )
+
+        # if not isinstance(stanza, Text):
+        #     stanza = Text.from_ansi(stanza)
+
+        paragraph = text_style_guide(stanza)
+
+        paragraph = paragraph.wrap(r_console, width=width)
+
+        blocks.append(paragraph)
+
     if is_image:
         for block in blocks:
             r_console.print(block)
@@ -108,7 +120,8 @@ def wrap(text, width=None, initial_indent=None, subsequent_indent=None, is_image
         for i, block in enumerate(blocks):
             if i > 0:
                 r_console.print()
-            r_console.print(block)
+            # TODO: this padding is only working for subsequent_indent, and it might not be working at all (eg is_image) 
+            r_console.print(Padding(block, (0, 0, 0, len(subsequent_indent))))
         r_console.print()
 
         # print(*blocks, sep="\n\n")
@@ -132,23 +145,23 @@ def start_message():
     print()
 
     # TODO: delete this after confirming parity
-    wrap((
-        "You wake to the soft glow of morning light filtering through the cottage's wooden shutters. Today is the day. "\
-        f"A promise made weeks ago lingers in your mind; your father's secret picnic spot, hidden somewhere in the {fg.lightcyan('misty woods')}.",
-        "Your heart races with excitement as you swing your legs out of bed, already imagining the sights and sounds of the adventure ahead. "\
-        f"The floorboards creak beneath your bare feet as you step toward the kitchen, eager to find him. But the {fg.lightcyan('cabin')} is unnervingly still.",
-        f"His coat and boots are gone. On the rough-hewn writing desk lies an unexpected object: a {fg.lightcyan('folded note')}, weighed down by a stone, with your name scrawled on the front."
-    ))
+    # wrap((
+    #     "You wake to the soft glow of morning light filtering through the cottage's wooden shutters. Today is the day. "\
+    #     f"A promise made weeks ago lingers in your mind; your father's secret picnic spot, hidden somewhere in the {fg.lightcyan('misty woods')}.",
+    #     "Your heart races with excitement as you swing your legs out of bed, already imagining the sights and sounds of the adventure ahead. "\
+    #     f"The floorboards creak beneath your bare feet as you step toward the kitchen, eager to find him. But the {fg.lightcyan('cabin')} is unnervingly still.",
+    #     f"His coat and boots are gone. On the rough-hewn writing desk lies an unexpected object: a {fg.lightcyan('folded note')}, weighed down by a stone, with your name scrawled on the front."
+    # ))
 
     wrap((
         Text.assemble(
-            "You wake to the soft glow of morning light filtering through the cottage's wooden shutters. Today is the day. "
-            "A promise made weeks ago lingers in your mind; your father's secret picnic spot, hidden somewhere in the "
+            "You wake to the soft glow of morning light filtering through the cottage's wooden shutters. Today is the day. ",
+            "A promise made weeks ago lingers in your mind; your father's secret picnic spot, hidden somewhere in the ",
             ("misty woods", "bright_cyan"),
             ".",
         ),
         Text.assemble(
-            "Your heart races with excitement as you swing your legs out of bed, already imagining the sights and sounds of the adventure ahead. "
+            "Your heart races with excitement as you swing your legs out of bed, already imagining the sights and sounds of the adventure ahead. ",
             "The floorboards creak beneath your bare feet as you step toward the kitchen, eager to find him. But the ",
             ("cabin", "bright_cyan"),
             " is unnervingly still.",
